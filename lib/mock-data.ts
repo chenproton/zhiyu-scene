@@ -244,18 +244,22 @@ export interface AbilityPoint {
   category?: string
   domain?: string
   proficiencyDesc?: string
+  code?: string
+  positionIds?: string[]
+  requiredLevel?: "了解" | "理解" | "掌握" | "熟练" | "精通"
 }
 
 export interface LearningResource {
   id: string
   name: string
-  type: "document" | "software" | "image" | "video" | "link" | "venue" | "other"
+  type: "document" | "spreadsheet" | "image" | "link" | "audio" | "video" | "archive" | "tool" | "venue" | "facility" | "software" | "other"
   url: string
   size?: string
   description?: string
   knowledgePoints: string[]
   uploadedAt: string
   uploadedBy: string
+  thumbnail?: string
 }
 
 // Position Ability Types
@@ -971,47 +975,73 @@ export const granularLessons: GranularLesson[] = [
   { id: "gl-3", name: "CSS 布局精讲", description: "Flexbox 与 Grid 布局详解", code: "GL-003" },
   { id: "gl-4", name: "RESTful API 设计", description: "API 设计规范与最佳实践", code: "GL-004" },
   { id: "gl-5", name: "数据库设计基础", description: "关系型数据库建模方法", code: "GL-005" },
+  { id: "gl-6", name: "Node.js 服务端开发", description: "Node.js 后端服务开发与性能优化", code: "GL-006" },
+  { id: "gl-7", name: "Docker 容器化部署", description: "Docker 镜像构建与容器编排", code: "GL-007" },
+  { id: "gl-8", name: "Redis 缓存策略", description: "Redis 数据结构与缓存设计模式", code: "GL-008" },
+  { id: "gl-9", name: "Git 工作流与协作", description: "Git 分支策略与团队协作规范", code: "GL-009" },
+  { id: "gl-10", name: "电商数据分析", description: "电商运营数据分析与指标拆解", code: "GL-010" },
 ]
 
 export const knowledgePoints: KnowledgePoint[] = [
-  { id: "kp-1", name: "React Hooks", description: "React 函数组件中的状态和副作用管理", category: "前端开发", relatedResources: ["lr-1", "lr-2"], code: "KP-001", granularLessons: ["gl-1"] },
-  { id: "kp-2", name: "TypeScript 基础", description: "TypeScript 类型系统和基本语法", category: "前端开发", relatedResources: ["lr-2", "lr-3"], code: "KP-002", granularLessons: ["gl-2"] },
-  { id: "kp-3", name: "CSS Flexbox", description: "CSS 弹性盒子布局", category: "前端开发", relatedResources: ["lr-3"], code: "KP-003", granularLessons: ["gl-3"] },
-  { id: "kp-4", name: "RESTful API", description: "REST 风格的 API 设计原则", category: "后端开发", relatedResources: ["lr-4", "lr-5"], code: "KP-004", granularLessons: ["gl-4"] },
-  { id: "kp-5", name: "数据库设计", description: "关系型数据库表结构设计", category: "后端开发", relatedResources: ["lr-5"], code: "KP-005", granularLessons: ["gl-5"] },
-  { id: "kp-6", name: "JWT 认证", description: "JSON Web Token 身份验证机制", category: "安全", relatedResources: ["lr-6", "lr-4"], code: "KP-006", granularLessons: ["gl-4", "gl-5"] },
-  { id: "kp-7", name: "Git 版本控制", description: "Git 分支管理和协作开发", category: "工具", relatedResources: ["lr-7"], code: "KP-007" },
-  { id: "kp-8", name: "电商运营基础", description: "电商平台运营的基本概念和流程", category: "电子商务", relatedResources: ["lr-9", "lr-10"], code: "KP-008" },
-  { id: "kp-9", name: "数据可视化", description: "使用图表展示数据的方法和技巧", category: "数据分析", relatedResources: ["lr-10"], code: "KP-009" },
-  { id: "kp-10", name: "财务报表分析", description: "企业财务报表的编制和分析方法", category: "财务管理", relatedResources: ["lr-10"], code: "KP-010" },
+  { id: "kp-1", name: "React Hooks", description: "React 函数组件中的状态和副作用管理", category: "前端开发", relatedResources: ["lr-1", "lr-2"], code: "KP-001", granularLessons: ["gl-1", "gl-2", "gl-3"] },
+  { id: "kp-2", name: "TypeScript 基础", description: "TypeScript 类型系统和基本语法", category: "前端开发", relatedResources: ["lr-2", "lr-3"], code: "KP-002", granularLessons: ["gl-2", "gl-4", "gl-6"] },
+  { id: "kp-3", name: "CSS Flexbox", description: "CSS 弹性盒子布局", category: "前端开发", relatedResources: ["lr-3"], code: "KP-003", granularLessons: ["gl-3", "gl-1"] },
+  { id: "kp-4", name: "RESTful API", description: "REST 风格的 API 设计原则", category: "后端开发", relatedResources: ["lr-4", "lr-5"], code: "KP-004", granularLessons: ["gl-4", "gl-6", "gl-8"] },
+  { id: "kp-5", name: "数据库设计", description: "关系型数据库表结构设计", category: "后端开发", relatedResources: ["lr-5"], code: "KP-005", granularLessons: ["gl-5", "gl-8", "gl-10"] },
+  { id: "kp-6", name: "JWT 认证", description: "JSON Web Token 身份验证机制", category: "安全", relatedResources: ["lr-6", "lr-4"], code: "KP-006", granularLessons: ["gl-4", "gl-5", "gl-6", "gl-8"] },
+  { id: "kp-7", name: "Git 版本控制", description: "Git 分支管理和协作开发", category: "工具", relatedResources: ["lr-7"], code: "KP-007", granularLessons: ["gl-9", "gl-2"] },
+  { id: "kp-8", name: "电商运营基础", description: "电商平台运营的基本概念和流程", category: "电子商务", relatedResources: ["lr-9", "lr-10"], code: "KP-008", granularLessons: ["gl-10", "gl-5", "gl-9"] },
+  { id: "kp-9", name: "数据可视化", description: "使用图表展示数据的方法和技巧", category: "数据分析", relatedResources: ["lr-10"], code: "KP-009", granularLessons: ["gl-3", "gl-10", "gl-1"] },
+  { id: "kp-10", name: "财务报表分析", description: "企业财务报表的编制和分析方法", category: "财务管理", relatedResources: ["lr-10"], code: "KP-010", granularLessons: ["gl-10", "gl-5", "gl-8", "gl-9"] },
 ]
 
 // Ability Points Library (global)
 export const abilityPoints: AbilityPoint[] = [
-  { id: "ab-1", name: "组件封装能力", description: "能够将业务逻辑封装为可复用的组件", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:能使用现有组件; L2:能修改组件适配需求; L3:能独立封装通用组件; L4:能设计组件库架构; L5:能制定团队组件规范" },
-  { id: "ab-2", name: "状态管理能力", description: "合理使用状态管理方案管理应用数据", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:了解useState/useReducer; L2:能使用Context; L3:能使用Redux/Zustand; L4:能设计状态架构; L5:能优化大规模状态性能" },
-  { id: "ab-3", name: "接口设计能力", description: "设计清晰、规范的 API 接口", category: "设计能力", domain: "系统设计", proficiencyDesc: "L1:能调用现成接口; L2:能编写简单CRUD; L3:能设计RESTful接口; L4:能设计版本兼容策略; L5:能设计高并发接口架构" },
-  { id: "ab-4", name: "数据库建模能力", description: "设计高效、规范的数据库表结构", category: "设计能力", domain: "系统设计", proficiencyDesc: "L1:能写基本SQL; L2:能设计单表结构; L3:能设计多表关联; L4:能优化查询性能; L5:能设计分库分表方案" },
-  { id: "ab-5", name: "安全编码能力", description: "编写安全的代码，防范常见安全漏洞", category: "开发能力", domain: "质量保障", proficiencyDesc: "L1:了解常见漏洞概念; L2:能避免XSS/SQL注入; L3:能实施认证授权; L4:能进行安全审计; L5:能设计安全架构" },
-  { id: "ab-6", name: "性能优化能力", description: "识别性能瓶颈并进行优化", category: "优化能力", domain: "质量保障", proficiencyDesc: "L1:能使用性能分析工具; L2:能优化渲染性能; L3:能优化网络请求; L4:能优化构建体积; L5:能设计性能监控体系" },
-  { id: "ab-7", name: "团队协作能力", description: "有效沟通、代码审查、文档编写", category: "软技能", domain: "职业素养", proficiencyDesc: "L1:能完成分配任务; L2:能主动沟通问题; L3:能进行代码审查; L4:能指导初级成员; L5:能推动团队协作文化" },
-  { id: "ab-8", name: "数据分析能力", description: "使用数据驱动决策和分析", category: "分析能力", domain: "职业素养", proficiencyDesc: "L1:能查看基础报表; L2:能使用Excel分析; L3:能使用SQL取数; L4:能建立分析模型; L5:能搭建数据平台" },
-  { id: "ab-9", name: "问题排查能力", description: "定位和解决技术问题的能力", category: "开发能力", domain: "质量保障", proficiencyDesc: "L1:能根据报错搜索; L2:能使用调试工具; L3:能分析复杂链路; L4:能处理线上故障; L5:能设计容灾方案" },
-  { id: "ab-10", name: "项目管理能力", description: "规划、跟踪和交付项目任务", category: "软技能", domain: "职业素养", proficiencyDesc: "L1:能管理个人任务; L2:能协助跟踪进度; L3:能主导小型项目; L4:能管理跨团队项目; L5:能制定项目管理规范" },
+  { id: "ab-1", name: "组件封装能力", description: "能够将业务逻辑封装为可复用的组件", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:能使用现有组件; L2:能修改组件适配需求; L3:能独立封装通用组件; L4:能设计组件库架构; L5:能制定团队组件规范", code: "AB-001", positionIds: ["pos-1", "pos-3"], requiredLevel: "精通" },
+  { id: "ab-2", name: "状态管理能力", description: "合理使用状态管理方案管理应用数据", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:了解useState/useReducer; L2:能使用Context; L3:能使用Redux/Zustand; L4:能设计状态架构; L5:能优化大规模状态性能", code: "AB-002", positionIds: ["pos-1", "pos-3"], requiredLevel: "熟练" },
+  { id: "ab-3", name: "接口设计能力", description: "设计清晰、规范的 API 接口", category: "设计能力", domain: "系统设计", proficiencyDesc: "L1:能调用现成接口; L2:能编写简单CRUD; L3:能设计RESTful接口; L4:能设计版本兼容策略; L5:能设计高并发接口架构", code: "AB-003", positionIds: ["pos-2", "pos-3"], requiredLevel: "精通" },
+  { id: "ab-4", name: "数据库建模能力", description: "设计高效、规范的数据库表结构", category: "设计能力", domain: "系统设计", proficiencyDesc: "L1:能写基本SQL; L2:能设计单表结构; L3:能设计多表关联; L4:能优化查询性能; L5:能设计分库分表方案", code: "AB-004", positionIds: ["pos-2", "pos-3", "pos-4"], requiredLevel: "熟练" },
+  { id: "ab-5", name: "安全编码能力", description: "编写安全的代码，防范常见安全漏洞", category: "开发能力", domain: "质量保障", proficiencyDesc: "L1:了解常见漏洞概念; L2:能避免XSS/SQL注入; L3:能实施认证授权; L4:能进行安全审计; L5:能设计安全架构", code: "AB-005", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "理解" },
+  { id: "ab-6", name: "性能优化能力", description: "识别性能瓶颈并进行优化", category: "优化能力", domain: "质量保障", proficiencyDesc: "L1:能使用性能分析工具; L2:能优化渲染性能; L3:能优化网络请求; L4:能优化构建体积; L5:能设计性能监控体系", code: "AB-006", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "熟悉" },
+  { id: "ab-7", name: "团队协作能力", description: "有效沟通、代码审查、文档编写", category: "软技能", domain: "职业素养", proficiencyDesc: "L1:能完成分配任务; L2:能主动沟通问题; L3:能进行代码审查; L4:能指导初级成员; L5:能推动团队协作文化", code: "AB-007", positionIds: ["pos-1", "pos-2", "pos-3", "pos-4", "pos-5", "pos-6", "pos-7", "pos-8", "pos-9", "pos-10", "pos-11", "pos-12"], requiredLevel: "理解" },
+  { id: "ab-8", name: "数据分析能力", description: "使用数据驱动决策和分析", category: "分析能力", domain: "职业素养", proficiencyDesc: "L1:能查看基础报表; L2:能使用Excel分析; L3:能使用SQL取数; L4:能建立分析模型; L5:能搭建数据平台", code: "AB-008", positionIds: ["pos-4", "pos-5", "pos-9"], requiredLevel: "熟练" },
+  { id: "ab-9", name: "问题排查能力", description: "定位和解决技术问题的能力", category: "开发能力", domain: "质量保障", proficiencyDesc: "L1:能根据报错搜索; L2:能使用调试工具; L3:能分析复杂链路; L4:能处理线上故障; L5:能设计容灾方案", code: "AB-009", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "熟悉" },
+  { id: "ab-10", name: "项目管理能力", description: "规划、跟踪和交付项目任务", category: "软技能", domain: "职业素养", proficiencyDesc: "L1:能管理个人任务; L2:能协助跟踪进度; L3:能主导小型项目; L4:能管理跨团队项目; L5:能制定项目管理规范", code: "AB-010", positionIds: ["pos-1", "pos-2", "pos-3", "pos-5", "pos-11", "pos-12"], requiredLevel: "理解" },
+  { id: "ab-11", name: "CSS 样式开发能力", description: "掌握现代 CSS 技术，实现复杂的页面布局和视觉效果", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:能写基础样式; L2:能使用Flexbox/Grid; L3:能实现响应式布局; L4:能优化样式性能; L5:能设计CSS架构", code: "AB-011", positionIds: ["pos-1", "pos-3"], requiredLevel: "熟练" },
+  { id: "ab-12", name: "前端构建工具配置", description: "配置和优化前端工程化工具链", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:能使用现成脚手架; L2:能配置Webpack/Vite; L3:能优化构建配置; L4:能定制构建流程; L5:能设计工程化体系", code: "AB-012", positionIds: ["pos-1", "pos-3"], requiredLevel: "熟悉" },
+  { id: "ab-13", name: "服务端开发能力", description: "使用 Node.js 或其他服务端技术开发后端服务", category: "开发能力", domain: "服务端开发", proficiencyDesc: "L1:能写简单脚本; L2:能开发基础API; L3:能设计服务架构; L4:能优化服务性能; L5:能设计微服务架构", code: "AB-013", positionIds: ["pos-2", "pos-3"], requiredLevel: "熟练" },
+  { id: "ab-14", name: "DevOps 运维能力", description: "掌握持续集成、持续部署和容器化技术", category: "工程能力", domain: "运维部署", proficiencyDesc: "L1:了解CI/CD概念; L2:能使用GitHub Actions; L3:能配置Docker; L4:能搭建K8s集群; L5:能设计DevOps体系", code: "AB-014", positionIds: ["pos-2", "pos-3"], requiredLevel: "理解" },
+  { id: "ab-15", name: "数据可视化能力", description: "使用图表库实现数据的可视化展示", category: "分析能力", domain: "数据分析", proficiencyDesc: "L1:能使用基础图表; L2:能配置ECharts/D3; L3:能设计可视化方案; L4:能开发交互式大屏; L5:能设计可视化规范", code: "AB-015", positionIds: ["pos-4", "pos-1"], requiredLevel: "熟悉" },
 ]
 
 // Learning Resources Library
 export const learningResources: LearningResource[] = [
-  { id: "lr-1", name: "React 官方文档", type: "link", url: "https://react.dev", description: "React 框架官方中文文档", knowledgePoints: ["kp-1"], uploadedAt: "2024-01-10", uploadedBy: "张老师" },
-  { id: "lr-2", name: "TypeScript 入门教程.pdf", type: "document", url: "/files/ts-guide.pdf", size: "2.3MB", description: "TypeScript 从入门到精通", knowledgePoints: ["kp-2"], uploadedAt: "2024-01-08", uploadedBy: "李老师" },
-  { id: "lr-3", name: "CSS 布局实战视频", type: "video", url: "/videos/css-layout.mp4", size: "156MB", description: "CSS Flexbox 和 Grid 布局详解", knowledgePoints: ["kp-3"], uploadedAt: "2024-01-05", uploadedBy: "王老师" },
-  { id: "lr-4", name: "API 设计规范文档.docx", type: "document", url: "/files/api-spec.docx", size: "1.2MB", description: "RESTful API 设计最佳实践", knowledgePoints: ["kp-4"], uploadedAt: "2024-01-12", uploadedBy: "张老师" },
-  { id: "lr-5", name: "数据库建模工具", type: "software", url: "https://dbdiagram.io", description: "在线数据库设计工具", knowledgePoints: ["kp-5"], uploadedAt: "2024-01-15", uploadedBy: "赵老师" },
-  { id: "lr-6", name: "JWT 认证流程图.png", type: "image", url: "/images/jwt-flow.png", size: "0.5MB", description: "JWT 认证工作流程图解", knowledgePoints: ["kp-6"], uploadedAt: "2024-01-18", uploadedBy: "李老师" },
-  { id: "lr-7", name: "Git 协作开发指南", type: "document", url: "/files/git-guide.pdf", size: "3.1MB", description: "团队 Git 工作流最佳实践", knowledgePoints: ["kp-7"], uploadedAt: "2024-01-20", uploadedBy: "王老师" },
-  { id: "lr-8", name: "实训室 A-301", type: "venue", url: "", description: "计算机实训室，配备50台电脑", knowledgePoints: [], uploadedAt: "2024-01-01", uploadedBy: "管理员" },
-  { id: "lr-9", name: "电商平台演示系统", type: "software", url: "https://demo.shop.edu", description: "电商运营模拟平台", knowledgePoints: ["kp-8"], uploadedAt: "2024-01-22", uploadedBy: "赵老师" },
-  { id: "lr-10", name: "数据分析案例集", type: "document", url: "/files/data-cases.pdf", size: "5.6MB", description: "真实业务数据分析案例", knowledgePoints: ["kp-9"], uploadedAt: "2024-01-25", uploadedBy: "刘老师" },
+  { id: "lr-1", name: "React 官方文档", type: "link", url: "https://react.dev", description: "React 框架官方中文文档", knowledgePoints: ["kp-1"], uploadedAt: "2024-01-10", uploadedBy: "张老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-2", name: "TypeScript 入门教程.pdf", type: "document", url: "/files/ts-guide.pdf", size: "2.3MB", description: "TypeScript 从入门到精通", knowledgePoints: ["kp-2"], uploadedAt: "2024-01-08", uploadedBy: "李老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-3", name: "CSS 布局实战视频", type: "video", url: "/videos/css-layout.mp4", size: "156MB", description: "CSS Flexbox 和 Grid 布局详解", knowledgePoints: ["kp-3"], uploadedAt: "2024-01-05", uploadedBy: "王老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-4", name: "API 设计规范文档.docx", type: "document", url: "/files/api-spec.docx", size: "1.2MB", description: "RESTful API 设计最佳实践", knowledgePoints: ["kp-4"], uploadedAt: "2024-01-12", uploadedBy: "张老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-5", name: "数据库建模工具", type: "tool", url: "https://dbdiagram.io", description: "在线数据库设计工具", knowledgePoints: ["kp-5"], uploadedAt: "2024-01-15", uploadedBy: "赵老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-6", name: "JWT 认证流程图.png", type: "image", url: "/images/jwt-flow.png", size: "0.5MB", description: "JWT 认证工作流程图解", knowledgePoints: ["kp-6"], uploadedAt: "2024-01-18", uploadedBy: "李老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-7", name: "Git 协作开发指南", type: "document", url: "/files/git-guide.pdf", size: "3.1MB", description: "团队 Git 工作流最佳实践", knowledgePoints: ["kp-7"], uploadedAt: "2024-01-20", uploadedBy: "王老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-8", name: "实训室 A-301", type: "venue", url: "", description: "计算机实训室，配备50台电脑", knowledgePoints: [], uploadedAt: "2024-01-01", uploadedBy: "管理员", thumbnail: "/placeholder.svg" },
+  { id: "lr-9", name: "电商平台演示系统", type: "software", url: "https://demo.shop.edu", description: "电商运营模拟平台", knowledgePoints: ["kp-8"], uploadedAt: "2024-01-22", uploadedBy: "赵老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-10", name: "数据分析案例集", type: "document", url: "/files/data-cases.pdf", size: "5.6MB", description: "真实业务数据分析案例", knowledgePoints: ["kp-9"], uploadedAt: "2024-01-25", uploadedBy: "刘老师", thumbnail: "/placeholder.svg" },
+  // New resource types for expanded coverage
+  { id: "lr-11", name: "学生成绩统计表.xlsx", type: "spreadsheet", url: "/files/grades.xlsx", size: "0.8MB", description: "2024春季学期学生实训成绩汇总表", knowledgePoints: [], uploadedAt: "2024-02-01", uploadedBy: "教务老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-12", name: "项目需求讲解音频", type: "audio", url: "/audio/requirements.mp3", size: "12MB", description: "企业导师对项目需求的详细讲解录音", knowledgePoints: ["kp-1"], uploadedAt: "2024-02-05", uploadedBy: "企业导师", thumbnail: "/placeholder.svg" },
+  { id: "lr-13", name: "前端开发工具包.zip", type: "archive", url: "/files/frontend-toolkit.zip", size: "45MB", description: "包含常用前端工具、脚手架和配置文件", knowledgePoints: ["kp-1", "kp-2"], uploadedAt: "2024-02-08", uploadedBy: "张老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-14", name: "VS Code 开发环境", type: "tool", url: "https://code.visualstudio.com", description: "推荐使用的代码编辑器及插件配置说明", knowledgePoints: ["kp-1"], uploadedAt: "2024-02-10", uploadedBy: "李老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-15", name: "3D打印机设备", type: "facility", url: "", description: "创想三维3D打印机，用于原型制作", knowledgePoints: [], uploadedAt: "2024-02-12", uploadedBy: "实验室管理员", thumbnail: "/placeholder.svg" },
+  { id: "lr-16", name: "服务器集群", type: "facility", url: "", description: "4台高性能服务器，用于部署和测试", knowledgePoints: ["kp-5"], uploadedAt: "2024-02-15", uploadedBy: "IT管理员", thumbnail: "/placeholder.svg" },
+  { id: "lr-17", name: "设计规范表格", type: "spreadsheet", url: "/files/design-spec.xlsx", size: "1.5MB", description: "UI设计规范参数对照表", knowledgePoints: ["kp-3"], uploadedAt: "2024-02-18", uploadedBy: "王老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-18", name: "代码审查清单", type: "document", url: "/files/code-review.pdf", size: "0.6MB", description: "团队代码审查标准检查清单", knowledgePoints: ["kp-7"], uploadedAt: "2024-02-20", uploadedBy: "张老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-19", name: "微服务架构讲解", type: "audio", url: "/audio/microservices.mp3", size: "28MB", description: "微服务架构设计原则讲解录音", knowledgePoints: ["kp-4"], uploadedAt: "2024-02-22", uploadedBy: "李老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-20", name: "项目素材压缩包", type: "archive", url: "/files/project-assets.zip", size: "120MB", description: "包含图片、图标、字体等项目素材", knowledgePoints: ["kp-3"], uploadedAt: "2024-02-25", uploadedBy: "王老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-21", name: "Postman API测试工具", type: "tool", url: "https://www.postman.com", description: "API接口测试与协作平台", knowledgePoints: ["kp-4"], uploadedAt: "2024-03-01", uploadedBy: "赵老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-22", name: "多媒体教室 B-205", type: "venue", url: "", description: "配备投影仪、音响和80个座位", knowledgePoints: [], uploadedAt: "2024-03-05", uploadedBy: "管理员", thumbnail: "/placeholder.svg" },
+  { id: "lr-23", name: "无人机实训设备", type: "facility", url: "", description: "大疆无人机及配套飞行模拟器", knowledgePoints: [], uploadedAt: "2024-03-08", uploadedBy: "实验室管理员", thumbnail: "/placeholder.svg" },
+  { id: "lr-24", name: "React 18 新特性视频教程", type: "video", url: "/videos/react18-features.mp4", size: "230MB", description: "深入讲解 React 18 并发特性和自动批处理", knowledgePoints: ["kp-1"], uploadedAt: "2024-03-10", uploadedBy: "张老师", thumbnail: "/placeholder.svg" },
+  { id: "lr-25", name: "百度统计后台链接", type: "link", url: "https://tongji.baidu.com", description: "网站流量分析平台入口", knowledgePoints: ["kp-9"], uploadedAt: "2024-03-12", uploadedBy: "刘老师", thumbnail: "/placeholder.svg" },
 ]
 
 // Extended users list for co-builder search
