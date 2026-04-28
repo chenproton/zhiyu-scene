@@ -220,21 +220,12 @@ export interface GradeMapping {
   color: string
 }
 
-export interface GranularLesson {
-  id: string
-  name: string
-  description: string
-  code: string
-}
-
 export interface KnowledgePoint {
   id: string
   name: string
   description: string
   category?: string
   relatedResources?: string[]
-  code?: string
-  granularLessons?: string[]
 }
 
 export interface AbilityPoint {
@@ -965,25 +956,17 @@ export const scenarios: Scenario[] = [
 ]
 
 // Knowledge Points Library
-export const granularLessons: GranularLesson[] = [
-  { id: "gl-1", name: "React 基础入门", description: "React 核心概念与 Hooks 使用", code: "GL-001" },
-  { id: "gl-2", name: "TypeScript 实战", description: "TS 类型系统与工程化实践", code: "GL-002" },
-  { id: "gl-3", name: "CSS 布局精讲", description: "Flexbox 与 Grid 布局详解", code: "GL-003" },
-  { id: "gl-4", name: "RESTful API 设计", description: "API 设计规范与最佳实践", code: "GL-004" },
-  { id: "gl-5", name: "数据库设计基础", description: "关系型数据库建模方法", code: "GL-005" },
-]
-
 export const knowledgePoints: KnowledgePoint[] = [
-  { id: "kp-1", name: "React Hooks", description: "React 函数组件中的状态和副作用管理", category: "前端开发", relatedResources: ["lr-1", "lr-2"], code: "KP-001", granularLessons: ["gl-1"] },
-  { id: "kp-2", name: "TypeScript 基础", description: "TypeScript 类型系统和基本语法", category: "前端开发", relatedResources: ["lr-2", "lr-3"], code: "KP-002", granularLessons: ["gl-2"] },
-  { id: "kp-3", name: "CSS Flexbox", description: "CSS 弹性盒子布局", category: "前端开发", relatedResources: ["lr-3"], code: "KP-003", granularLessons: ["gl-3"] },
-  { id: "kp-4", name: "RESTful API", description: "REST 风格的 API 设计原则", category: "后端开发", relatedResources: ["lr-4", "lr-5"], code: "KP-004", granularLessons: ["gl-4"] },
-  { id: "kp-5", name: "数据库设计", description: "关系型数据库表结构设计", category: "后端开发", relatedResources: ["lr-5"], code: "KP-005", granularLessons: ["gl-5"] },
-  { id: "kp-6", name: "JWT 认证", description: "JSON Web Token 身份验证机制", category: "安全", relatedResources: ["lr-6", "lr-4"], code: "KP-006", granularLessons: ["gl-4", "gl-5"] },
-  { id: "kp-7", name: "Git 版本控制", description: "Git 分支管理和协作开发", category: "工具", relatedResources: ["lr-7"], code: "KP-007" },
-  { id: "kp-8", name: "电商运营基础", description: "电商平台运营的基本概念和流程", category: "电子商务", relatedResources: ["lr-9", "lr-10"], code: "KP-008" },
-  { id: "kp-9", name: "数据可视化", description: "使用图表展示数据的方法和技巧", category: "数据分析", relatedResources: ["lr-10"], code: "KP-009" },
-  { id: "kp-10", name: "财务报表分析", description: "企业财务报表的编制和分析方法", category: "财务管理", relatedResources: ["lr-10"], code: "KP-010" },
+  { id: "kp-1", name: "React Hooks", description: "React 函数组件中的状态和副作用管理", category: "前端开发", relatedResources: ["lr-1", "lr-2"] },
+  { id: "kp-2", name: "TypeScript 基础", description: "TypeScript 类型系统和基本语法", category: "前端开发", relatedResources: ["lr-2", "lr-3"] },
+  { id: "kp-3", name: "CSS Flexbox", description: "CSS 弹性盒子布局", category: "前端开发", relatedResources: ["lr-3"] },
+  { id: "kp-4", name: "RESTful API", description: "REST 风格的 API 设计原则", category: "后端开发", relatedResources: ["lr-4", "lr-5"] },
+  { id: "kp-5", name: "数据库设计", description: "关系型数据库表结构设计", category: "后端开发", relatedResources: ["lr-5"] },
+  { id: "kp-6", name: "JWT 认证", description: "JSON Web Token 身份验证机制", category: "安全", relatedResources: ["lr-6", "lr-4"] },
+  { id: "kp-7", name: "Git 版本控制", description: "Git 分支管理和协作开发", category: "工具", relatedResources: ["lr-7"] },
+  { id: "kp-8", name: "电商运营基础", description: "电商平台运营的基本概念和流程", category: "电子商务", relatedResources: ["lr-9", "lr-10"] },
+  { id: "kp-9", name: "数据可视化", description: "使用图表展示数据的方法和技巧", category: "数据分析", relatedResources: ["lr-10"] },
+  { id: "kp-10", name: "财务报表分析", description: "企业财务报表的编制和分析方法", category: "财务管理", relatedResources: ["lr-10"] },
 ]
 
 // Ability Points Library (global)

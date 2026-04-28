@@ -104,7 +104,6 @@ import {
   learningResources,
   positionAbilities,
   questionBank,
-  granularLessons,
   type Task,
   type PositionAbility,
   type GradeMapping,
@@ -155,20 +154,20 @@ const evaluationMethodOptions = [
 const abilityLevels = ["了解", "理解", "掌握", "熟练", "精通"]
 
 const defaultDescriptionTemplate = `<h2>任务描述</h2>
-<p>请详细描述本任务的具体内容、操作场景及所需完成的各项工作。建议包含任务背景、涉及的业务流程、使用的工具或平台等信息。</p>
+<p>本任务要求学员完成一个完整的企业级前端项目搭建，从项目初始化到用户认证模块开发，涵盖现代前端工程化的核心实践。</p>
 
 <h2>任务目标</h2>
 <ul>
-<li>明确学生通过本任务需要掌握的核心知识点</li>
-<li>列出需要达成的技能目标或能力要求</li>
-<li>说明完成任务后应达到的预期水平</li>
+<li>掌握 Vite + React + TypeScript 项目搭建流程</li>
+<li>理解 ESLint、Prettier 配置规范</li>
+<li>实现 JWT 用户认证全流程</li>
 </ul>
 
 <h2>任务结果</h2>
-<p>说明学生完成任务后需要提交的交付物形式，例如：代码仓库、设计文档、演示视频、测试报告等。同时明确交付物的验收标准。</p>
+<p>提交一个可运行的项目代码仓库，包含完整的登录注册功能、路由配置和状态管理。</p>
 
 <h2>测评要求</h2>
-<p>详细说明本任务的评分标准与测评方式，包括评价维度、分值权重、合格标准等。如有特殊环境或工具要求，也请在此说明。</p>`
+<p>代码需通过自动化测试，评审将从代码规范、功能完整性、安全性三个维度进行打分。</p>`
 
 const defaultGradeMapping: GradeMapping[] = [
   { id: "grade-1", grade: "A", minScore: 90, maxScore: 100, color: "bg-green-500" },
@@ -327,7 +326,7 @@ export default function TasksEditPage() {
 
     switch (type) {
       case "info":
-        return `任务名称：${task.name}\n编码：${task.code || "-"}\n任务类型：${task.taskType === "assessment" ? "考核" : "训练"}\n难度：${task.difficulty}星\n预估学时：${task.estimatedHours}小时`
+        return `${task.name}\n${task.taskType === "assessment" ? "考核" : "训练"} · ${task.difficulty}星 · ${task.estimatedHours}h`
       case "description":
         return state.description ? `${state.description.replace(/<[^>]*>/g, "").slice(0, 50)}...` : "未填写"
       case "knowledge":
@@ -529,108 +528,105 @@ export default function TasksEditPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" onClick={() => setIsAddTaskOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              添加任务
+            <Button variant="outline" size="sm" onClick={() => setIsWeightConfigOpen(true)}>
+              <PieChartIcon className="mr-2 h-4 w-4" />
+              配置任务权重
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsCloneOpen(true)}>
               <Copy className="mr-2 h-4 w-4" />
               克隆/引用
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setIsWeightConfigOpen(true)}>
-              <PieChartIcon className="mr-2 h-4 w-4" />
-              配置任务权重
+            <Button size="sm" onClick={() => setIsAddTaskOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              添加任务
             </Button>
           </div>
         </div>
 
-        {/* Task List with unified horizontal scroll */}
-        <div className="overflow-x-auto pb-2">
-          {/* Column Headers */}
-          <div className="flex items-start gap-3 pl-10 min-w-max">
-            {cardConfigs.map(c => (
-              <div key={c.type} className="w-52 shrink-0 text-xs text-gray-500 text-center whitespace-pre-line leading-tight py-1">
-                {c.title}
+        {/* Column Headers */}
+        <div className="flex items-start gap-3 pl-10">
+          {cardConfigs.map(c => (
+            <div key={c.type} className="w-44 shrink-0 text-xs text-gray-500 text-center whitespace-pre-line leading-tight py-1">
+              {c.title}
+            </div>
+          ))}
+        </div>
+
+        {/* Task Rows */}
+        <div className="space-y-3">
+          {tasks.map((task, idx) => (
+            <div key={task.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border hover:border-primary/30 transition-colors group">
+              {/* Order */}
+              <div className="flex items-center gap-1 shrink-0 w-8">
+                <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
+                <span className="text-xs text-gray-400 font-medium">{idx + 1}</span>
               </div>
-            ))}
-          </div>
 
-          {/* Task Rows */}
-          <div className="space-y-3 min-w-max">
-            {tasks.map((task, idx) => (
-              <div key={task.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border hover:border-primary/30 transition-colors group">
-                {/* Order */}
-                <div className="flex items-center gap-1 shrink-0 w-8">
-                  <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
-                  <span className="text-xs text-gray-400 font-medium">{idx + 1}</span>
-                </div>
+              {/* Cards */}
+              <div className="flex items-center gap-3 flex-1 overflow-x-auto pb-1">
+                {cardConfigs.map(config => {
+                  const configured = isConfigured(task.id, config.type)
+                  const summary = getSummary(task.id, config.type)
+                  const isRef = task.isReferenced && config.type !== "weight"
+                  const isWeightReadonly = config.type === "weight"
 
-                {/* Cards */}
-                <div className="flex items-center gap-3 flex-1">
-                  {cardConfigs.map(config => {
-                    const configured = isConfigured(task.id, config.type)
-                    const summary = getSummary(task.id, config.type)
-                    const isRef = task.isReferenced && config.type !== "weight"
-                    const isWeightReadonly = config.type === "weight"
-
-                    return (
-                      <button
-                        key={config.type}
-                        onClick={() => !isRef && !isWeightReadonly && setEditingCard({ taskId: task.id, type: config.type })}
-                        disabled={isRef || isWeightReadonly}
-                        className={cn(
-                          "w-52 h-36 shrink-0 rounded-lg border p-3 text-left transition-all flex flex-col",
-                          isRef || isWeightReadonly
-                            ? "bg-gray-100 border-gray-200 cursor-not-allowed opacity-60"
-                            : configured
-                              ? "bg-white border-gray-200 hover:border-primary hover:shadow-sm"
-                              : "bg-gray-50 border-dashed border-gray-300 hover:border-primary"
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <div className={cn(
-                            "p-1 rounded",
-                            configured ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"
-                          )}>
-                            {config.icon}
-                          </div>
-                          <span className="text-xs font-medium truncate flex-1">{config.title}</span>
-                          {isRef && <Badge variant="outline" className="text-[10px] px-1 py-0">引用</Badge>}
-                        </div>
-                        <p className={cn(
-                          "text-xs line-clamp-5 flex-1 leading-relaxed whitespace-pre-line",
-                          configured ? "text-gray-600" : "text-gray-400"
+                  return (
+                    <button
+                      key={config.type}
+                      onClick={() => !isRef && !isWeightReadonly && setEditingCard({ taskId: task.id, type: config.type })}
+                      disabled={isRef || isWeightReadonly}
+                      className={cn(
+                        "w-44 h-28 shrink-0 rounded-lg border p-3 text-left transition-all flex flex-col",
+                        isRef || isWeightReadonly
+                          ? "bg-gray-100 border-gray-200 cursor-not-allowed opacity-60"
+                          : configured
+                            ? "bg-white border-gray-200 hover:border-primary hover:shadow-sm"
+                            : "bg-gray-50 border-dashed border-gray-300 hover:border-primary"
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <div className={cn(
+                          "p-1 rounded",
+                          configured ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"
                         )}>
-                          {summary}
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-
-                {/* Delete */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500"
-                  onClick={() => handleDeleteTask(task.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                          {config.icon}
+                        </div>
+                        <span className="text-xs font-medium truncate flex-1">{config.title}</span>
+                        {isRef && <Badge variant="outline" className="text-[10px] px-1 py-0">引用</Badge>}
+                      </div>
+                      <p className={cn(
+                        "text-xs line-clamp-3 flex-1 leading-relaxed",
+                        configured ? "text-gray-600" : "text-gray-400"
+                      )}>
+                        {summary}
+                      </p>
+                    </button>
+                  )
+                })}
               </div>
-            ))}
 
-            {tasks.length === 0 && (
-              <div className="py-16 text-center">
-                <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 mb-4">暂无任务，点击添加第一个任务</p>
-                <Button onClick={() => setIsAddTaskOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  添加任务
-                </Button>
-              </div>
-            )}
-          </div>
+              {/* Delete */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500"
+                onClick={() => handleDeleteTask(task.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+
+          {tasks.length === 0 && (
+            <div className="py-16 text-center">
+              <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 mb-4">暂无任务，点击添加第一个任务</p>
+              <Button onClick={() => setIsAddTaskOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                添加任务
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -657,10 +653,7 @@ export default function TasksEditPage() {
                 </Select>
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <Label>预估学时</Label>
-                  <span className="text-xs text-gray-400">学生完成任务的预估时长</span>
-                </div>
+                <Label>预估课时</Label>
                 <Input type="number" value={newTask.hours} onChange={e => setNewTask({ ...newTask, hours: +e.target.value })} className="mt-1.5" />
               </div>
             </div>
@@ -882,14 +875,8 @@ function EditCardDialog({
           <div className="space-y-4">
             <div><Label>任务名称</Label><Input value={localTask.name} onChange={e => setLocalTask({ ...localTask, name: e.target.value })} className="mt-1.5" /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>任务类型</Label><Select value={localTask.type} onValueChange={v => setLocalTask({ ...localTask, type: v as "assessment"|"training" })}><SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="training">训练</SelectItem><SelectItem value="assessment">考核</SelectItem></SelectContent></Select></div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <Label>预估学时</Label>
-                  <span className="text-xs text-gray-400">学生完成任务的预估时长</span>
-                </div>
-                <Input type="number" value={localTask.hours} onChange={e => setLocalTask({ ...localTask, hours: +e.target.value })} className="mt-1.5" />
-              </div>
+              <div><Label>类型</Label><Select value={localTask.type} onValueChange={v => setLocalTask({ ...localTask, type: v as "assessment"|"training" })}><SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="training">训练</SelectItem><SelectItem value="assessment">考核</SelectItem></SelectContent></Select></div>
+              <div><Label>课时</Label><Input type="number" value={localTask.hours} onChange={e => setLocalTask({ ...localTask, hours: +e.target.value })} className="mt-1.5" /></div>
             </div>
             <div><Label>难度</Label><div className="flex gap-1 mt-1.5">{([1,2,3,4,5] as const).map(n => <button key={n} onClick={() => setLocalTask({ ...localTask, difficulty: n })}><Star className={cn("h-6 w-6", n <= localTask.difficulty ? "fill-amber-400 text-amber-400" : "text-gray-200")} /></button>)}</div></div>
             <div><Label>背景</Label><Textarea value={localTask.background} onChange={e => setLocalTask({ ...localTask, background: e.target.value })} className="mt-1.5" rows={3} /></div>
@@ -903,13 +890,13 @@ function EditCardDialog({
             <Tabs value={descMode} onValueChange={v => setDescMode(v as "rich_text" | "pdf")}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="rich_text">富文本编辑</TabsTrigger>
-                <TabsTrigger value="pdf">上传任务说明书</TabsTrigger>
+                <TabsTrigger value="pdf">PDF 上传</TabsTrigger>
               </TabsList>
             </Tabs>
             {descMode === "rich_text" ? (
               <div className="flex-1 flex flex-col min-h-0">
                 <p className="text-xs text-gray-500 mb-2">可编写详细的操作手册，支持图文混排</p>
-                <div className="border rounded-lg overflow-hidden flex-1 flex flex-col min-h-[450px]">
+                <div className="border rounded-lg overflow-hidden flex-1 flex flex-col">
                   {/* Mock Toolbar */}
                   <div className="bg-gray-50 border-b px-3 py-2 flex flex-wrap gap-1">
                     {toolbarItems.map((group, gi) => (
@@ -927,8 +914,8 @@ function EditCardDialog({
                     <Textarea
                       value={state.description}
                       onChange={e => updateState({ description: e.target.value })}
-                      placeholder="请在此输入任务说明，建议包含任务描述、任务目标、任务结果和测评要求..."
-                      className="border-0 min-h-full w-full focus-visible:ring-0 resize-none text-sm leading-relaxed"
+                      placeholder="在此输入详细的任务说明..."
+                      className="border-0 min-h-full focus-visible:ring-0 resize-none text-sm leading-relaxed"
                     />
                   </div>
                   {/* Mock Status Bar */}
@@ -963,7 +950,7 @@ function EditCardDialog({
                       <Upload className="h-8 w-8 text-gray-400" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-medium text-gray-700">点击或拖拽上传任务说明书</p>
+                      <p className="text-sm font-medium text-gray-700">点击或拖拽上传 PDF 文件</p>
                       <p className="text-xs text-gray-500 mt-1">支持 PDF 格式，最大 20MB</p>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => updateState({ descriptionPdf: "任务说明书示例.pdf" })}>
@@ -978,253 +965,137 @@ function EditCardDialog({
       }
 
       case "knowledge": {
-        const [kpSearch, setKpSearch] = useState("")
         const [kpDetailOpen, setKpDetailOpen] = useState(false)
         const [selectedKpForDetail, setSelectedKpForDetail] = useState<string | null>(null)
-        const [kpActionOpen, setKpActionOpen] = useState(false)
-        const [kpActionMode, setKpActionMode] = useState<"add" | "clone" | null>(null)
-        const [kpActionTarget, setKpActionTarget] = useState<(typeof knowledgePoints)[0] | null>(null)
-        const [newKpForm, setNewKpForm] = useState({ name: "", description: "", code: "", granularLessons: [] as string[] })
+        const filteredKp = knowledgePoints.filter(k => !search || k.name.includes(search) || k.description.includes(search))
+        const hasExactMatch = search && knowledgePoints.some(k => k.name === search)
 
-        const filteredKp = knowledgePoints.filter(k => !kpSearch || k.name.includes(kpSearch) || k.description.includes(kpSearch) || (k.code && k.code.includes(kpSearch)))
-        const hasResults = kpSearch ? filteredKp.length > 0 : false
-
-        const generateKpCode = () => `KP-${Date.now().toString().slice(-6)}`
-
-        const handleReferenceKp = (kpId: string) => {
-          if (state.knowledgePoints.includes(kpId)) return
-          updateState({ knowledgePoints: [...state.knowledgePoints, kpId] })
+        const toggleKp = (kpId: string) => {
+          const selected = state.knowledgePoints.includes(kpId)
+          const newKps = selected ? state.knowledgePoints.filter(x => x !== kpId) : [...state.knowledgePoints, kpId]
+          updateState({ knowledgePoints: newKps })
         }
 
-        const handleRemoveKp = (kpId: string) => {
-          updateState({ knowledgePoints: state.knowledgePoints.filter(x => x !== kpId) })
-        }
-
-        const openAddKp = () => {
-          setNewKpForm({ name: kpSearch, description: "", code: generateKpCode(), granularLessons: [] })
-          setKpActionMode("add")
-          setKpActionTarget(null)
-          setKpActionOpen(true)
-        }
-
-        const openCloneKp = (kp: (typeof knowledgePoints)[0]) => {
-          setNewKpForm({ name: `${kp.name}（克隆）`, description: kp.description, code: generateKpCode(), granularLessons: kp.granularLessons || [] })
-          setKpActionMode("clone")
-          setKpActionTarget(kp)
-          setKpActionOpen(true)
-        }
-
-        const handleSaveNewKp = () => {
-          if (!newKpForm.name.trim()) return
-          const newId = `kp-${kpActionMode}-${Date.now()}`
-          const newKp = {
-            id: newId,
-            name: newKpForm.name.trim(),
-            description: newKpForm.description.trim(),
-            code: newKpForm.code,
-            granularLessons: newKpForm.granularLessons,
-          }
-          knowledgePoints.push(newKp as any)
-          updateState({ knowledgePoints: [...state.knowledgePoints, newId] })
-          setKpActionOpen(false)
-          setKpSearch("")
+        const toggleKpResource = (resId: string) => {
+          const selected = state.knowledgeAutoResources.includes(resId)
+          updateState({ knowledgeAutoResources: selected ? state.knowledgeAutoResources.filter(x => x !== resId) : [...state.knowledgeAutoResources, resId] })
         }
 
         const detailKp = selectedKpForDetail ? knowledgePoints.find(k => k.id === selectedKpForDetail) : null
-        const detailGranularLessons = detailKp?.granularLessons?.map(gid => granularLessons.find(g => g.id === gid)).filter(Boolean) || []
+        const detailResources = detailKp?.relatedResources?.map(rid => learningResources.find(r => r.id === rid)).filter(Boolean) || []
 
         return (
           <div className="h-full flex flex-col">
-            {/* Search Bar */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                value={kpSearch}
-                onChange={e => setKpSearch(e.target.value)}
-                placeholder="搜索知识点名称、描述或编码..."
-                className="pl-9"
-              />
-            </div>
-
             <div className="flex gap-4 flex-1 min-h-0">
-              {/* Left: Search Results */}
-              <div className="w-3/5 flex flex-col min-h-0 border rounded-xl p-3">
-                <p className="text-sm font-medium mb-3 text-gray-700">
-                  {kpSearch ? `搜索结果 (${filteredKp.length})` : "全部知识点"}
-                </p>
+              {/* Left: Knowledge Points */}
+              <div className="w-3/5 flex flex-col min-h-0">
+                <div className="relative mb-3"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><Input value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索知识点" className="pl-9" /></div>
                 <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-                  {!kpSearch && filteredKp.length === 0 && (
-                    <div className="text-center text-gray-400 py-8">
-                      <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">请输入关键词搜索知识点</p>
-                    </div>
-                  )}
-                  {kpSearch && !hasResults && (
-                    <div className="p-6 text-center text-gray-500 text-sm border border-dashed rounded-lg">
-                      <p className="mb-2">未找到 "{kpSearch}" 相关的知识点</p>
-                      <Button variant="outline" size="sm" onClick={openAddKp}>
+                  {filteredKp.map(kp => {
+                    const selected = state.knowledgePoints.includes(kp.id)
+                    const kpRes = kp.relatedResources?.map(rid => learningResources.find(r => r.id === rid)).filter(Boolean) || []
+                    return (
+                      <div key={kp.id} className={cn("p-3 rounded-lg border", selected ? "border-primary bg-primary/5" : "border-gray-200")}>
+                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleKp(kp.id)}>
+                          <div className={cn("w-4 h-4 rounded border flex items-center justify-center shrink-0", selected ? "bg-primary border-primary" : "border-gray-300")}>{selected && <CheckCircle2 className="h-3 w-3 text-white" />}</div>
+                          <span className="text-sm font-medium flex-1">{kp.name}</span>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={e => { e.stopPropagation(); setSelectedKpForDetail(kp.id); setKpDetailOpen(true) }}>
+                            详情
+                          </Button>
+                          {kp.category && <Badge variant="secondary" className="text-xs">{kp.category}</Badge>}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 ml-6">{kp.description}</p>
+                        {kpRes.length > 0 && (
+                          <div className="mt-2 ml-6 space-y-1.5">
+                            <p className="text-[11px] text-gray-400">关联资源：</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {kpRes.map(res => {
+                                if (!res) return null
+                                const resSelected = state.knowledgeAutoResources.includes(res.id)
+                                return (
+                                  <button key={res.id} onClick={() => toggleKpResource(res.id)} className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded border transition-all", resSelected ? "border-primary bg-primary/10 text-primary" : "border-gray-200 text-gray-600 hover:border-gray-300")}>
+                                    {resourceTypeIcons[res.type]}
+                                    <span className="truncate max-w-[100px]">{res.name}</span>
+                                    {resSelected && <CheckCircle2 className="h-3 w-3" />}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {search && !hasExactMatch && filteredKp.length === 0 && (
+                    <div className="p-4 text-center text-gray-500 text-sm border border-dashed rounded-lg">
+                      <p>未找到 "{search}" 相关的知识点</p>
+                      <Button variant="outline" size="sm" className="mt-2" onClick={() => { setNewKnowledgeName(search); setShowAddKnowledge(true) }}>
                         <Plus className="h-3 w-3 mr-1" />新增此知识点
                       </Button>
                     </div>
                   )}
-                  {filteredKp.map(kp => {
-                    const isSelected = state.knowledgePoints.includes(kp.id)
-                    const kpGlNames = kp.granularLessons?.map(gid => granularLessons.find(g => g.id === gid)?.name).filter(Boolean) || []
-                    return (
-                      <div key={kp.id} className={cn("p-3 rounded-lg border transition-all", isSelected ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300")}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium flex-1 truncate">{kp.name}</span>
-                          {kp.code && <Badge variant="outline" className="text-[10px]">{kp.code}</Badge>}
-                          {kp.category && <Badge variant="secondary" className="text-[10px]">{kp.category}</Badge>}
-                        </div>
-                        <p className="text-xs text-gray-500 mb-2 line-clamp-2">{kp.description}</p>
-                        {kpGlNames.length > 0 && (
-                          <div className="flex items-center gap-1 mb-2 flex-wrap">
-                            <span className="text-[11px] text-gray-400">关联颗粒课：</span>
-                            {kpGlNames.slice(0, 3).map((name, i) => (
-                              <Badge key={i} variant="outline" className="text-[10px] font-normal">{name}</Badge>
-                            ))}
-                            {kpGlNames.length > 3 && <span className="text-[11px] text-gray-400">+{kpGlNames.length - 3}</span>}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2 mt-1">
-                          {isSelected ? (
-                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleRemoveKp(kp.id)}>
-                              取消选择
-                            </Button>
-                          ) : (
-                            <>
-                              <Button size="sm" className="h-7 text-xs" onClick={() => handleReferenceKp(kp.id)}>
-                                引用
-                              </Button>
-                              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => openCloneKp(kp)}>
-                                克隆
-                              </Button>
-                            </>
-                          )}
-                          <Button variant="ghost" size="sm" className="h-7 text-xs ml-auto" onClick={() => { setSelectedKpForDetail(kp.id); setKpDetailOpen(true) }}>
-                            查看详情
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  })}
                 </div>
+                {/* Bottom: Selected Summary */}
+                {state.knowledgePoints.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-xs text-gray-500 mb-2">已选知识点 ({state.knowledgePoints.length})</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {state.knowledgePoints.map(kpId => {
+                        const kp = knowledgePoints.find(k => k.id === kpId)
+                        return kp ? (
+                          <Badge key={kpId} variant="secondary" className="text-xs cursor-pointer" onClick={() => toggleKp(kpId)}>
+                            {kp.name} <X className="h-3 w-3 ml-1 inline" />
+                          </Badge>
+                        ) : null
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Right: Selected Knowledge Points */}
-              <div className="w-2/5 border rounded-xl p-3 flex flex-col min-h-0">
-                <p className="text-sm font-medium mb-3 text-gray-700">已选择知识点 ({state.knowledgePoints.length})</p>
+              {/* Right: Selected Resources */}
+              <div className="w-2/5 border-l pl-4 flex flex-col min-h-0">
+                <p className="text-sm font-medium mb-3">关联资源（自动加入任务资源）</p>
                 <div className="flex-1 overflow-y-auto space-y-2">
-                  {state.knowledgePoints.length === 0 ? (
+                  {state.knowledgeAutoResources.length === 0 ? (
                     <div className="text-center text-gray-400 py-8">
-                      <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-xs">从左侧搜索并选择知识点</p>
+                      <Link2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-xs">在左侧勾选知识点关联资源<br />资源将自动加入任务资源</p>
                     </div>
                   ) : (
-                    state.knowledgePoints.map(kpId => {
-                      const kp = knowledgePoints.find(k => k.id === kpId)
-                      if (!kp) return null
-                      const kpGlNames = kp.granularLessons?.map(gid => granularLessons.find(g => g.id === gid)?.name).filter(Boolean) || []
+                    state.knowledgeAutoResources.map(resId => {
+                      const res = learningResources.find(r => r.id === resId)
+                      if (!res) return null
                       return (
-                        <div key={kpId} className="p-3 rounded-lg border border-primary/20 bg-primary/5">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium flex-1 truncate">{kp.name}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400" onClick={() => handleRemoveKp(kpId)}>
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          <p className="text-xs text-gray-500 line-clamp-1 mb-1">{kp.description}</p>
-                          {kp.code && <p className="text-[11px] text-gray-400 mb-1">编码：{kp.code}</p>}
-                          {kpGlNames.length > 0 && (
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <span className="text-[11px] text-gray-400">颗粒课：</span>
-                              {kpGlNames.slice(0, 2).map((name, i) => (
-                                <Badge key={i} variant="outline" className="text-[10px] font-normal">{name}</Badge>
-                              ))}
-                            </div>
-                          )}
-                          <div className="mt-2">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs w-full" onClick={() => { setSelectedKpForDetail(kp.id); setKpDetailOpen(true) }}>
-                              查看详情
-                            </Button>
-                          </div>
+                        <div key={resId} className="p-2.5 rounded-lg border border-primary/20 bg-primary/5 flex items-center gap-2">
+                          {resourceTypeIcons[res.type]}
+                          <span className="text-sm flex-1 truncate">{res.name}</span>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400" onClick={() => toggleKpResource(resId)}>
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
                       )
                     })
                   )}
                 </div>
+                {state.knowledgeAutoResources.length > 0 && (
+                  <p className="text-xs text-primary mt-2">已选 {state.knowledgeAutoResources.length} 个关联资源</p>
+                )}
               </div>
             </div>
 
-            {/* Add / Clone Knowledge Dialog */}
-            <Dialog open={kpActionOpen} onOpenChange={setKpActionOpen}>
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>{kpActionMode === "add" ? "新增知识点" : "克隆知识点"}</DialogTitle>
-                  <DialogDescription>
-                    {kpActionMode === "add" ? "创建一个新的知识点" : `基于「${kpActionTarget?.name}」创建副本`}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div>
-                    <Label>知识点名称</Label>
-                    <Input
-                      value={newKpForm.name}
-                      onChange={e => setNewKpForm({ ...newKpForm, name: e.target.value })}
-                      placeholder="输入知识点名称"
-                      className="mt-1.5"
-                    />
-                  </div>
-                  <div>
-                    <Label>描述</Label>
-                    <Textarea
-                      value={newKpForm.description}
-                      onChange={e => setNewKpForm({ ...newKpForm, description: e.target.value })}
-                      placeholder="输入知识点描述"
-                      className="mt-1.5"
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label>编码</Label>
-                    <Input
-                      value={newKpForm.code}
-                      disabled
-                      className="mt-1.5 bg-gray-50"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">系统自动生成，不可修改</p>
-                  </div>
-                  <div>
-                    <Label>关联颗粒课</Label>
-                    <div className="mt-1.5 space-y-2">
-                      <Select
-                        value={newKpForm.granularLessons[0] || ""}
-                        onValueChange={v => setNewKpForm({ ...newKpForm, granularLessons: v ? [v] : [] })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="选择已有颗粒课" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {granularLessons.map(gl => (
-                            <SelectItem key={gl.id} value={gl.id}>{gl.name} ({gl.code})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button variant="outline" size="sm" className="w-full" onClick={() => window.open("/granular-lessons/new", "_blank")}>
-                        <Plus className="h-3 w-3 mr-1" />新建颗粒课（新开标签页）
-                      </Button>
-                    </div>
-                  </div>
+            {showAddKnowledge && (
+              <div className="p-4 border rounded-lg bg-gray-50 space-y-3 mt-3">
+                <p className="text-sm font-medium">新增知识点</p>
+                <Input value={newKnowledgeName} onChange={e => setNewKnowledgeName(e.target.value)} placeholder="知识点名称" />
+                <Input value={newKnowledgeCategory} onChange={e => setNewKnowledgeCategory(e.target.value)} placeholder="分类" />
+                <Textarea value={newKnowledgeDesc} onChange={e => setNewKnowledgeDesc(e.target.value)} placeholder="描述" rows={2} />
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setShowAddKnowledge(false)}>取消</Button>
+                  <Button size="sm" onClick={handleAddKnowledge} disabled={!newKnowledgeName.trim()}>添加并选中</Button>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setKpActionOpen(false)}>取消</Button>
-                  <Button onClick={handleSaveNewKp} disabled={!newKpForm.name.trim()}>
-                    {kpActionMode === "add" ? "新增并选中" : "克隆并选中"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+              </div>
+            )}
 
             {/* Knowledge Point Detail Dialog */}
             <Dialog open={kpDetailOpen} onOpenChange={setKpDetailOpen}>
@@ -1242,12 +1113,6 @@ function EditCardDialog({
                       <Label className="text-xs text-gray-500">知识点描述</Label>
                       <p className="text-sm text-gray-700 mt-1">{detailKp.description}</p>
                     </div>
-                    {detailKp.code && (
-                      <div>
-                        <Label className="text-xs text-gray-500">编码</Label>
-                        <p className="text-sm text-gray-700 mt-1">{detailKp.code}</p>
-                      </div>
-                    )}
                     {detailKp.category && (
                       <div>
                         <Label className="text-xs text-gray-500">分类</Label>
@@ -1255,16 +1120,19 @@ function EditCardDialog({
                       </div>
                     )}
                     <div>
-                      <Label className="text-xs text-gray-500">关联颗粒课</Label>
+                      <Label className="text-xs text-gray-500">关联资源</Label>
                       <div className="space-y-2 mt-2">
-                        {detailGranularLessons.length > 0 ? detailGranularLessons.map(gl => (
-                          <div key={gl!.id} className="flex items-center gap-2 p-2 rounded border text-sm">
-                            <span className="flex-1">{gl!.name}</span>
-                            <Badge variant="outline" className="text-[10px]">{gl!.code}</Badge>
+                        {detailResources.length > 0 ? detailResources.map(res => (
+                          <div key={res!.id} className="flex items-center gap-2 p-2 rounded border text-sm">
+                            {resourceTypeIcons[res!.type]}
+                            <span className="flex-1">{res!.name}</span>
                           </div>
-                        )) : <p className="text-sm text-gray-400">暂无关联颗粒课</p>}
+                        )) : <p className="text-sm text-gray-400">暂无关联资源</p>}
                       </div>
                     </div>
+                    <Button size="sm" variant="outline" className="w-full" onClick={() => setKpDetailOpen(false)}>
+                      <Plus className="h-4 w-4 mr-1" />添加资源（模拟）
+                    </Button>
                   </div>
                 )}
               </DialogContent>
@@ -2039,21 +1907,13 @@ function EditCardDialog({
     }
   }
 
-  const isFullScreen = cardType === "assessment" || cardType === "weight" || cardType === "evaluation" || cardType === "knowledge"
-  const dialogSizeClass =
-    isFullScreen
-      ? "sm:max-w-[95vw] max-h-[95vh] h-[95vh]"
-      : cardType === "description"
-        ? "sm:max-w-[900px] max-h-[90vh]"
-        : cardType === "info"
-          ? "sm:max-w-[650px] max-h-[85vh]"
-          : "sm:max-w-[550px] max-h-[85vh]"
+  const isFullScreen = cardType === "assessment" || cardType === "weight" || cardType === "evaluation"
 
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className={cn(
         "flex flex-col overflow-hidden",
-        dialogSizeClass
+        isFullScreen ? "sm:max-w-[95vw] max-h-[95vh] h-[95vh]" : "sm:max-w-[550px] max-h-[85vh]"
       )}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
