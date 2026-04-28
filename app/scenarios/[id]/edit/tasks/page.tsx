@@ -72,6 +72,10 @@ import {
   Archive,
   Building2,
   RotateCcw,
+  Shield,
+  Server,
+  Layers,
+  BookOpen,
 } from "lucide-react"
 import NextLink from "next/link"
 import { useParams, useRouter } from "next/navigation"
@@ -1639,6 +1643,25 @@ function EditCardDialog({
           "精通": "bg-purple-50 text-purple-600 border-purple-200",
         }
 
+        const domainIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+          "前端工程化": Code,
+          "系统设计": Database,
+          "质量保障": Shield,
+          "职业素养": Users,
+          "服务端开发": Server,
+          "运维部署": Wrench,
+          "数据分析": BookOpen,
+        }
+
+        const categoryColors: Record<string, string> = {
+          "开发能力": "bg-blue-50 text-blue-600 border-blue-200",
+          "设计能力": "bg-purple-50 text-purple-600 border-purple-200",
+          "优化能力": "bg-green-50 text-green-600 border-green-200",
+          "软技能": "bg-orange-50 text-orange-600 border-orange-200",
+          "分析能力": "bg-cyan-50 text-cyan-600 border-cyan-200",
+          "工程能力": "bg-indigo-50 text-indigo-600 border-indigo-200",
+        }
+
         return (
           <div className="h-full flex flex-col">
             {/* Header bar */}
@@ -1652,146 +1675,105 @@ function EditCardDialog({
               </div>
             </div>
 
-            <div className="flex gap-4 flex-1 min-h-0">
-              {/* Left: Domain-grouped ability cards */}
-              <div className="flex-1 flex flex-col min-h-0 border rounded-xl p-4 overflow-hidden">
-                <div className="flex-1 overflow-y-auto pr-1 space-y-4">
-                  {Object.entries(domainGroups).map(([domain, abilities]) => {
-                    const filtered = abilities.filter(a =>
-                      !abilitySearch ||
-                      a.name.includes(abilitySearch) ||
-                      a.description.includes(abilitySearch) ||
-                      (a.code && a.code.includes(abilitySearch))
-                    )
-                    if (filtered.length === 0) return null
-                    const expanded = expandedDomains[domain] !== false
-                    return (
-                      <div key={domain} className="border rounded-xl overflow-hidden">
-                        <button
-                          className="w-full flex items-center gap-2 px-4 py-3 bg-gray-50 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
-                          onClick={() => setExpandedDomains(prev => ({ ...prev, [domain]: !expanded }))}
-                        >
-                          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                          <span className="flex-1 text-left">{domain}</span>
-                          <Badge variant="secondary" className="text-[10px]">{filtered.length} 个能力点</Badge>
-                        </button>
-                        {expanded && (
-                          <div className="p-3 grid grid-cols-1 xl:grid-cols-2 gap-3">
-                            {filtered.map(ab => {
-                              const selected = state.abilityPoints.includes(ab.id)
-                              const positionNames = ab.positionIds?.map(pid => positionNameMap[pid]).filter(Boolean) || []
-                              return (
-                                <div
-                                  key={ab.id}
-                                  onClick={() => toggleAbility(ab.id)}
-                                  className={cn(
-                                    "relative p-4 rounded-lg border cursor-pointer transition-all group",
-                                    selected
-                                      ? "border-primary bg-primary/[0.03] shadow-sm"
-                                      : "border-gray-200 hover:border-gray-300 hover:shadow-sm bg-white"
-                                  )}
-                                >
-                                  {selected && (
-                                    <div className="absolute top-3 right-3">
-                                      <div className="bg-primary text-white rounded-full p-0.5">
-                                        <CheckCircle2 className="h-4 w-4" />
-                                      </div>
-                                    </div>
-                                  )}
-                                  <div className="flex items-start gap-3">
-                                    <div className={cn(
-                                      "mt-0.5 w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-colors",
-                                      selected ? "bg-primary border-primary" : "border-gray-300 group-hover:border-gray-400"
-                                    )}>
-                                      {selected && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                                        <span className="text-sm font-semibold text-gray-800">{ab.name}</span>
-                                        {ab.code && <Badge variant="outline" className="text-[10px] font-mono">{ab.code}</Badge>}
-                                      </div>
-                                      <p className="text-xs text-gray-500 line-clamp-2 mb-2.5 leading-relaxed">{ab.description}</p>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        {positionNames.slice(0, 3).map((name, i) => (
-                                          <Badge key={i} variant="secondary" className="text-[10px] font-normal bg-gray-100 text-gray-600">{name}</Badge>
-                                        ))}
-                                        {ab.requiredLevel && (
-                                          <Badge variant="outline" className={cn("text-[10px] font-medium", requiredLevelColors[ab.requiredLevel] || "")}>
-                                            要求：{ab.requiredLevel}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                    </div>
+            <div className="flex-1 min-h-0 border rounded-xl overflow-hidden">
+              <div className="h-full overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 content-start">
+                {Object.entries(domainGroups).map(([domain, abilities]) => {
+                  const filtered = abilities.filter(a =>
+                    !abilitySearch ||
+                    a.name.includes(abilitySearch) ||
+                    a.description.includes(abilitySearch) ||
+                    (a.code && a.code.includes(abilitySearch))
+                  )
+                  if (filtered.length === 0) return null
+                  const expanded = expandedDomains[domain] !== false
+                  const DomainIcon = domainIconMap[domain] || Award
+                  return (
+                    <div key={domain} className="border rounded-xl overflow-hidden bg-white flex flex-col">
+                      <button
+                        className="w-full flex items-center gap-2 px-4 py-2.5 bg-sky-50 text-sm font-semibold text-sky-700 hover:bg-sky-100 transition-colors shrink-0"
+                        onClick={() => setExpandedDomains(prev => ({ ...prev, [domain]: !expanded }))}
+                      >
+                        {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        <DomainIcon className="h-4 w-4" />
+                        <span className="flex-1 text-left truncate">{domain}</span>
+                        <Badge className="text-[10px] bg-white text-sky-600 border-sky-200 shrink-0">{filtered.length} 个能力点</Badge>
+                      </button>
+                      {expanded && (
+                        <div className="divide-y divide-gray-100">
+                          {filtered.map(ab => {
+                            const selected = state.abilityPoints.includes(ab.id)
+                            const positionNames = ab.positionIds?.map(pid => positionNameMap[pid]).filter(Boolean) || []
+                            return (
+                              <div
+                                key={ab.id}
+                                onClick={() => toggleAbility(ab.id)}
+                                className={cn(
+                                  "px-4 py-2.5 cursor-pointer transition-colors group",
+                                  selected
+                                    ? "bg-primary/[0.03] border-l-2 border-l-primary"
+                                    : "hover:bg-gray-50 border-l-2 border-l-transparent"
+                                )}
+                              >
+                                {/* Row 1: checkbox + name + code + badges */}
+                                <div className="flex items-center gap-2">
+                                  <div className={cn(
+                                    "w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors",
+                                    selected ? "bg-primary border-primary" : "border-gray-300 group-hover:border-gray-400"
+                                  )}>
+                                    {selected && <Check className="h-3 w-3 text-white" />}
                                   </div>
-                                  <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
-                                    <span className="text-[11px] text-gray-400">{ab.category || "通用能力"}</span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 text-[11px] px-2 text-gray-400 hover:text-primary"
-                                      onClick={(e) => { e.stopPropagation(); setSelectedAbilityForDetail(ab.id); setAbilityDetailOpen(true) }}
-                                    >
-                                      查看详情
-                                    </Button>
+                                  <span className="text-sm font-medium text-gray-800 truncate">{ab.name}</span>
+                                  {ab.code && <span className="text-[11px] text-gray-400 font-mono shrink-0">{ab.code}</span>}
+                                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                                    {ab.requiredLevel && (
+                                      <Badge variant="outline" className={cn("text-[10px] font-medium h-5 px-1", requiredLevelColors[ab.requiredLevel] || "")}>
+                                        要求：{ab.requiredLevel}
+                                      </Badge>
+                                    )}
+                                    {ab.category && (
+                                      <Badge variant="outline" className={cn("text-[10px] font-normal h-5 px-1.5", categoryColors[ab.category] || "border-gray-200 text-gray-500")}>
+                                        {ab.category}
+                                      </Badge>
+                                    )}
                                   </div>
                                 </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                  {Object.entries(domainGroups).filter(([_, abilities]) =>
-                    abilities.some(a =>
-                      !abilitySearch ||
-                      a.name.includes(abilitySearch) ||
-                      a.description.includes(abilitySearch) ||
-                      (a.code && a.code.includes(abilitySearch))
-                    )
-                  ).length === 0 && (
-                    <div className="text-center text-gray-400 py-16">
-                      <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">未找到匹配的能力点</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right: Selected abilities sidebar */}
-              <div className="w-72 shrink-0 flex flex-col min-h-0 border rounded-xl p-4 bg-gray-50/50">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-700">已选能力点</p>
-                  <Badge variant="secondary" className="text-[10px]">{state.abilityPoints.length}</Badge>
-                </div>
-                <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-                  {state.abilityPoints.length === 0 ? (
-                    <div className="text-center text-gray-400 py-8">
-                      <Award className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-xs">请从左侧选择能力点</p>
-                    </div>
-                  ) : (
-                    state.abilityPoints.map(abId => {
-                      const ab = abilityPoints.find(a => a.id === abId)
-                      if (!ab) return null
-                      return (
-                        <div key={abId} className="p-3 rounded-lg border border-primary/20 bg-white shadow-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium flex-1 truncate">{ab.name}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-red-500 shrink-0" onClick={() => toggleAbility(abId)}>
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          {ab.code && <p className="text-[11px] text-gray-400 mt-1 font-mono">{ab.code}</p>}
-                          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                            {ab.domain && <Badge variant="secondary" className="text-[10px] font-normal">{ab.domain}</Badge>}
-                            {ab.requiredLevel && <Badge variant="outline" className={cn("text-[10px]", requiredLevelColors[ab.requiredLevel] || "")}>{ab.requiredLevel}</Badge>}
-                          </div>
+                                {/* Row 2: description + positions */}
+                                <div className="flex items-center gap-2 mt-1 ml-6">
+                                  <p className="text-xs text-gray-500 line-clamp-1 flex-1">{ab.description}</p>
+                                  {positionNames.length > 0 && (
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      {positionNames.slice(0, 2).map((name, i) => (
+                                        <Badge key={i} variant="secondary" className="text-[10px] font-normal bg-gray-100 text-gray-600 h-5 px-1">
+                                          {name}
+                                        </Badge>
+                                      ))}
+                                      {positionNames.length > 2 && (
+                                        <span className="text-[10px] text-gray-400">+{positionNames.length - 2}</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
-                      )
-                    })
-                  )}
-                </div>
+                      )}
+                    </div>
+                  )
+                })}
+                {Object.entries(domainGroups).filter(([_, abilities]) =>
+                  abilities.some(a =>
+                    !abilitySearch ||
+                    a.name.includes(abilitySearch) ||
+                    a.description.includes(abilitySearch) ||
+                    (a.code && a.code.includes(abilitySearch))
+                  )
+                ).length === 0 && (
+                  <div className="col-span-full text-center text-gray-400 py-16">
+                    <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">未找到匹配的能力点</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1924,69 +1906,69 @@ function EditCardDialog({
                       <p className="text-xs mt-1">尝试调整筛选条件</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                       {filteredRes.map(r => {
                         const selected = state.resources.includes(r.id)
                         return (
                           <div
                             key={r.id}
                             className={cn(
-                              "relative rounded-xl border overflow-hidden transition-all cursor-pointer group",
+                              "relative rounded-lg border overflow-hidden transition-all cursor-pointer group",
                               selected
                                 ? "border-primary shadow-sm ring-1 ring-primary/10"
                                 : "border-gray-200 hover:border-gray-300 hover:shadow-sm bg-white"
                             )}
                           >
                             {/* Thumbnail area */}
-                            <div className="relative h-28 bg-gray-50 border-b border-gray-100 overflow-hidden">
+                            <div className="relative h-20 bg-gray-50 border-b border-gray-100 overflow-hidden">
                               {r.thumbnail && r.type === "image" ? (
                                 <img src={r.thumbnail} alt={r.name} className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
-                                  <div className={cn("p-3 rounded-xl border", resourceTypeColors[r.type] || "bg-gray-50 border-gray-200")}>
-                                    {resourceTypeIcons[r.type] || <Package className="h-6 w-6 text-gray-400" />}
+                                  <div className={cn("p-2 rounded-lg border", resourceTypeColors[r.type] || "bg-gray-50 border-gray-200")}>
+                                    {resourceTypeIcons[r.type] || <Package className="h-5 w-5 text-gray-400" />}
                                   </div>
                                 </div>
                               )}
                               {selected && (
-                                <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-0.5 shadow-sm">
-                                  <CheckCircle2 className="h-4 w-4" />
+                                <div className="absolute top-1.5 right-1.5 bg-primary text-white rounded-full p-0.5 shadow-sm">
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
                                 </div>
                               )}
                               {/* Type badge */}
-                              <div className="absolute bottom-2 left-2">
-                                <Badge className={cn("text-[10px] border", resourceTypeColors[r.type] || "")}>
+                              <div className="absolute bottom-1.5 left-1.5">
+                                <Badge className={cn("text-[9px] border", resourceTypeColors[r.type] || "")}>
                                   {resourceTypeLabels[r.type] || r.type}
                                 </Badge>
                               </div>
                             </div>
                             {/* Info */}
-                            <div className="p-3" onClick={() => toggleResource(r.id)}>
-                              <p className="text-sm font-medium text-gray-800 truncate mb-2">{r.name}</p>
-                              <div className="flex items-center justify-between text-xs text-gray-500">
-                                <span className="flex items-center gap-1 truncate max-w-[120px]">
+                            <div className="p-2" onClick={() => toggleResource(r.id)}>
+                              <p className="text-xs font-medium text-gray-800 truncate mb-1">{r.name}</p>
+                              <div className="flex items-center justify-between text-[11px] text-gray-500">
+                                <span className="flex items-center gap-1 truncate max-w-[80px]">
                                   <Users className="h-3 w-3 shrink-0" />{r.uploadedBy}
                                 </span>
                                 <span className="shrink-0">{r.uploadedAt}</span>
                               </div>
                             </div>
                             {/* Actions */}
-                            <div className="px-3 pb-3 flex items-center gap-2">
+                            <div className="px-2 pb-2 flex items-center gap-1.5">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 text-[11px] px-2 flex-1 text-gray-500 hover:text-primary"
+                                className="h-6 text-[10px] px-1.5 flex-1 text-gray-500 hover:text-primary"
                                 onClick={(e) => { e.stopPropagation(); window.open(r.url || "#", "_blank") }}
                               >
-                                <Eye className="h-3 w-3 mr-1" />预览
+                                <Eye className="h-3 w-3 mr-0.5" />预览
                               </Button>
                               <Button
                                 variant={selected ? "outline" : "default"}
                                 size="sm"
-                                className="h-7 text-[11px] px-2 flex-1"
+                                className="h-6 text-[10px] px-1.5 flex-1"
                                 onClick={(e) => { e.stopPropagation(); toggleResource(r.id) }}
                               >
-                                {selected ? "取消选择" : "选择"}
+                                {selected ? "取消" : "选择"}
                               </Button>
                             </div>
                           </div>
