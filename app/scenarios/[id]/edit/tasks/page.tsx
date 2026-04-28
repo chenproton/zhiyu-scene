@@ -252,11 +252,30 @@ interface EvalSubjectConfig {
   type: "teacher" | "enterprise_mentor" | "peer" | "self" | "ai" | "service_target"
   enabled: boolean
   params?: {
+    // teacher
     teacherBackground?: string
     scorerCount?: number
-    requiresEnterpriseMentor?: boolean
+    weightPercent?: number
+    scoringDimensions?: string[]
+    minTeachingYears?: number
+    // enterprise_mentor
+    expertise?: string
+    minYears?: number
+    companyType?: string
+    // peer
     peerCount?: number
+    peerRule?: string
+    anonymous?: boolean
+    // self
+    requiresReflection?: boolean
+    reflectionMinLength?: number
+    // ai
     aiModel?: string
+    confidenceThreshold?: number
+    autoReview?: boolean
+    // service_target
+    serviceMethod?: string
+    sampleSize?: number
   }
 }
 
@@ -292,6 +311,9 @@ interface EvalPoint {
   desc: string
   subType?: EvalSubType
   knowledgePointIds?: string[]
+  abilityPointIds?: string[]
+  scoringMethod?: "score" | "level" | "rubric"
+  gradeMapping?: GradeMapping[]
 }
 
 interface ScoringConfig {
@@ -315,7 +337,9 @@ interface TaskState {
   reviewEvalPoints: EvalPoint[]
   reviewScoreType: "eval_points" | "ability_levels"
   paperId: string | null
+  paperEvalPoints: EvalPoint[]
   questionBankQuestions: string[]
+  questionBankEvalPoints: EvalPoint[]
   weight: number
   locked: boolean
   gradeMapping: GradeMapping[]
@@ -325,12 +349,76 @@ interface TaskState {
 }
 
 const defaultEvalSubjects: EvalSubjectConfig[] = [
-  { type: "teacher", enabled: true, params: { teacherBackground: "", scorerCount: 1, requiresEnterpriseMentor: false } },
-  { type: "enterprise_mentor", enabled: false },
-  { type: "peer", enabled: false, params: { peerCount: 3 } },
-  { type: "self", enabled: false },
-  { type: "ai", enabled: false, params: { aiModel: "默认模型" } },
-  { type: "service_target", enabled: false },
+  {
+    type: "teacher",
+    enabled: true,
+    params: {
+      teacherBackground: "计算机/软件工程相关专业",
+      scorerCount: 2,
+      weightPercent: 50,
+      scoringDimensions: ["knowledge_mastery", "operation_standard", "task_completion", "result_quality"],
+      minTeachingYears: 3,
+    },
+  },
+  {
+    type: "enterprise_mentor",
+    enabled: true,
+    params: {
+      expertise: "前端开发 / React 生态",
+      minYears: 5,
+      scorerCount: 1,
+      weightPercent: 20,
+      companyType: "互联网/科技公司",
+    },
+  },
+  {
+    type: "peer",
+    enabled: true,
+    params: {
+      peerCount: 4,
+      peerRule: "随机分配",
+      anonymous: true,
+      weightPercent: 15,
+    },
+  },
+  {
+    type: "self",
+    enabled: true,
+    params: {
+      requiresReflection: true,
+      weightPercent: 10,
+      reflectionMinLength: 500,
+    },
+  },
+  {
+    type: "ai",
+    enabled: false,
+    params: {
+      aiModel: "GPT-4",
+      weightPercent: 5,
+      confidenceThreshold: 85,
+      autoReview: true,
+    },
+  },
+  {
+    type: "service_target",
+    enabled: false,
+    params: {
+      serviceMethod: "满意度问卷",
+      sampleSize: 20,
+      weightPercent: 5,
+    },
+  },
+]
+
+const mockDefaultEvalPoints: EvalPoint[] = [
+  { id: "ep-mock-1", name: "组件封装能力评价", desc: "考察组件封装与复用能力", subType: "knowledge_mastery", knowledgePointIds: ["kp-1"], abilityPointIds: ["ab-1"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+  { id: "ep-mock-2", name: "状态管理能力评价", desc: "考察状态管理方案运用", subType: "knowledge_mastery", knowledgePointIds: ["kp-2"], abilityPointIds: ["ab-2"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+  { id: "ep-mock-3", name: "接口设计规范", desc: "API设计是否清晰规范", subType: "operation_standard", knowledgePointIds: ["kp-4"], abilityPointIds: ["ab-3"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+  { id: "ep-mock-4", name: "数据库建模规范", desc: "数据库设计是否高效规范", subType: "operation_standard", knowledgePointIds: ["kp-5"], abilityPointIds: ["ab-4"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+  { id: "ep-mock-5", name: "任务完成完整性", desc: "功能是否全部实现", subType: "task_completion", knowledgePointIds: ["kp-3"], abilityPointIds: ["ab-5"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+  { id: "ep-mock-6", name: "代码质量与成果", desc: "代码规范性和可维护性", subType: "result_quality", knowledgePointIds: ["kp-6"], abilityPointIds: ["ab-6"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+  { id: "ep-mock-7", name: "团队协作沟通", desc: "沟通表达与协作配合", subType: "communication", knowledgePointIds: ["kp-7"], abilityPointIds: ["ab-7"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
 ]
 
 function makeDefaultTaskState(count: number, index: number): TaskState {
@@ -342,14 +430,16 @@ function makeDefaultTaskState(count: number, index: number): TaskState {
     abilityPoints: [],
     abilityLevelMappings: [],
     resources: [],
-    evaluationMethods: [],
-    randomDrawQuestions: [],
-    randomDrawEvalPoints: [],
+    evaluationMethods: ["random_draw", "review", "paper", "question_bank"],
+    randomDrawQuestions: allQuestions.slice(0, 2).map(q => q.id),
+    randomDrawEvalPoints: [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1]],
     randomDrawScoreType: "eval_points",
-    reviewEvalPoints: [],
+    reviewEvalPoints: [mockDefaultEvalPoints[2]],
     reviewScoreType: "eval_points",
-    paperId: null,
-    questionBankQuestions: [],
+    paperId: paperMocks[0].id,
+    paperEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
+    questionBankQuestions: allQuestions.slice(0, 2).map(q => q.id),
+    questionBankEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
     weight: count > 0 ? Math.floor(100 / count) + (index < 100 % count ? 1 : 0) : 0,
     locked: false,
     gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)),
@@ -371,10 +461,44 @@ export default function TasksEditPage() {
 
   const [tasks, setTasks] = useState<Task[]>(existingScenario?.tasks || [])
 
+  // Helper: generate mock eval points from task deliverables
+  const generateMockEvalPoints = (t: Task): { randomDraw: EvalPoint[]; review: EvalPoint[] } => {
+    const subTypePool: EvalSubType[] = ["knowledge_mastery", "operation_standard", "task_completion", "result_quality", "communication", "collaboration", "professionalism", "innovation", "adaptability"]
+    const eps = t.deliverables?.flatMap(d => d.evaluationPoints || []) || []
+    const randomDraw: EvalPoint[] = []
+    const review: EvalPoint[] = []
+    eps.forEach((ep, idx) => {
+      const point: EvalPoint = {
+        id: ep.id,
+        name: ep.name,
+        desc: ep.description || "",
+        subType: subTypePool[idx % subTypePool.length],
+        knowledgePointIds: t.knowledgePoints?.slice(0, 2),
+        abilityPointIds: t.abilityPoints?.slice(0, 2),
+        scoringMethod: "level",
+        gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)),
+      }
+      if (idx % 2 === 0) randomDraw.push(point)
+      else review.push(point)
+    })
+    return { randomDraw, review }
+  }
+
   const [taskStates, setTaskStates] = useState<Record<string, TaskState>>(() => {
     const states: Record<string, TaskState> = {}
     const count = existingScenario?.tasks.length || 0
     existingScenario?.tasks.forEach((t, i) => {
+      // Determine evaluation methods from assessment type
+      let methods: string[] = []
+      if (t.assessment?.type === "objective") methods = ["random_draw", "question_bank"]
+      else if (t.assessment?.type === "subjective") methods = ["review"]
+      else if (t.assessment?.type === "mixed") methods = ["random_draw", "review"]
+      else methods = ["review"]
+
+      const mockEps = generateMockEvalPoints(t)
+      const mockQuestions = allQuestions.slice(0, 3).map(q => q.id)
+      const hasPaper = methods.includes("paper")
+
       states[t.id] = {
         description: t.detailedDescription || defaultDescriptionTemplate,
         descriptionPdf: null,
@@ -383,14 +507,16 @@ export default function TasksEditPage() {
         abilityPoints: (t as any).abilityPoints || [],
         abilityLevelMappings: [],
         resources: t.resources || [],
-        evaluationMethods: [],
-        randomDrawQuestions: [],
-        randomDrawEvalPoints: [],
+        evaluationMethods: methods,
+        randomDrawQuestions: mockQuestions,
+        randomDrawEvalPoints: mockEps.randomDraw.length > 0 ? mockEps.randomDraw : [mockDefaultEvalPoints[0]],
         randomDrawScoreType: "eval_points",
-        reviewEvalPoints: [],
+        reviewEvalPoints: mockEps.review.length > 0 ? mockEps.review : [mockDefaultEvalPoints[1]],
         reviewScoreType: "eval_points",
-        paperId: null,
-        questionBankQuestions: [],
+        paperId: hasPaper ? paperMocks[0].id : null,
+        paperEvalPoints: [mockDefaultEvalPoints[3]],
+        questionBankQuestions: methods.includes("question_bank") ? mockQuestions : [],
+        questionBankEvalPoints: [mockDefaultEvalPoints[4]],
         weight: count > 0 ? Math.floor(100 / count) + (i < 100 % count ? 1 : 0) : 0,
         locked: false,
         gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)),
@@ -979,11 +1105,20 @@ function EditCardDialog({
   const [newPointName, setNewPointName] = useState("")
 
   // For evaluation rules
-  const [erActiveMethod, setErActiveMethod] = useState<string | null>(state.evaluationMethods[0] || null)
-  const [erActiveStep, setErActiveStep] = useState(0)
   const [erQSearch, setErQSearch] = useState("")
   const [erPSearch, setErPSearch] = useState("")
   const [erKpSearch, setErKpSearch] = useState("")
+  const [erAbSearch, setErAbSearch] = useState("")
+
+  // Dialog states for evaluation rules card layout
+  const [erDialogOpen, setErDialogOpen] = useState<"object" | "subject" | "resource" | "method" | null>(null)
+  const [erDialogMethod, setErDialogMethod] = useState<string | null>(null)
+
+  // Mock resource config states
+  const [mockResRandomDraw, setMockResRandomDraw] = useState({ questionCount: 5, difficulty: "mixed", types: { single: true, multiple: true, judge: true } })
+  const [mockResPaper, setMockResPaper] = useState({ duration: 60, passScore: 60, allowRetake: false, retakeCount: 1, shuffleQuestions: true, showResult: true })
+  const [mockResQuestionBank, setMockResQuestionBank] = useState({ questionCount: 10, difficulty: "mixed", totalScore: 100, autoGenerate: false, timeLimit: 90 })
+  const [mockResReview, setMockResReview] = useState({ materialType: "project_report", submitFormat: "pdf", deadlineDays: 7, requiresAttachment: true, minWordCount: 2000, allowResubmit: false })
 
   const handleSave = () => {
     if (cardType === "info") {
@@ -2153,18 +2288,14 @@ function EditCardDialog({
       }
 
       case "evaluationRules": {
-        const activeMethod = erActiveMethod
-        const setActiveMethod = setErActiveMethod
-        const activeStep = erActiveStep
-        const setActiveStep = setErActiveStep
         const qSearch = erQSearch
         const setQSearch = setErQSearch
         const pSearch = erPSearch
         const setPSearch = setErPSearch
         const kpSearchForEval = erKpSearch
         const setKpSearchForEval = setErKpSearch
-
-        const steps = ["测评对象", "测评主体", "评价方式与测评资源", "评价方法"]
+        const abSearchForEval = erAbSearch
+        const setAbSearchForEval = setErAbSearch
 
         const subjectLabels: Record<string, string> = {
           teacher: "教师",
@@ -2195,31 +2326,49 @@ function EditCardDialog({
           updateState({ evalSubjects: newSubjects })
         }
 
-        const addEvalPoint = (field: "randomDrawEvalPoints" | "reviewEvalPoints") => {
-          if (!newPointName.trim()) return
-          const newPoint: EvalPoint = { id: `ep-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, name: newPointName.trim(), desc: "" }
-          if (field === "randomDrawEvalPoints") {
-            updateState({ randomDrawEvalPoints: [...state.randomDrawEvalPoints, newPoint] })
-          } else {
-            updateState({ reviewEvalPoints: [...state.reviewEvalPoints, newPoint] })
+        type EvalPointField = "randomDrawEvalPoints" | "reviewEvalPoints" | "paperEvalPoints" | "questionBankEvalPoints"
+
+        const getEvalPoints = (field: EvalPointField) => {
+          switch (field) {
+            case "randomDrawEvalPoints": return state.randomDrawEvalPoints
+            case "reviewEvalPoints": return state.reviewEvalPoints
+            case "paperEvalPoints": return state.paperEvalPoints
+            case "questionBankEvalPoints": return state.questionBankEvalPoints
           }
+        }
+
+        const setEvalPoints = (field: EvalPointField, points: EvalPoint[]) => {
+          switch (field) {
+            case "randomDrawEvalPoints": updateState({ randomDrawEvalPoints: points }); break
+            case "reviewEvalPoints": updateState({ reviewEvalPoints: points }); break
+            case "paperEvalPoints": updateState({ paperEvalPoints: points }); break
+            case "questionBankEvalPoints": updateState({ questionBankEvalPoints: points }); break
+          }
+        }
+
+        const addEvalPoint = (field: EvalPointField, preset?: Partial<EvalPoint>) => {
+          const name = preset?.name || newPointName.trim()
+          if (!name) return
+          const newPoint: EvalPoint = {
+            id: `ep-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+            name,
+            desc: preset?.desc || "",
+            subType: preset?.subType,
+            knowledgePointIds: preset?.knowledgePointIds,
+            abilityPointIds: preset?.abilityPointIds,
+            scoringMethod: preset?.scoringMethod || "level",
+            gradeMapping: preset?.gradeMapping || JSON.parse(JSON.stringify(defaultGradeMapping)),
+          }
+          setEvalPoints(field, [...getEvalPoints(field), newPoint])
           setNewPointName("")
         }
 
-        const removeEvalPoint = (field: "randomDrawEvalPoints" | "reviewEvalPoints", id: string) => {
-          if (field === "randomDrawEvalPoints") {
-            updateState({ randomDrawEvalPoints: state.randomDrawEvalPoints.filter(p => p.id !== id) })
-          } else {
-            updateState({ reviewEvalPoints: state.reviewEvalPoints.filter(p => p.id !== id) })
-          }
+        const removeEvalPoint = (field: EvalPointField, id: string) => {
+          setEvalPoints(field, getEvalPoints(field).filter(p => p.id !== id))
         }
 
-        const updateEvalPoint = (field: "randomDrawEvalPoints" | "reviewEvalPoints", id: string, updates: Partial<EvalPoint>) => {
-          if (field === "randomDrawEvalPoints") {
-            updateState({ randomDrawEvalPoints: state.randomDrawEvalPoints.map(p => p.id === id ? { ...p, ...updates } : p) })
-          } else {
-            updateState({ reviewEvalPoints: state.reviewEvalPoints.map(p => p.id === id ? { ...p, ...updates } : p) })
-          }
+        const updateEvalPoint = (field: EvalPointField, id: string, updates: Partial<EvalPoint>) => {
+          setEvalPoints(field, getEvalPoints(field).map(p => p.id === id ? { ...p, ...updates } : p))
         }
 
         const toggleQuestion = (qid: string, field: "randomDrawQuestions" | "questionBankQuestions") => {
@@ -2230,82 +2379,326 @@ function EditCardDialog({
           else updateState({ questionBankQuestions: newArr })
         }
 
-        const EvalPointConfigPanel = ({ points, field }: { points: EvalPoint[]; field: "randomDrawEvalPoints" | "reviewEvalPoints" }) => (
-          <div className="border rounded-xl p-4">
-            <p className="text-sm font-medium mb-3">评价点配置</p>
-            <div className="space-y-3">
-              {points.map(ep => (
-                <div key={ep.id} className="p-3 bg-white rounded-lg border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Input value={ep.name} onChange={e => updateEvalPoint(field, ep.id, { name: e.target.value })} className="flex-1 h-8 text-sm" />
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500" onClick={() => removeEvalPoint(field, ep.id)}><Trash2 className="h-4 w-4" /></Button>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <Select value={ep.subType || ""} onValueChange={v => updateEvalPoint(field, ep.id, { subType: v as EvalSubType })}>
-                      <SelectTrigger className="h-8 text-xs w-44">
-                        <SelectValue placeholder="选择细分类型" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(evalSubTypeLabels).map(([key, label]) => (
-                          <SelectItem key={key} value={key}>{label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {ep.subType && <Badge variant="outline" className={cn("text-[10px]", evalSubTypeColors[ep.subType])}>{evalSubTypeLabels[ep.subType]}</Badge>}
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">关联知识点</p>
-                    <div className="flex flex-wrap gap-1">
-                      {(ep.knowledgePointIds || []).map(kpid => {
-                        const kp = knowledgePoints.find(k => k.id === kpid)
-                        return kp ? (
-                          <Badge key={kpid} variant="secondary" className="text-[10px] font-normal">
-                            {kp.name}
-                            <button onClick={() => updateEvalPoint(field, ep.id, { knowledgePointIds: (ep.knowledgePointIds || []).filter(id => id !== kpid) })} className="ml-1 text-gray-400 hover:text-red-500">×</button>
-                          </Badge>
-                        ) : null
-                      })}
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary">+ 添加知识点</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader><DialogTitle>关联知识点</DialogTitle></DialogHeader>
-                          <div className="relative mb-3">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input value={kpSearchForEval} onChange={e => setKpSearchForEval(e.target.value)} placeholder="搜索知识点..." className="pl-9" />
-                          </div>
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {knowledgePoints.filter(k => !kpSearchForEval || k.name.includes(kpSearchForEval)).map(k => {
-                              const alreadyLinked = (ep.knowledgePointIds || []).includes(k.id)
-                              return (
-                                <div key={k.id} onClick={() => {
-                                  if (alreadyLinked) return
-                                  updateEvalPoint(field, ep.id, { knowledgePointIds: [...(ep.knowledgePointIds || []), k.id] })
-                                }} className={cn("p-2 rounded-lg border cursor-pointer text-sm", alreadyLinked ? "border-primary bg-primary/5 opacity-50" : "hover:border-gray-300")}>
-                                  <div className="flex items-center gap-2">
-                                    <span className="flex-1">{k.name}</span>
-                                    {alreadyLinked && <CheckCircle2 className="h-4 w-4 text-primary" />}
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+        const addEvalPointFromAbility = (field: EvalPointField, abilityId: string, subType?: EvalSubType) => {
+          const ab = abilityPoints.find(a => a.id === abilityId)
+          if (!ab) return
+          addEvalPoint(field, {
+            name: ab.name,
+            desc: ab.description || "",
+            abilityPointIds: [ab.id],
+            subType,
+            scoringMethod: "level",
+          })
+        }
+
+        const addEvalPointFromKnowledge = (field: EvalPointField, kpId: string, subType?: EvalSubType) => {
+          const kp = knowledgePoints.find(k => k.id === kpId)
+          if (!kp) return
+          addEvalPoint(field, {
+            name: kp.name,
+            desc: kp.description || "",
+            knowledgePointIds: [kp.id],
+            subType,
+            scoringMethod: "level",
+          })
+        }
+
+        const LevelRuleEditor = ({ gradeMapping, onChange }: { gradeMapping: GradeMapping[]; onChange: (gm: GradeMapping[]) => void }) => {
+          const gradeColors = [
+            { light: "bg-green-50 border-green-200 text-green-700", dot: "bg-green-500" },
+            { light: "bg-blue-50 border-blue-200 text-blue-700", dot: "bg-blue-500" },
+            { light: "bg-yellow-50 border-yellow-200 text-yellow-700", dot: "bg-yellow-500" },
+            { light: "bg-red-50 border-red-200 text-red-700", dot: "bg-red-500" },
+          ]
+          return (
+            <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+              <p className="text-xs font-medium text-gray-600 mb-2">等级转换规则</p>
+              <div className="h-6 bg-gray-200 rounded overflow-hidden flex mb-2">
+                {[...gradeMapping].sort((a, b) => a.minScore - b.minScore).map(g => {
+                  const width = g.maxScore - g.minScore + 1
+                  return <div key={g.id} className={cn("flex items-center justify-center text-white text-[10px] font-medium", g.color)} style={{ width: `${width}%` }}>{g.grade}</div>
+                })}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[...gradeMapping].sort((a, b) => b.maxScore - a.maxScore).map((g, i) => {
+                  const c = gradeColors[i % gradeColors.length]
+                  return (
+                    <div key={g.id} className={cn("rounded border p-2", c.light)}>
+                      <div className="flex items-center justify-between mb-1">
+                        <Input value={g.grade} onChange={e => onChange(gradeMapping.map(x => x.id === g.id ? { ...x, grade: e.target.value } : x))} className="w-14 h-6 text-center text-xs font-semibold" />
+                        <div className={cn("w-3 h-3 rounded-full", c.dot)} />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Input type="number" value={g.minScore} onChange={e => onChange(gradeMapping.map(x => x.id === g.id ? { ...x, minScore: parseInt(e.target.value) || 0 } : x))} className="w-12 h-6 text-center text-xs" min={0} max={100} />
+                        <span className="text-gray-500 text-xs">-</span>
+                        <Input type="number" value={g.maxScore} onChange={e => onChange(gradeMapping.map(x => x.id === g.id ? { ...x, maxScore: parseInt(e.target.value) || 0 } : x))} className="w-12 h-6 text-center text-xs" min={0} max={100} />
+                        <span className="text-xs text-gray-500">分</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <Input value={newPointName} onChange={e => setNewPointName(e.target.value)} placeholder="输入评价点名称" className="flex-1 h-9" />
-                <Button size="sm" onClick={() => addEvalPoint(field)}>添加</Button>
+                  )
+                })}
               </div>
             </div>
+          )
+        }
+
+        const EvalPointCard = ({ ep, field }: { ep: EvalPoint; field: EvalPointField }) => (
+          <div className="p-3 bg-white rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <Input value={ep.name} onChange={e => updateEvalPoint(field, ep.id, { name: e.target.value })} className="flex-1 h-8 text-sm" />
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500" onClick={() => removeEvalPoint(field, ep.id)}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <Badge variant="outline" className={cn("text-[10px]", evalSubTypeColors[ep.subType as EvalSubType])}>{ep.subType ? evalSubTypeLabels[ep.subType as EvalSubType] : "未分类"}</Badge>
+              <Select value={ep.scoringMethod || "level"} onValueChange={v => updateEvalPoint(field, ep.id, { scoringMethod: v as "score" | "level" | "rubric" })}>
+                <SelectTrigger className="h-7 text-[10px] w-28">
+                  <SelectValue placeholder="评价方法" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="score" disabled>分值制</SelectItem>
+                  <SelectItem value="level">等级制</SelectItem>
+                  <SelectItem value="rubric" disabled>rubric量表</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="mb-2">
+              <p className="text-xs text-gray-500 mb-1">关联能力点</p>
+              <div className="flex flex-wrap gap-1">
+                {(ep.abilityPointIds || []).map(abId => {
+                  const ab = abilityPoints.find(a => a.id === abId)
+                  return ab ? (
+                    <Badge key={abId} variant="secondary" className="text-[10px] font-normal">
+                      {ab.name}
+                      <button onClick={() => updateEvalPoint(field, ep.id, { abilityPointIds: (ep.abilityPointIds || []).filter(id => id !== abId) })} className="ml-1 text-gray-400 hover:text-red-500">×</button>
+                    </Badge>
+                  ) : null
+                })}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary">+ 添加能力点</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader><DialogTitle>关联能力点</DialogTitle></DialogHeader>
+                    <div className="relative mb-3">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input value={abSearchForEval} onChange={e => setAbSearchForEval(e.target.value)} placeholder="搜索能力点..." className="pl-9" />
+                    </div>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {abilityPoints.filter(a => !abSearchForEval || a.name.includes(abSearchForEval)).map(a => {
+                        const alreadyLinked = (ep.abilityPointIds || []).includes(a.id)
+                        return (
+                          <div key={a.id} onClick={() => {
+                            if (alreadyLinked) return
+                            updateEvalPoint(field, ep.id, { abilityPointIds: [...(ep.abilityPointIds || []), a.id] })
+                          }} className={cn("p-2 rounded-lg border cursor-pointer text-sm", alreadyLinked ? "border-primary bg-primary/5 opacity-50" : "hover:border-gray-300")}>
+                            <div className="flex items-center gap-2">
+                              <span className="flex-1">{a.name}</span>
+                              {alreadyLinked && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+            <div className="mb-2">
+              <p className="text-xs text-gray-500 mb-1">关联知识点</p>
+              <div className="flex flex-wrap gap-1">
+                {(ep.knowledgePointIds || []).map(kpid => {
+                  const kp = knowledgePoints.find(k => k.id === kpid)
+                  return kp ? (
+                    <Badge key={kpid} variant="secondary" className="text-[10px] font-normal">
+                      {kp.name}
+                      <button onClick={() => updateEvalPoint(field, ep.id, { knowledgePointIds: (ep.knowledgePointIds || []).filter(id => id !== kpid) })} className="ml-1 text-gray-400 hover:text-red-500">×</button>
+                    </Badge>
+                  ) : null
+                })}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary">+ 添加知识点</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader><DialogTitle>关联知识点</DialogTitle></DialogHeader>
+                    <div className="relative mb-3">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input value={kpSearchForEval} onChange={e => setKpSearchForEval(e.target.value)} placeholder="搜索知识点..." className="pl-9" />
+                    </div>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {knowledgePoints.filter(k => !kpSearchForEval || k.name.includes(kpSearchForEval)).map(k => {
+                        const alreadyLinked = (ep.knowledgePointIds || []).includes(k.id)
+                        return (
+                          <div key={k.id} onClick={() => {
+                            if (alreadyLinked) return
+                            updateEvalPoint(field, ep.id, { knowledgePointIds: [...(ep.knowledgePointIds || []), k.id] })
+                          }} className={cn("p-2 rounded-lg border cursor-pointer text-sm", alreadyLinked ? "border-primary bg-primary/5 opacity-50" : "hover:border-gray-300")}>
+                            <div className="flex items-center gap-2">
+                              <span className="flex-1">{k.name}</span>
+                              {alreadyLinked && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+            {ep.scoringMethod === "level" && ep.gradeMapping && (
+              <LevelRuleEditor
+                gradeMapping={ep.gradeMapping}
+                onChange={gm => updateEvalPoint(field, ep.id, { gradeMapping: gm })}
+              />
+            )}
           </div>
         )
 
-        const EvalResourcePanel = ({ methodKey }: { methodKey: string }) => {
+        const EvalPointConfigPanel = ({ points, field }: { points: EvalPoint[]; field: EvalPointField }) => {
+          const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({})
+
+          // Group points by subType
+          const grouped = points.reduce((acc, ep) => {
+            const key = ep.subType || "uncategorized"
+            if (!acc[key]) acc[key] = []
+            acc[key].push(ep)
+            return acc
+          }, {} as Record<string, EvalPoint[]>)
+
+          const subTypeKeys = Object.keys(evalSubTypeLabels) as EvalSubType[]
+          const usedSubTypes = subTypeKeys.filter(st => grouped[st]?.length > 0)
+
+          const toggleType = (st: string) => setExpandedTypes(prev => ({ ...prev, [st]: !prev[st] }))
+
+          return (
+            <div className="border rounded-xl p-4">
+              <p className="text-sm font-medium mb-3">评价点配置</p>
+
+              {/* Sub-type selector */}
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2">选择细分类型并添加评价点</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {subTypeKeys.map(st => {
+                    const count = grouped[st]?.length || 0
+                    const active = count > 0
+                    return (
+                      <button
+                        key={st}
+                        onClick={() => {
+                          if (!active) {
+                            // Add a blank eval point of this type
+                            addEvalPoint(field, { subType: st, name: `${evalSubTypeLabels[st]}评价点` })
+                          }
+                          toggleType(st)
+                        }}
+                        className={cn(
+                          "px-2.5 py-1 rounded-full text-xs border transition-all",
+                          active
+                            ? cn(evalSubTypeColors[st], "border-current")
+                            : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                        )}
+                      >
+                        {evalSubTypeLabels[st]}
+                        {count > 0 && <span className="ml-1 font-medium">({count})</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Grouped eval points */}
+              <div className="space-y-3">
+                {usedSubTypes.map(st => {
+                  const expanded = expandedTypes[st] !== false
+                  const eps = grouped[st]
+                  return (
+                    <div key={st} className="border rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => toggleType(st)}
+                        className={cn("w-full flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors", expanded ? "bg-gray-50" : "bg-white hover:bg-gray-50")}
+                      >
+                        {expanded ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+                        <Badge variant="outline" className={cn("text-[10px]", evalSubTypeColors[st])}>{evalSubTypeLabels[st]}</Badge>
+                        <span className="flex-1 text-left text-gray-600">{eps.length} 个评价点</span>
+                        <div className="flex items-center gap-1">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={e => e.stopPropagation()}>
+                                <Award className="h-3 w-3 mr-1" />能力点
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader><DialogTitle>从能力点创建 — {evalSubTypeLabels[st]}</DialogTitle></DialogHeader>
+                              <div className="space-y-2 max-h-80 overflow-y-auto mt-2">
+                                {abilityPoints.map(a => (
+                                  <div key={a.id} onClick={() => addEvalPointFromAbility(field, a.id, st)} className="p-2.5 rounded-lg border cursor-pointer hover:border-gray-300 text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <span className="flex-1 font-medium">{a.name}</span>
+                                      {a.code && <Badge variant="outline" className="text-[10px]">{a.code}</Badge>}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1 line-clamp-1">{a.description}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={e => e.stopPropagation()}>
+                                <Lightbulb className="h-3 w-3 mr-1" />知识点
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader><DialogTitle>从知识点创建 — {evalSubTypeLabels[st]}</DialogTitle></DialogHeader>
+                              <div className="space-y-2 max-h-80 overflow-y-auto mt-2">
+                                {knowledgePoints.map(k => (
+                                  <div key={k.id} onClick={() => addEvalPointFromKnowledge(field, k.id, st)} className="p-2.5 rounded-lg border cursor-pointer hover:border-gray-300 text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <span className="flex-1 font-medium">{k.name}</span>
+                                      {k.code && <Badge variant="outline" className="text-[10px]">{k.code}</Badge>}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1 line-clamp-1">{k.description}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={e => { e.stopPropagation(); addEvalPoint(field, { subType: st, name: "" }); }}>
+                            <Plus className="h-3 w-3 mr-1" />手动添加
+                          </Button>
+                        </div>
+                      </button>
+                      {expanded && (
+                        <div className="p-3 space-y-2 border-t">
+                          {eps.map(ep => <EvalPointCard key={ep.id} ep={ep} field={field} />)}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+
+                {/* Uncategorized points */}
+                {grouped["uncategorized"]?.length > 0 && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <button onClick={() => toggleType("uncategorized")} className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium bg-white hover:bg-gray-50 transition-colors">
+                      {expandedTypes["uncategorized"] !== false ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+                      <span className="text-gray-600">未分类评价点</span>
+                      <span className="text-gray-400">({grouped["uncategorized"].length})</span>
+                    </button>
+                    {expandedTypes["uncategorized"] !== false && (
+                      <div className="p-3 space-y-2 border-t">
+                        {grouped["uncategorized"].map(ep => <EvalPointCard key={ep.id} ep={ep} field={field} />)}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        }
+
+        // Resource-only panel (no eval points)
+        const EvalResourceOnlyPanel = ({ methodKey }: { methodKey: string }) => {
           if (methodKey === "random_draw") {
             return (
               <div className="space-y-4">
@@ -2331,21 +2724,147 @@ function EditCardDialog({
                   </div>
                   <p className="text-xs text-gray-500 mt-2">已选 {state.randomDrawQuestions.length} 题</p>
                 </div>
-                <EvalPointConfigPanel points={state.randomDrawEvalPoints} field="randomDrawEvalPoints" />
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">抽题规则</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">抽取题数</Label>
+                      <Input type="number" value={mockResRandomDraw.questionCount} onChange={e => setMockResRandomDraw({ ...mockResRandomDraw, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">难度分布</Label>
+                      <Select value={mockResRandomDraw.difficulty} onValueChange={v => setMockResRandomDraw({ ...mockResRandomDraw, difficulty: v })}>
+                        <SelectTrigger className="mt-1 text-sm h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="easy">简单为主</SelectItem>
+                          <SelectItem value="mixed">难易混合</SelectItem>
+                          <SelectItem value="hard">困难为主</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <Label className="text-xs text-gray-500 mb-1">题型范围</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: "single", label: "单选题" },
+                        { key: "multiple", label: "多选题" },
+                        { key: "judge", label: "判断题" },
+                      ].map(t => (
+                        <Badge
+                          key={t.key}
+                          variant={mockResRandomDraw.types[t.key as keyof typeof mockResRandomDraw.types] ? "default" : "outline"}
+                          className="cursor-pointer text-[10px] h-6"
+                          onClick={() => setMockResRandomDraw({ ...mockResRandomDraw, types: { ...mockResRandomDraw.types, [t.key]: !mockResRandomDraw.types[t.key as keyof typeof mockResRandomDraw.types] } })}
+                        >
+                          {t.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">评分标准</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center p-3 rounded-lg bg-gray-50 border">
+                      <p className="text-lg font-bold text-primary">{state.randomDrawQuestions.length * 5}</p>
+                      <p className="text-xs text-gray-500 mt-1">预估总分</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-gray-50 border">
+                      <p className="text-lg font-bold text-primary">{mockResRandomDraw.questionCount}</p>
+                      <p className="text-xs text-gray-500 mt-1">抽取数量</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-gray-50 border">
+                      <p className="text-lg font-bold text-primary">60</p>
+                      <p className="text-xs text-gray-500 mt-1">及格线</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )
           }
           if (methodKey === "review") {
             return (
               <div className="space-y-4">
-                <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 text-sm text-amber-700 mb-4">
+                <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 text-sm text-amber-700">
                   <div className="flex items-center gap-2 mb-2">
                     <Info className="h-4 w-4" />
                     <span className="font-medium">评审说明</span>
                   </div>
-                  <p>评审时教师根据学生现场表现或提交的材料进行打分。</p>
+                  <p>评审时教师根据学生现场表现或提交的材料进行打分。评价点配置请在「评价方法」卡片中设置。</p>
                 </div>
-                <EvalPointConfigPanel points={state.reviewEvalPoints} field="reviewEvalPoints" />
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">评审材料要求</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">材料类型</Label>
+                      <Select value={mockResReview.materialType} onValueChange={v => setMockResReview({ ...mockResReview, materialType: v })}>
+                        <SelectTrigger className="mt-1 text-sm h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="project_report">项目报告</SelectItem>
+                          <SelectItem value="code_repo">代码仓库</SelectItem>
+                          <SelectItem value="design_doc">设计文档</SelectItem>
+                          <SelectItem value="demo_video">演示视频</SelectItem>
+                          <SelectItem value="presentation">答辩 PPT</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">提交格式</Label>
+                      <Select value={mockResReview.submitFormat} onValueChange={v => setMockResReview({ ...mockResReview, submitFormat: v })}>
+                        <SelectTrigger className="mt-1 text-sm h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pdf">PDF</SelectItem>
+                          <SelectItem value="doc">Word</SelectItem>
+                          <SelectItem value="zip">压缩包</SelectItem>
+                          <SelectItem value="link">在线链接</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">最少字数</Label>
+                      <Input type="number" value={mockResReview.minWordCount} onChange={e => setMockResReview({ ...mockResReview, minWordCount: Math.max(0, parseInt(e.target.value) || 0) })} className="mt-1 text-sm" min={0} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
+                      <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResReview.requiresAttachment} onCheckedChange={v => setMockResReview({ ...mockResReview, requiresAttachment: v })} />
+                      <span className="text-xs text-gray-600">需要附件</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResReview.allowResubmit} onCheckedChange={v => setMockResReview({ ...mockResReview, allowResubmit: v })} />
+                      <span className="text-xs text-gray-600">允许重新提交</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">评审流程设置</p>
+                  <div className="space-y-2">
+                    {[
+                      { label: "初评", desc: "由指导教师进行第一轮评审", enabled: true },
+                      { label: "复评", desc: "由专家组进行第二轮复核", enabled: false },
+                      { label: "终评", desc: "答辩委员会最终评定", enabled: false },
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div>
+                          <p className="text-sm font-medium">{step.label}</p>
+                          <p className="text-xs text-gray-400">{step.desc}</p>
+                        </div>
+                        <Badge variant={step.enabled ? "default" : "outline"} className="text-[10px]">{step.enabled ? "启用" : "未启用"}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )
           }
@@ -2374,6 +2893,60 @@ function EditCardDialog({
                         </div>
                       )
                     })}
+                  </div>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">考试设置</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">考试时长（分钟）</Label>
+                      <Input type="number" value={mockResPaper.duration} onChange={e => setMockResPaper({ ...mockResPaper, duration: Math.max(5, parseInt(e.target.value) || 5) })} className="mt-1 text-sm" min={5} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">及格分数线</Label>
+                      <Input type="number" value={mockResPaper.passScore} onChange={e => setMockResPaper({ ...mockResPaper, passScore: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })} className="mt-1 text-sm" min={0} max={100} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">允许重考</Label>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Switch checked={mockResPaper.allowRetake} onCheckedChange={v => setMockResPaper({ ...mockResPaper, allowRetake: v })} />
+                        <span className="text-xs text-gray-600">{mockResPaper.allowRetake ? "是" : "否"}</span>
+                      </div>
+                    </div>
+                    {mockResPaper.allowRetake && (
+                      <div>
+                        <Label className="text-xs text-gray-500">最多重考次数</Label>
+                        <Input type="number" value={mockResPaper.retakeCount} onChange={e => setMockResPaper({ ...mockResPaper, retakeCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3 flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResPaper.shuffleQuestions} onCheckedChange={v => setMockResPaper({ ...mockResPaper, shuffleQuestions: v })} />
+                      <span className="text-xs text-gray-600">题目乱序</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResPaper.showResult} onCheckedChange={v => setMockResPaper({ ...mockResPaper, showResult: v })} />
+                      <span className="text-xs text-gray-600">交卷后显示成绩</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">防作弊设置</p>
+                  <div className="space-y-2">
+                    {[
+                      { label: "切屏检测", desc: "离开考试页面超过 3 次自动交卷", enabled: true },
+                      { label: "复制粘贴限制", desc: "禁止复制题目、禁止粘贴答案", enabled: false },
+                      { label: "摄像头监控", desc: "考试期间随机拍照留存", enabled: false },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div>
+                          <p className="text-sm font-medium">{item.label}</p>
+                          <p className="text-xs text-gray-400">{item.desc}</p>
+                        </div>
+                        <Switch checked={item.enabled} onCheckedChange={() => {}} />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -2405,10 +2978,428 @@ function EditCardDialog({
                   </div>
                   <p className="text-xs text-gray-500 mt-2">已选 {state.questionBankQuestions.length} 题 / 总分 {allQuestions.filter(q => state.questionBankQuestions.includes(q.id)).reduce((s, q) => s + q.score, 0)} 分</p>
                 </div>
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">组卷规则</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">组卷题数</Label>
+                      <Input type="number" value={mockResQuestionBank.questionCount} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">试卷总分</Label>
+                      <Input type="number" value={mockResQuestionBank.totalScore} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, totalScore: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">难度分布</Label>
+                      <Select value={mockResQuestionBank.difficulty} onValueChange={v => setMockResQuestionBank({ ...mockResQuestionBank, difficulty: v })}>
+                        <SelectTrigger className="mt-1 text-sm h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="easy">简单为主</SelectItem>
+                          <SelectItem value="mixed">难易混合</SelectItem>
+                          <SelectItem value="hard">困难为主</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">时间限制（分钟）</Label>
+                      <Input type="number" value={mockResQuestionBank.timeLimit} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, timeLimit: Math.max(5, parseInt(e.target.value) || 5) })} className="mt-1 text-sm" min={5} />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Switch checked={mockResQuestionBank.autoGenerate} onCheckedChange={v => setMockResQuestionBank({ ...mockResQuestionBank, autoGenerate: v })} />
+                    <span className="text-xs text-gray-600">启用自动组卷（按规则从题库随机抽取）</span>
+                  </div>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">题型配额</p>
+                  <div className="space-y-2">
+                    {[
+                      { type: "single", label: "单选题", count: 6, score: 5 },
+                      { type: "multiple", label: "多选题", count: 2, score: 10 },
+                      { type: "judge", label: "判断题", count: 2, score: 5 },
+                    ].map(item => (
+                      <div key={item.type} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div className="flex items-center gap-3">
+                          <Badge variant="secondary" className="text-xs">{item.label}</Badge>
+                          <span className="text-xs text-gray-500">{item.count} 题 × {item.score} 分</span>
+                        </div>
+                        <span className="text-sm font-medium">{item.count * item.score} 分</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 p-2 rounded-lg bg-gray-50 border text-center">
+                    <span className="text-xs text-gray-500">合计 10 题 / </span>
+                    <span className="text-sm font-semibold">{6*5 + 2*10 + 2*5} 分</span>
+                  </div>
+                </div>
               </div>
             )
           }
           return null
+        }
+
+        const getMethodEvalInfo = (methodKey: string) => {
+          switch (methodKey) {
+            case "random_draw": return { points: state.randomDrawEvalPoints, field: "randomDrawEvalPoints" as const }
+            case "review": return { points: state.reviewEvalPoints, field: "reviewEvalPoints" as const }
+            case "paper": return { points: state.paperEvalPoints, field: "paperEvalPoints" as const }
+            case "question_bank": return { points: state.questionBankEvalPoints, field: "questionBankEvalPoints" as const }
+            default: return { points: [] as EvalPoint[], field: "randomDrawEvalPoints" as const }
+          }
+        }
+
+        const openDialog = (type: "object" | "subject" | "resource" | "method", methodKey: string) => {
+          setErDialogMethod(methodKey)
+          setErDialogOpen(type)
+        }
+
+        const ObjectDialogContent = () => (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500 mb-4">选择本任务的测评对象类型</p>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { key: "individual", label: "个人", desc: "以学生个人为单位进行测评" },
+                { key: "group", label: "小组", desc: "以小组为单位进行测评" },
+                { key: "individual_and_group", label: "个人+小组", desc: "同时考核个人和小组表现" },
+              ].map(opt => (
+                <button
+                  key={opt.key}
+                  onClick={() => updateState({ evalObject: opt.key as EvalObjectType })}
+                  className={cn("p-5 rounded-xl border text-left transition-all", state.evalObject === opt.key ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20" : "border-gray-200 hover:border-gray-300 bg-white")}
+                >
+                  <p className="text-sm font-semibold mb-1">{opt.label}</p>
+                  <p className="text-xs text-gray-400">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+
+        const SubjectDialogContent = () => (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500 mb-4">配置参与测评的主体及其参数</p>
+            <div className="space-y-3">
+              {state.evalSubjects.map((subject, idx) => (
+                <div key={subject.type} className={cn("p-4 rounded-xl border transition-all", subject.enabled ? "border-primary bg-primary/[0.03]" : "border-gray-200 bg-white")}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <Switch checked={subject.enabled} onCheckedChange={v => updateEvalSubject(idx, { enabled: v })} />
+                      <span className="text-sm font-medium">{subjectLabels[subject.type]}</span>
+                    </div>
+                    {subject.enabled && subject.params?.weightPercent !== undefined && (
+                      <Badge variant="outline" className="text-[10px]">权重 {subject.params.weightPercent}%</Badge>
+                    )}
+                  </div>
+                  {subject.enabled && (
+                    <div className="pl-12 space-y-3">
+                      {subject.type === "teacher" && (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-gray-500">专业背景要求</Label>
+                              <Input value={subject.params?.teacherBackground || ""} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, teacherBackground: e.target.value } })} placeholder="例如：计算机相关专业" className="mt-1 text-sm" />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">评分人数</Label>
+                              <Input type="number" value={subject.params?.scorerCount || 1} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, scorerCount: Math.max(1, parseInt(e.target.value) || 1) } })} className="mt-1 text-sm" min={1} />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">评分权重 (%)</Label>
+                              <Input type="number" value={subject.params?.weightPercent || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, weightPercent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">最低教龄 (年)</Label>
+                              <Input type="number" value={subject.params?.minTeachingYears || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, minTeachingYears: Math.max(0, parseInt(e.target.value) || 0) } })} className="mt-1 text-sm" min={0} />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500 mb-1">评分维度</Label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {Object.entries(evalSubTypeLabels).map(([key, label]) => {
+                                const selected = (subject.params?.scoringDimensions || []).includes(key)
+                                return (
+                                  <Badge
+                                    key={key}
+                                    variant={selected ? "default" : "outline"}
+                                    className="cursor-pointer text-[10px] h-6"
+                                    onClick={() => {
+                                      const dims = subject.params?.scoringDimensions || []
+                                      const updated = selected ? dims.filter(d => d !== key) : [...dims, key]
+                                      updateEvalSubject(idx, { params: { ...subject.params, scoringDimensions: updated } })
+                                    }}
+                                  >
+                                    {label}
+                                  </Badge>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {subject.type === "enterprise_mentor" && (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-gray-500">专业领域</Label>
+                              <Input value={subject.params?.expertise || ""} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, expertise: e.target.value } })} placeholder="例如：前端开发" className="mt-1 text-sm" />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">工作年限要求 (年)</Label>
+                              <Input type="number" value={subject.params?.minYears || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, minYears: Math.max(0, parseInt(e.target.value) || 0) } })} className="mt-1 text-sm" min={0} />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">评分人数</Label>
+                              <Input type="number" value={subject.params?.scorerCount || 1} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, scorerCount: Math.max(1, parseInt(e.target.value) || 1) } })} className="mt-1 text-sm" min={1} />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">评分权重 (%)</Label>
+                              <Input type="number" value={subject.params?.weightPercent || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, weightPercent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">企业类型</Label>
+                            <Select value={subject.params?.companyType || ""} onValueChange={v => updateEvalSubject(idx, { params: { ...subject.params, companyType: v } })}>
+                              <SelectTrigger className="mt-1 text-sm h-9">
+                                <SelectValue placeholder="选择企业类型" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="互联网/科技公司">互联网/科技公司</SelectItem>
+                                <SelectItem value="传统行业">传统行业</SelectItem>
+                                <SelectItem value="创业公司">创业公司</SelectItem>
+                                <SelectItem value="外资企业">外资企业</SelectItem>
+                                <SelectItem value="国企/事业单位">国企/事业单位</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </>
+                      )}
+                      {subject.type === "peer" && (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-gray-500">互评人数</Label>
+                              <Input type="number" value={subject.params?.peerCount || 3} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, peerCount: Math.max(1, parseInt(e.target.value) || 1) } })} className="mt-1 text-sm" min={1} />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">评分权重 (%)</Label>
+                              <Input type="number" value={subject.params?.weightPercent || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, weightPercent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-gray-500">互评规则</Label>
+                              <Select value={subject.params?.peerRule || ""} onValueChange={v => updateEvalSubject(idx, { params: { ...subject.params, peerRule: v } })}>
+                                <SelectTrigger className="mt-1 text-sm h-9">
+                                  <SelectValue placeholder="选择互评规则" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="随机分配">随机分配</SelectItem>
+                                  <SelectItem value="相邻座位">相邻座位</SelectItem>
+                                  <SelectItem value="自由组合">自由组合</SelectItem>
+                                  <SelectItem value="指定分组">指定分组</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-end pb-2">
+                              <div className="flex items-center gap-2">
+                                <Switch checked={subject.params?.anonymous || false} onCheckedChange={v => updateEvalSubject(idx, { params: { ...subject.params, anonymous: v } })} />
+                                <span className="text-xs text-gray-600">匿名评价</span>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {subject.type === "self" && (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-gray-500">评分权重 (%)</Label>
+                              <Input type="number" value={subject.params?.weightPercent || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, weightPercent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
+                            </div>
+                            <div className="flex items-end pb-2">
+                              <div className="flex items-center gap-2">
+                                <Switch checked={subject.params?.requiresReflection || false} onCheckedChange={v => updateEvalSubject(idx, { params: { ...subject.params, requiresReflection: v } })} />
+                                <span className="text-xs text-gray-600">需要提交反思报告</span>
+                              </div>
+                            </div>
+                          </div>
+                          {subject.params?.requiresReflection && (
+                            <div>
+                              <Label className="text-xs text-gray-500">反思报告最少字数</Label>
+                              <Input type="number" value={subject.params?.reflectionMinLength || 300} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, reflectionMinLength: Math.max(100, parseInt(e.target.value) || 100) } })} className="mt-1 text-sm w-32" min={100} />
+                            </div>
+                          )}
+                        </>
+                      )}
+                      {subject.type === "ai" && (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-gray-500">AI 模型</Label>
+                              <Select value={subject.params?.aiModel || ""} onValueChange={v => updateEvalSubject(idx, { params: { ...subject.params, aiModel: v } })}>
+                                <SelectTrigger className="mt-1 text-sm h-9">
+                                  <SelectValue placeholder="选择 AI 模型" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GPT-4">GPT-4</SelectItem>
+                                  <SelectItem value="GPT-3.5">GPT-3.5</SelectItem>
+                                  <SelectItem value="Claude">Claude</SelectItem>
+                                  <SelectItem value="文心一言">文心一言</SelectItem>
+                                  <SelectItem value="通义千问">通义千问</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">评分权重 (%)</Label>
+                              <Input type="number" value={subject.params?.weightPercent || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, weightPercent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">置信度阈值 (%)</Label>
+                              <Input type="number" value={subject.params?.confidenceThreshold || 80} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, confidenceThreshold: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
+                            </div>
+                            <div className="flex items-end pb-2">
+                              <div className="flex items-center gap-2">
+                                <Switch checked={subject.params?.autoReview || false} onCheckedChange={v => updateEvalSubject(idx, { params: { ...subject.params, autoReview: v } })} />
+                                <span className="text-xs text-gray-600">低置信度时自动人工复核</span>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {subject.type === "service_target" && (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-gray-500">评价方式</Label>
+                              <Select value={subject.params?.serviceMethod || ""} onValueChange={v => updateEvalSubject(idx, { params: { ...subject.params, serviceMethod: v } })}>
+                                <SelectTrigger className="mt-1 text-sm h-9">
+                                  <SelectValue placeholder="选择评价方式" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="满意度问卷">满意度问卷</SelectItem>
+                                  <SelectItem value="现场反馈">现场反馈</SelectItem>
+                                  <SelectItem value="线上评价">线上评价</SelectItem>
+                                  <SelectItem value="访谈记录">访谈记录</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">样本数量</Label>
+                              <Input type="number" value={subject.params?.sampleSize || 10} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, sampleSize: Math.max(1, parseInt(e.target.value) || 1) } })} className="mt-1 text-sm" min={1} />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-500">评分权重 (%)</Label>
+                              <Input type="number" value={subject.params?.weightPercent || 0} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, weightPercent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+
+        const MethodDialogContent = ({ methodKey }: { methodKey: string }) => {
+          const info = getMethodEvalInfo(methodKey)
+          return (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium">评价点配置</p>
+              </div>
+              <EvalPointConfigPanel points={info.points} field={info.field} />
+            </div>
+          )
+        }
+
+        const objectOptions = [
+          { key: "individual", label: "个人", desc: "以个人为单位" },
+          { key: "group", label: "小组", desc: "以小组为单位" },
+          { key: "individual_and_group", label: "个人+小组", desc: "同时考核" },
+        ] as const
+
+        const ObjectCard = ({ onClick }: { onClick: () => void }) => {
+          const opt = objectOptions.find(o => o.key === state.evalObject)
+          return (
+            <button onClick={onClick} className="flex-1 min-w-0 p-4 rounded-xl border text-left transition-all hover:border-primary/50 hover:bg-primary/[0.02] bg-white group">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                <span className="text-xs font-medium text-gray-500">测评对象</span>
+              </div>
+              <p className="text-sm font-semibold truncate">{opt?.label || "未选择"}</p>
+              <p className="text-xs text-gray-400 truncate mt-0.5">{opt?.desc || "点击配置"}</p>
+            </button>
+          )
+        }
+
+        const SubjectCard = ({ onClick }: { onClick: () => void }) => {
+          const enabledSubjects = state.evalSubjects.filter(s => s.enabled)
+          const totalWeight = enabledSubjects.reduce((s, sub) => s + (sub.params?.weightPercent || 0), 0)
+          return (
+            <button onClick={onClick} className="flex-1 min-w-0 p-4 rounded-xl border text-left transition-all hover:border-primary/50 hover:bg-primary/[0.02] bg-white group">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <UserCheck className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                  <span className="text-xs font-medium text-gray-500">测评主体</span>
+                </div>
+                {enabledSubjects.length > 0 && <Badge variant="outline" className="text-[10px]">{enabledSubjects.length} 类</Badge>}
+              </div>
+              <p className="text-sm font-semibold truncate">
+                {enabledSubjects.length === 0 ? "未配置" : enabledSubjects.map(s => subjectLabels[s.type]).join("、")}
+              </p>
+              <p className="text-xs text-gray-400 truncate mt-0.5">
+                {enabledSubjects.length === 0 ? "点击配置" : `总权重 ${totalWeight}%`}
+              </p>
+            </button>
+          )
+        }
+
+        const ResourceCard = ({ methodKey, onClick }: { methodKey: string; onClick: () => void }) => {
+          const summary = getMethodConfigSummary(methodKey)
+          return (
+            <button onClick={onClick} className="flex-1 min-w-0 p-4 rounded-xl border text-left transition-all hover:border-primary/50 hover:bg-primary/[0.02] bg-white group">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                  <span className="text-xs font-medium text-gray-500">测评资源</span>
+                </div>
+                {summary.configured && <CheckCircle2 className="h-3.5 w-3.5 text-primary" />}
+              </div>
+              <p className="text-sm font-semibold truncate">{summary.configured ? "已配置" : "未配置"}</p>
+              <p className="text-xs text-gray-400 truncate mt-0.5">{summary.summary || "点击配置"}</p>
+            </button>
+          )
+        }
+
+        const MethodCard = ({ methodKey, onClick }: { methodKey: string; onClick: () => void }) => {
+          const info = getMethodEvalInfo(methodKey)
+          const subTypeCount = Object.entries(
+            info.points.reduce((acc, p) => {
+              if (p.subType) acc[p.subType] = (acc[p.subType] || 0) + 1
+              return acc
+            }, {} as Record<string, number>)
+          ).map(([k, v]) => `${evalSubTypeLabels[k as EvalSubType]}${v}`)
+          return (
+            <button onClick={onClick} className="flex-1 min-w-0 p-4 rounded-xl border text-left transition-all hover:border-primary/50 hover:bg-primary/[0.02] bg-white group">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                  <span className="text-xs font-medium text-gray-500">评价方法</span>
+                </div>
+                {info.points.length > 0 && <Badge variant="outline" className="text-[10px]">{info.points.length} 点</Badge>}
+              </div>
+              <p className="text-sm font-semibold truncate">
+                {info.points.length === 0 ? "未配置评价点" : `${info.points.length} 个评价点`}
+              </p>
+              <p className="text-xs text-gray-400 truncate mt-0.5">
+                {subTypeCount.length === 0 ? "点击配置" : subTypeCount.join(" · ")}
+              </p>
+            </button>
+          )
         }
 
         return (
@@ -2420,184 +3411,74 @@ function EditCardDialog({
                 <p className="text-xs mt-1">请先在「配置任务测评形式」中选择评价类型</p>
               </div>
             ) : (
-              <div className="flex gap-4 flex-1 min-h-0">
-                {/* Left: Method list */}
-                <div className="w-64 shrink-0 flex flex-col min-h-0 border rounded-xl p-3 overflow-hidden">
-                  <p className="text-sm font-semibold mb-3 text-gray-700">评价方式列表</p>
-                  <div className="flex-1 overflow-y-auto space-y-2">
-                    {state.evaluationMethods.map(methodKey => {
-                      const method = evaluationMethodOptions.find(o => o.key === methodKey)
-                      if (!method) return null
-                      const isActive = activeMethod === methodKey
-                      const summary = getMethodConfigSummary(methodKey)
-                      return (
-                        <button
-                          key={methodKey}
-                          onClick={() => { setActiveMethod(methodKey); setActiveStep(0) }}
-                          className={cn("w-full flex items-center gap-2 p-3 rounded-lg border text-left transition-all", isActive ? "border-primary bg-primary/[0.03]" : "border-gray-200 hover:border-gray-300 bg-white")}
-                        >
-                          <div className={cn("p-1.5 rounded", method.color)}>{method.icon}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{method.label}</p>
-                            <p className="text-[11px] text-gray-400 truncate">{summary.configured ? "已配置" : "待配置"}</p>
-                          </div>
-                          {summary.configured && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Right: Step configuration */}
-                <div className="flex-1 flex flex-col min-h-0 border rounded-xl overflow-hidden">
-                  {/* Step tabs */}
-                  <div className="flex border-b shrink-0">
-                    {steps.map((step, idx) => (
-                      <button
-                        key={step}
-                        onClick={() => setActiveStep(idx)}
-                        className={cn("flex-1 py-3 text-sm font-medium transition-colors relative", activeStep === idx ? "text-primary" : "text-gray-500 hover:text-gray-700")}
-                      >
-                        <span className={cn("inline-flex items-center justify-center w-6 h-6 rounded-full text-xs mr-2", activeStep === idx ? "bg-primary text-white" : "bg-gray-100 text-gray-500")}>
-                          {idx + 1}
-                        </span>
-                        {step}
-                        {activeStep === idx && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Step content */}
-                  <div className="flex-1 overflow-y-auto p-5">
-                    {activeStep === 0 && (
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-500 mb-4">选择本任务的测评对象类型</p>
-                        <div className="grid grid-cols-3 gap-4">
-                          {[
-                            { key: "individual", label: "个人", desc: "以学生个人为单位进行测评" },
-                            { key: "group", label: "小组", desc: "以小组为单位进行测评" },
-                            { key: "individual_and_group", label: "个人+小组", desc: "同时考核个人和小组表现" },
-                          ].map(opt => (
-                            <button
-                              key={opt.key}
-                              onClick={() => updateState({ evalObject: opt.key as EvalObjectType })}
-                              className={cn("p-5 rounded-xl border text-left transition-all", state.evalObject === opt.key ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20" : "border-gray-200 hover:border-gray-300 bg-white")}
-                            >
-                              <p className="text-sm font-semibold mb-1">{opt.label}</p>
-                              <p className="text-xs text-gray-400">{opt.desc}</p>
-                            </button>
-                          ))}
+              <div className="flex-1 overflow-y-auto space-y-5 p-1">
+                {state.evaluationMethods.map(methodKey => {
+                  const method = evaluationMethodOptions.find(o => o.key === methodKey)
+                  if (!method) return null
+                  return (
+                    <div key={methodKey} className="border rounded-xl p-4 bg-gray-50/50">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={cn("p-2 rounded-lg", method.color)}>{method.icon}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold">{method.label}</p>
+                          <p className="text-xs text-gray-400">{method.desc}</p>
                         </div>
                       </div>
-                    )}
-
-                    {activeStep === 1 && (
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-500 mb-4">配置参与测评的主体及其参数</p>
-                        <div className="space-y-3">
-                          {state.evalSubjects.map((subject, idx) => (
-                            <div key={subject.type} className={cn("p-4 rounded-xl border transition-all", subject.enabled ? "border-primary bg-primary/[0.03]" : "border-gray-200 bg-white")}>
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                  <Switch checked={subject.enabled} onCheckedChange={v => updateEvalSubject(idx, { enabled: v })} />
-                                  <span className="text-sm font-medium">{subjectLabels[subject.type]}</span>
-                                </div>
-                              </div>
-                              {subject.enabled && (
-                                <div className="pl-12 space-y-3">
-                                  {subject.type === "teacher" && (
-                                    <>
-                                      <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                          <Label className="text-xs text-gray-500">专业背景要求</Label>
-                                          <Input value={subject.params?.teacherBackground || ""} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, teacherBackground: e.target.value } })} placeholder="例如：计算机相关专业" className="mt-1 text-sm" />
-                                        </div>
-                                        <div>
-                                          <Label className="text-xs text-gray-500">评分人数</Label>
-                                          <Input type="number" value={subject.params?.scorerCount || 1} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, scorerCount: Math.max(1, parseInt(e.target.value) || 1) } })} className="mt-1 text-sm" min={1} />
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Switch checked={subject.params?.requiresEnterpriseMentor || false} onCheckedChange={v => updateEvalSubject(idx, { params: { ...subject.params, requiresEnterpriseMentor: v } })} />
-                                        <span className="text-xs text-gray-600">需要企业导师参与</span>
-                                      </div>
-                                    </>
-                                  )}
-                                  {subject.type === "peer" && (
-                                    <div>
-                                      <Label className="text-xs text-gray-500">互评人数</Label>
-                                      <Input type="number" value={subject.params?.peerCount || 3} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, peerCount: Math.max(1, parseInt(e.target.value) || 1) } })} className="mt-1 text-sm w-32" min={1} />
-                                    </div>
-                                  )}
-                                  {subject.type === "ai" && (
-                                    <div>
-                                      <Label className="text-xs text-gray-500">AI 模型</Label>
-                                      <Input value={subject.params?.aiModel || ""} onChange={e => updateEvalSubject(idx, { params: { ...subject.params, aiModel: e.target.value } })} placeholder="例如：GPT-4" className="mt-1 text-sm" />
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                      <div className="flex gap-3">
+                        <ObjectCard onClick={() => openDialog("object", methodKey)} />
+                        <SubjectCard onClick={() => openDialog("subject", methodKey)} />
+                        <ResourceCard methodKey={methodKey} onClick={() => openDialog("resource", methodKey)} />
+                        <MethodCard methodKey={methodKey} onClick={() => openDialog("method", methodKey)} />
                       </div>
-                    )}
-
-                    {activeStep === 2 && activeMethod && (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-medium">
-                            配置 {evaluationMethodOptions.find(o => o.key === activeMethod)?.label} 的测评资源
-                          </p>
-                        </div>
-                        <EvalResourcePanel methodKey={activeMethod} />
-                      </div>
-                    )}
-
-                    {activeStep === 3 && (
-                      <div className="space-y-4">
-                        <p className="text-sm font-medium mb-2">等级转换规则配置</p>
-                        <div className="h-10 bg-gray-100 rounded-lg overflow-hidden flex mb-4">
-                          {[...state.gradeMapping].sort((a, b) => a.minScore - b.minScore).map(grade => {
-                            const width = grade.maxScore - grade.minScore + 1
-                            return (
-                              <div key={grade.id} className={cn("flex items-center justify-center text-white font-medium text-sm transition-all", grade.color)} style={{ width: `${width}%` }}>
-                                {grade.grade}
-                              </div>
-                            )
-                          })}
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          {[...state.gradeMapping].sort((a, b) => b.maxScore - a.maxScore).map((grade, index) => {
-                            const gradeColors = [
-                              { light: "bg-green-50 border-green-200 text-green-700" },
-                              { light: "bg-blue-50 border-blue-200 text-blue-700" },
-                              { light: "bg-yellow-50 border-yellow-200 text-yellow-700" },
-                              { light: "bg-red-50 border-red-200 text-red-700" },
-                            ]
-                            const colorConfig = gradeColors[index % gradeColors.length]
-                            return (
-                              <div key={grade.id} className={cn("rounded-lg border p-4 transition-all", colorConfig.light)}>
-                                <div className="flex items-center justify-between mb-3">
-                                  <Input value={grade.grade} onChange={e => updateState({ gradeMapping: state.gradeMapping.map(g => g.id === grade.id ? { ...g, grade: e.target.value } : g) })} className="w-20 h-8 text-center font-semibold" />
-                                  <div className={cn("w-4 h-4 rounded-full", grade.color)} />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Input type="number" value={grade.minScore} onChange={e => updateState({ gradeMapping: state.gradeMapping.map(g => g.id === grade.id ? { ...g, minScore: parseInt(e.target.value) || 0 } : g) })} className="w-16 h-7 text-center text-sm" min={0} max={100} />
-                                  <span className="text-gray-500">-</span>
-                                  <Input type="number" value={grade.maxScore} onChange={e => updateState({ gradeMapping: state.gradeMapping.map(g => g.id === grade.id ? { ...g, maxScore: parseInt(e.target.value) || 0 } : g) })} className="w-16 h-7 text-center text-sm" min={0} max={100} />
-                                  <span className="text-sm text-gray-500">分</span>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
+
+            <Dialog open={erDialogOpen === "object"} onOpenChange={v => !v && setErDialogOpen(null)}>
+              <DialogContent className="sm:max-w-[63vw] max-w-[63vw] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>测评对象配置</DialogTitle>
+                  <DialogDescription>选择本任务的测评对象类型，所有评价方式共用同一配置</DialogDescription>
+                </DialogHeader>
+                <ObjectDialogContent />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={erDialogOpen === "subject"} onOpenChange={v => !v && setErDialogOpen(null)}>
+              <DialogContent className="sm:max-w-[63vw] max-w-[63vw] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>测评主体配置</DialogTitle>
+                  <DialogDescription>配置参与测评的主体及其参数，所有评价方式共用同一配置</DialogDescription>
+                </DialogHeader>
+                <SubjectDialogContent />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={erDialogOpen === "resource"} onOpenChange={v => !v && setErDialogOpen(null)}>
+              <DialogContent className="sm:max-w-[63vw] max-w-[63vw] h-[92vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>测评资源配置</DialogTitle>
+                  <DialogDescription>
+                    配置 {erDialogMethod ? evaluationMethodOptions.find(o => o.key === erDialogMethod)?.label : ""} 的测评资源
+                  </DialogDescription>
+                </DialogHeader>
+                {erDialogMethod && <EvalResourceOnlyPanel methodKey={erDialogMethod} />}
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={erDialogOpen === "method"} onOpenChange={v => !v && setErDialogOpen(null)}>
+              <DialogContent className="sm:max-w-[63vw] max-w-[63vw] h-[92vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>评价方法配置</DialogTitle>
+                  <DialogDescription>
+                    配置 {erDialogMethod ? evaluationMethodOptions.find(o => o.key === erDialogMethod)?.label : ""} 的评价点与评分规则
+                  </DialogDescription>
+                </DialogHeader>
+                {erDialogMethod && <MethodDialogContent methodKey={erDialogMethod} />}
+              </DialogContent>
+            </Dialog>
           </div>
         )
       }
