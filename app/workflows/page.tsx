@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowRight, GitBranch, MoreHorizontal, Pencil, Plus, Trash2, User } from "lucide-react"
+import { GitBranch, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { approvalWorkflows } from "@/lib/mock-data"
 
 export default function WorkflowsPage() {
@@ -41,12 +49,12 @@ export default function WorkflowsPage() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              新建流程
+              新增审批流程
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>新建审批流程</DialogTitle>
+              <DialogTitle>新增审批流程</DialogTitle>
               <DialogDescription>
                 创建新的审批流程模板，定义审批步骤和角色。
               </DialogDescription>
@@ -58,8 +66,8 @@ export default function WorkflowsPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="description">流程说明</Label>
-                <Textarea 
-                  id="description" 
+                <Textarea
+                  id="description"
                   placeholder="描述该流程的适用场景和审批规则..."
                   rows={3}
                 />
@@ -89,77 +97,69 @@ export default function WorkflowsPage() {
         </Dialog>
       </div>
 
-      {/* Workflow cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {approvalWorkflows.map((workflow) => (
-          <Card key={workflow.id} className="group">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <GitBranch className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base">{workflow.name}</CardTitle>
-                    <CardDescription className="text-xs">
-                      创建于 {workflow.createdAt}
-                    </CardDescription>
-                  </div>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      编辑
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-red-500 focus:text-red-500">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      删除
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500 mb-4">{workflow.description}</p>
-              
-              {/* Steps visualization */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                {workflow.steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center gap-2">
-                    <div className="flex flex-col items-center min-w-[100px]">
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
-                        <User className="h-3.5 w-3.5 text-gray-400" />
-                        <span className="text-sm text-gray-700">{step.approverRole}</span>
+      {/* Workflow table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <GitBranch className="h-4 w-4" />
+            审批流程列表
+          </CardTitle>
+          <CardDescription>共 {approvalWorkflows.length} 个审批流程</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50">
+                  <TableHead className="text-xs font-medium text-slate-500">流程名称</TableHead>
+                  <TableHead className="text-xs font-medium text-slate-500">流程描述</TableHead>
+                  <TableHead className="text-xs font-medium text-slate-500">审批步骤</TableHead>
+                  <TableHead className="text-xs font-medium text-slate-500">创建时间</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {approvalWorkflows.map((workflow) => (
+                  <TableRow key={workflow.id}>
+                    <TableCell className="font-medium">{workflow.name}</TableCell>
+                    <TableCell className="text-sm text-gray-600">{workflow.description}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {workflow.steps.map((step) => (
+                          <Badge key={step.id} variant="outline" className="text-xs">
+                            {step.order}.{step.name}({step.approverRole})
+                          </Badge>
+                        ))}
                       </div>
-                      <span className="text-xs text-gray-400 mt-1">{step.name}</span>
-                    </div>
-                    {index < workflow.steps.length - 1 && (
-                      <ArrowRight className="h-4 w-4 text-gray-300 flex-shrink-0" />
-                    )}
-                  </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500">{workflow.createdAt}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            编辑
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-500 focus:text-red-500">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            删除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </div>
-              
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                <Badge variant="outline" className="text-xs">
-                  {workflow.steps.length} 个审批步骤
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -14,6 +14,7 @@ export interface Position {
 export interface Batch {
   id: string
   name: string
+  code: string
   departmentId: string
   departmentName: string
   professionId?: string
@@ -44,6 +45,9 @@ export interface ApprovalItem {
   id: string
   scenarioId: string
   scenarioName: string
+  scenarioCode: string
+  version: string
+  positionName?: string
   batchId: string
   batchName: string
   submitterId: string
@@ -53,6 +57,7 @@ export interface ApprovalItem {
   status: "pending" | "approved" | "rejected"
   submittedAt: string
   comments?: string
+  rejectReason?: string
 }
 
 export interface TodoItem {
@@ -404,6 +409,7 @@ export const batches: Batch[] = [
   {
     id: "batch-1",
     name: "2026春季电商实训场景开发",
+    code: "BG-2026-0001",
     departmentId: "dept-1",
     departmentName: "信息工程系",
     professionId: "prof-2",
@@ -417,6 +423,7 @@ export const batches: Batch[] = [
   {
     id: "batch-2",
     name: "2026春季前端开发场景建设",
+    code: "BG-2026-0002",
     departmentId: "dept-1",
     departmentName: "信息工程系",
     professionId: "prof-1",
@@ -430,6 +437,7 @@ export const batches: Batch[] = [
   {
     id: "batch-3",
     name: "2025秋季财务管理场景",
+    code: "BG-2025-0003",
     departmentId: "dept-2",
     departmentName: "经济管理系",
     professionId: "prof-3",
@@ -448,6 +456,9 @@ export const approvalItems: ApprovalItem[] = [
     id: "approval-1",
     scenarioId: "scenario-1",
     scenarioName: "企业级前端项目开发实战",
+    scenarioCode: "SC-2026-0001",
+    version: "v2.1",
+    positionName: "前端开发工程师",
     batchId: "batch-2",
     batchName: "2026春季前端开发场景建设",
     submitterId: "user-1",
@@ -461,6 +472,9 @@ export const approvalItems: ApprovalItem[] = [
     id: "approval-2",
     scenarioId: "scenario-4",
     scenarioName: "电商平台运营全流程",
+    scenarioCode: "SC-2026-0004",
+    version: "v3.0",
+    positionName: "电商运营专员",
     batchId: "batch-1",
     batchName: "2026春季电商实训场景开发",
     submitterId: "user-2",
@@ -469,6 +483,41 @@ export const approvalItems: ApprovalItem[] = [
     totalSteps: 3,
     status: "pending",
     submittedAt: "2026-04-15",
+  },
+  {
+    id: "approval-3",
+    scenarioId: "scenario-3",
+    scenarioName: "数据可视化分析实战",
+    scenarioCode: "SC-2026-0003",
+    version: "v1.2",
+    positionName: "数据分析师",
+    batchId: "batch-2",
+    batchName: "2026春季前端开发场景建设",
+    submitterId: "user-2",
+    submitterName: "李老师",
+    currentStep: 1,
+    totalSteps: 1,
+    status: "rejected",
+    submittedAt: "2026-04-10",
+    comments: "请补充数据清洗相关的任务节点",
+    rejectReason: "场景任务链不完整，缺少数据清洗环节，请补充后再提交。",
+  },
+  {
+    id: "approval-4",
+    scenarioId: "scenario-5",
+    scenarioName: "企业财务报表分析",
+    scenarioCode: "SC-2025-0005",
+    version: "v2.0",
+    positionName: "会计师",
+    batchId: "batch-3",
+    batchName: "2025秋季财务管理场景",
+    submitterId: "user-3",
+    submitterName: "王老师",
+    currentStep: 2,
+    totalSteps: 2,
+    status: "approved",
+    submittedAt: "2026-03-20",
+    comments: "内容完整，审核通过。",
   },
 ]
 

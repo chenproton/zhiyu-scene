@@ -51,42 +51,15 @@ export const senceNavigationTemplate = {
     ],
     sideNavItems: [
         {
-            id: "overview",
-            label: "平台总览",
-            icon: "barChart3",
-            href: "/dashboard",
-            matchers: ["/dashboard"],
-        },
-        {
-            id: "operations",
-            label: "建设运营",
-            icon: "settings",
-            children: [
-                { id: "batches", label: "批次管理", href: "/batches", matchers: ["/batches"] },
-                { id: "workflows", label: "审批流程管理", href: "/workflows", matchers: ["/workflows"] },
-                { id: "approvals", label: "审批中心", href: "/approvals", matchers: ["/approvals"] },
-            ],
-        },
-        {
-            id: "scenarios",
-            label: "场景建设",
+            id: "scene-construction",
+            label: "场景建设管理",
             icon: "layoutGrid",
-            children: [{ id: "hall", label: "场景大厅", href: "/", matchers: ["/"] }],
-        },
-        {
-            id: "abilities",
-            label: "能力评估",
-            icon: "graduationCap",
             children: [
-                { id: "positions", label: "岗位能力管理", href: "/positions", matchers: ["/positions"] },
-                { id: "students", label: "学生能力报告", href: "/students", matchers: ["/students"] },
+                { id: "scene-resource", label: "场景资源管理", href: "/", matchers: ["/"] },
+                { id: "batch-group", label: "批次分组管理", href: "/batches", matchers: ["/batches"] },
+                { id: "approval-workflow", label: "审批流程管理", href: "/workflows", matchers: ["/workflows"] },
+                { id: "resource-approval", label: "资源审批管理", href: "/approvals", matchers: ["/approvals"] },
             ],
-        },
-        {
-            id: "assets",
-            label: "资源协同",
-            icon: "folderKanban",
-            children: [{ id: "scenario-editor", label: "场景内容配置", href: "/", matchers: ["/scenarios"] }],
         },
     ],
 };

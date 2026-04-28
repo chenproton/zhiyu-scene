@@ -1,17 +1,10 @@
 "use client"
 
-import { Copy, Eye, MoreHorizontal, Send, Trash2, Undo2 } from "lucide-react"
+import { Copy, Eye, GitBranch, Pencil, Send, Undo2, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import type { Scenario } from "@/lib/mock-data"
 
@@ -29,9 +22,10 @@ interface ScenarioListProps {
   onSelectId?: (id: string, checked: boolean) => void
   onSelectAll?: (checked: boolean) => void
   onClone?: (scenario: Scenario) => void
-  onDelete?: (scenario: Scenario) => void
   onSubmitApproval?: (scenario: Scenario) => void
   onWithdrawApproval?: (scenario: Scenario) => void
+  onViewRejectReason?: (scenario: Scenario) => void
+  className?: string
 }
 
 export function ScenarioList({
@@ -40,9 +34,10 @@ export function ScenarioList({
   onSelectId,
   onSelectAll,
   onClone,
-  onDelete,
   onSubmitApproval,
   onWithdrawApproval,
+  onViewRejectReason,
+  className,
 }: ScenarioListProps) {
   if (scenarios.length === 0) return null
 
@@ -50,7 +45,7 @@ export function ScenarioList({
   const someSelected = scenarios.some((s) => selectedIds.includes(s.id)) && !allSelected
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+    <div className={cn("rounded-lg border border-slate-200 bg-white overflow-hidden", className)}>
       {/* Header */}
       <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-slate-50 text-xs font-medium text-slate-500 border-b border-slate-100 items-center">
         <div className="col-span-1 flex justify-center">
@@ -75,16 +70,13 @@ export function ScenarioList({
       <div className="divide-y divide-slate-100">
         {scenarios.map((scenario) => {
           const status = statusConfig[scenario.status]
-          const canSubmit = scenario.status === "draft" || scenario.status === "rejected"
-          const canWithdraw = scenario.status === "pending"
-          const canDelete = scenario.status === "draft" || scenario.status === "rejected"
           const isSelected = selectedIds.includes(scenario.id)
 
           return (
             <div
               key={scenario.id}
               className={cn(
-                "grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-slate-50 transition-colors group",
+                "grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-slate-50 transition-colors group relative",
                 isSelected && "bg-primary/5"
               )}
             >
@@ -117,72 +109,81 @@ export function ScenarioList({
                   {scenario.tasks.length}
                 </Link>
               </div>
-              <div className="col-span-1 text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
+              <div className="col-span-1 text-right relative">
+                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm z-10 px-2 py-1 rounded-lg shadow-sm border border-slate-100">
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+                    <Link href={`/scenarios/${scenario.id}/edit`}>
+                      <Eye className="mr-1 h-3 w-3" />
+                      查看详情
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+                    <Link href={`/scenarios/${scenario.id}/edit`}>
+                      <Pencil className="mr-1 h-3 w-3" />
+                      编辑
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+                    <Link href={`/scenarios/${scenario.id}/edit/tasks`}>
+                      <GitBranch className="mr-1 h-3 w-3" />
+                      编排任务
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onClone?.(scenario)
+                    }}
+                  >
+                    <Copy className="mr-1 h-3 w-3" />
+                    克隆场景
+                  </Button>
+                  {scenario.status === "draft" && onSubmitApproval && (
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSubmitApproval(scenario)
+                      }}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <Send className="mr-1 h-3 w-3" />
+                      提交审批
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/scenarios/${scenario.id}/edit`} className="flex items-center cursor-pointer">
-                        <Eye className="mr-2 h-4 w-4" />
-                        查看
-                      </Link>
-                    </DropdownMenuItem>
-                    {onClone && (
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onClone(scenario)
-                        }}
-                      >
-                        <Copy className="mr-2 h-4 w-4" />
-                        克隆
-                      </DropdownMenuItem>
-                    )}
-                    {canSubmit && onSubmitApproval && (
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onSubmitApproval(scenario)
-                        }}
-                      >
-                        <Send className="mr-2 h-4 w-4" />
-                        提交审核
-                      </DropdownMenuItem>
-                    )}
-                    {canWithdraw && onWithdrawApproval && (
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onWithdrawApproval(scenario)
-                        }}
-                      >
-                        <Undo2 className="mr-2 h-4 w-4" />
-                        撤回审批
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    {canDelete && onDelete && (
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onDelete(scenario)
-                        }}
-                        className="text-red-500 focus:text-red-500"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        删除
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  )}
+                  {scenario.status === "pending" && onWithdrawApproval && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-amber-600 hover:text-amber-700"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onWithdrawApproval(scenario)
+                      }}
+                    >
+                      <Undo2 className="mr-1 h-3 w-3" />
+                      撤回审批
+                    </Button>
+                  )}
+                  {scenario.status === "rejected" && onViewRejectReason && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onViewRejectReason(scenario)
+                      }}
+                    >
+                      <MessageSquare className="mr-1 h-3 w-3" />
+                      查看驳回原因
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )

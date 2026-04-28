@@ -14,9 +14,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { approvalItems } from "@/lib/mock-data"
+import type { ApprovalItem } from "@/lib/mock-data"
 
 const statusConfig = {
   pending: { label: "待审批", className: "bg-yellow-50 text-yellow-600" },
@@ -25,32 +34,145 @@ const statusConfig = {
 }
 
 export default function ApprovalsPage() {
-  const [selectedItem, setSelectedItem] = useState<typeof approvalItems[0] | null>(null)
+  const [items, setItems] = useState<ApprovalItem[]>(approvalItems)
+  const [selectedItem, setSelectedItem] = useState<ApprovalItem | null>(null)
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
-  const [rejectComment, setRejectComment] = useState("")
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false)
+  const [comment, setComment] = useState("")
 
-  const pendingItems = approvalItems.filter(a => a.status === "pending")
-  const processedItems = approvalItems.filter(a => a.status !== "pending")
+  const pendingItems = items.filter((a) => a.status === "pending")
+  const processedItems = items.filter((a) => a.status !== "pending")
 
-  const handleApprove = (item: typeof approvalItems[0]) => {
-    // Approval logic would go here
-    console.log("Approved:", item.id)
+  const handleApproveClick = (item: ApprovalItem) => {
+    setSelectedItem(item)
+    setComment("")
+    setIsApproveDialogOpen(true)
   }
 
-  const handleReject = () => {
-    // Reject logic would go here
-    console.log("Rejected:", selectedItem?.id, "Comment:", rejectComment)
-    setIsRejectDialogOpen(false)
-    setRejectComment("")
+  const handleApproveConfirm = () => {
+    if (!selectedItem) return
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === selectedItem.id
+          ? { ...item, status: "approved" as const, comments: comment || "审批通过。" }
+          : item
+      )
+    )
+    setIsApproveDialogOpen(false)
+    setComment("")
     setSelectedItem(null)
   }
 
+  const handleRejectClick = (item: ApprovalItem) => {
+    setSelectedItem(item)
+    setComment("")
+    setIsRejectDialogOpen(true)
+  }
+
+  const handleRejectConfirm = () => {
+    if (!selectedItem) return
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === selectedItem.id
+          ? { ...item, status: "rejected" as const, comments: comment, rejectReason: comment }
+          : item
+      )
+    )
+    setIsRejectDialogOpen(false)
+    setComment("")
+    setSelectedItem(null)
+  }
+
+  const renderTable = (data: ApprovalItem[]) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <CheckSquare className="h-4 w-4" />
+          审批记录列表
+        </CardTitle>
+        <CardDescription>共 {data.length} 条审批记录</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-lg border border-slate-200 bg-white overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50">
+                <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">场景名称</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">场景编码</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 text-center whitespace-nowrap">版本</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">所属岗位</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">所属批次分组</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">创建人</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">提交审批日期</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 text-center whitespace-nowrap">状态</TableHead>
+                <TableHead className="text-xs font-medium text-slate-500 text-right whitespace-nowrap sticky right-0 bg-slate-50 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-12 text-gray-500">
+                    暂无数据
+                  </TableCell>
+                </TableRow>
+              ) : (
+                data.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium whitespace-nowrap">{item.scenarioName}</TableCell>
+                    <TableCell className="text-sm text-gray-600 whitespace-nowrap">{item.scenarioCode}</TableCell>
+                    <TableCell className="text-center text-sm text-gray-600 whitespace-nowrap">{item.version}</TableCell>
+                    <TableCell className="text-sm text-gray-600 whitespace-nowrap">{item.positionName || "-"}</TableCell>
+                    <TableCell className="text-sm text-gray-600 whitespace-nowrap">{item.batchName}</TableCell>
+                    <TableCell className="text-sm text-gray-600 whitespace-nowrap">{item.submitterName}</TableCell>
+                    <TableCell className="text-sm text-gray-600 whitespace-nowrap">{item.submittedAt}</TableCell>
+                    <TableCell className="text-center whitespace-nowrap">
+                      <Badge variant="secondary" className={statusConfig[item.status].className}>
+                        {statusConfig[item.status].label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap sticky right-0 bg-white z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/scenarios/${item.scenarioId}/edit`}>
+                            <Eye className="mr-1 h-3 w-3" />
+                            查看
+                          </Link>
+                        </Button>
+                        {item.status === "pending" && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => handleRejectClick(item)}
+                            >
+                              <X className="mr-1 h-3 w-3" />
+                              驳回
+                            </Button>
+                            <Button size="sm" onClick={() => handleApproveClick(item)}>
+                              <Check className="mr-1 h-3 w-3" />
+                              通过
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-800">审批中心</h1>
-        <p className="text-sm text-gray-500 mt-1">审核场景和批次的提交申请</p>
+        <h1 className="text-2xl font-semibold text-gray-800">资源审批管理</h1>
+        <p className="text-sm text-gray-500 mt-1">审核场景提交申请，管理审批流程</p>
       </div>
 
       <Tabs defaultValue="pending">
@@ -63,61 +185,12 @@ export default function ApprovalsPage() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="processed">已处理</TabsTrigger>
+          <TabsTrigger value="processed">已审批</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="mt-6">
           {pendingItems.length > 0 ? (
-            <div className="space-y-4">
-              {pendingItems.map((item) => (
-                <Card key={item.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary" className={statusConfig[item.status].className}>
-                            {statusConfig[item.status].label}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            步骤 {item.currentStep}/{item.totalSteps}
-                          </Badge>
-                        </div>
-                        <h3 className="font-semibold text-gray-800 text-lg">{item.scenarioName}</h3>
-                        <p className="text-sm text-gray-500 mt-1">批次: {item.batchName}</p>
-                        <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
-                          <span>提交人: {item.submitterName}</span>
-                          <span>提交时间: {item.submittedAt}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/scenarios/${item.scenarioId}/edit`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            查看详情
-                          </Link>
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                          onClick={() => {
-                            setSelectedItem(item)
-                            setIsRejectDialogOpen(true)
-                          }}
-                        >
-                          <X className="mr-2 h-4 w-4" />
-                          驳回
-                        </Button>
-                        <Button size="sm" onClick={() => handleApprove(item)}>
-                          <Check className="mr-2 h-4 w-4" />
-                          通过
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            renderTable(pendingItems)
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
@@ -131,36 +204,7 @@ export default function ApprovalsPage() {
 
         <TabsContent value="processed" className="mt-6">
           {processedItems.length > 0 ? (
-            <div className="space-y-4">
-              {processedItems.map((item) => (
-                <Card key={item.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary" className={statusConfig[item.status].className}>
-                            {statusConfig[item.status].label}
-                          </Badge>
-                        </div>
-                        <h3 className="font-medium text-gray-800">{item.scenarioName}</h3>
-                        <p className="text-sm text-gray-500 mt-1">批次: {item.batchName}</p>
-                        {item.comments && (
-                          <p className="text-sm text-gray-600 mt-2 p-2 bg-gray-50 rounded">
-                            审批意见: {item.comments}
-                          </p>
-                        )}
-                      </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/scenarios/${item.scenarioId}/edit`}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          查看
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            renderTable(processedItems)
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
@@ -171,6 +215,34 @@ export default function ApprovalsPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Approve dialog */}
+      <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>通过审批</DialogTitle>
+            <DialogDescription>
+              请填写审批备注（可选），确认通过该场景审批。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="请输入审批备注..."
+              rows={4}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsApproveDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleApproveConfirm}>
+              确认通过
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reject dialog */}
       <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
@@ -183,8 +255,8 @@ export default function ApprovalsPage() {
           </DialogHeader>
           <div className="py-4">
             <Textarea
-              value={rejectComment}
-              onChange={(e) => setRejectComment(e.target.value)}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
               placeholder="请详细说明需要修改的内容..."
               rows={4}
             />
@@ -193,10 +265,10 @@ export default function ApprovalsPage() {
             <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
               取消
             </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleReject}
-              disabled={!rejectComment.trim()}
+            <Button
+              variant="destructive"
+              onClick={handleRejectConfirm}
+              disabled={!comment.trim()}
             >
               确认驳回
             </Button>
