@@ -10,9 +10,21 @@ function AnnotationEditor({ x, y, theme, onSave, onCancel }) {
     const [imageUrl, setImageUrl] = (0, react_1.useState)();
     const inputRef = (0, react_1.useRef)(null);
     const fileInputRef = (0, react_1.useRef)(null);
+    const containerRef = (0, react_1.useRef)(null);
     const primaryColor = theme?.primary ?? '#ef4444';
     (0, react_1.useEffect)(() => {
         inputRef.current?.focus();
+    }, []);
+    // 阻止 focusin 冒泡到 document，避免被 Dialog/Sheet 的 focus trap 抢回焦点
+    (0, react_1.useEffect)(() => {
+        const el = containerRef.current;
+        if (!el)
+            return;
+        const stopPropagation = (e) => {
+            e.stopPropagation();
+        };
+        el.addEventListener('focusin', stopPropagation, true);
+        return () => el.removeEventListener('focusin', stopPropagation, true);
     }, []);
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -30,7 +42,7 @@ function AnnotationEditor({ x, y, theme, onSave, onCancel }) {
             reader.readAsDataURL(file);
         }
     };
-    return ((0, jsx_runtime_1.jsxs)("div", { className: "absolute bg-white rounded-lg shadow-lg border border-gray-100 p-4 w-72 pointer-events-auto", style: {
+    return ((0, jsx_runtime_1.jsxs)("div", { ref: containerRef, className: "absolute bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-72 pointer-events-auto", style: {
             left: `${x}%`,
             top: `${y}%`,
             transform: 'translate(-50%, -10px)',

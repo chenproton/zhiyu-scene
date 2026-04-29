@@ -571,7 +571,7 @@ export default function SceneHallPage() {
                     新建场景
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[450px]">
+                <DialogContent className="sm:max-w-[450px]" annotationContext="modal-create-scenario">
                   <DialogHeader>
                     <DialogTitle>新建实践场景</DialogTitle>
                     <DialogDescription>

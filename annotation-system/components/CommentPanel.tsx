@@ -21,7 +21,7 @@ interface CommentPanelProps {
 export function CommentPanel({
   annotation,
   comments,
-  zIndex = 500,
+  zIndex = 2147483647,
   theme,
   onAddComment,
   onDeleteComment,
@@ -49,6 +49,19 @@ export function CommentPanel({
     updateIsMobile();
     window.addEventListener('resize', updateIsMobile);
     return () => window.removeEventListener('resize', updateIsMobile);
+  }, []);
+
+  // 阻止 focusin 冒泡到 document，避免被 Dialog/Sheet 的 focus trap 抢回焦点
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+
+    const stopPropagation = (e: Event) => {
+      e.stopPropagation();
+    };
+
+    el.addEventListener('focusin', stopPropagation, true);
+    return () => el.removeEventListener('focusin', stopPropagation, true);
   }, []);
 
   // ESC 关闭面板
@@ -185,12 +198,12 @@ export function CommentPanel({
   return (
     <div
       ref={panelRef}
-      className={`fixed bg-white shadow-lg border-l border-gray-100 flex flex-col pointer-events-auto ann-panel ${
-        isMobile ? 'bottom-0 left-0 right-0 h-[70vh] rounded-t-xl border-t' : 'right-0 top-0 h-full w-96'
+      className={`fixed bg-white shadow-xl border-l border-gray-200 flex flex-col pointer-events-auto ann-panel ${
+        isMobile ? 'bottom-0 left-0 right-0 h-[70vh] rounded-t-2xl border-t' : 'right-0 top-0 h-full w-96'
       }`}
       style={{ zIndex: zIndex + 500 }}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
@@ -300,7 +313,7 @@ export function CommentPanel({
         </div>
       </div>
 
-      <div className="p-4 border-t border-gray-100 bg-white">
+      <div className="p-4 border-t border-gray-200 bg-white">
         {commentImageUrl && (
           <div className="mb-2 relative inline-block">
             <img src={commentImageUrl} alt="Preview" className="h-20 w-20 object-cover rounded-lg border border-gray-200" />

@@ -17,11 +17,25 @@ export function AnnotationEditor({ x, y, theme, onSave, onCancel }: AnnotationEd
   const [imageUrl, setImageUrl] = useState<string | undefined>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const primaryColor = theme?.primary ?? '#ef4444';
 
   useEffect(() => {
     inputRef.current?.focus();
+  }, []);
+
+  // 阻止 focusin 冒泡到 document，避免被 Dialog/Sheet 的 focus trap 抢回焦点
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const stopPropagation = (e: Event) => {
+      e.stopPropagation();
+    };
+
+    el.addEventListener('focusin', stopPropagation, true);
+    return () => el.removeEventListener('focusin', stopPropagation, true);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,7 +58,8 @@ export function AnnotationEditor({ x, y, theme, onSave, onCancel }: AnnotationEd
 
   return (
     <div
-      className="absolute bg-white rounded-lg shadow-lg border border-gray-100 p-4 w-72 pointer-events-auto"
+      ref={containerRef}
+      className="absolute bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-72 pointer-events-auto"
       style={{
         left: `${x}%`,
         top: `${y}%`,

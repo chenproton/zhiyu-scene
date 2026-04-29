@@ -31,6 +31,60 @@
       "content": "sa",
       "id": "2c5acf76-83d3-44dd-af2a-dfd7152d75da",
       "createdAt": 1777256676481
+    },
+    {
+      "page": "/",
+      "context": "default",
+      "x": 33.485639686684074,
+      "y": 43.05705059203444,
+      "content": "d",
+      "id": "0d0e3f15-ad60-4ac3-b394-88f33a78d0e7",
+      "createdAt": 1777426491717
+    },
+    {
+      "page": "/",
+      "context": "modal-create-scenario",
+      "x": 71.20535714285714,
+      "y": 9.203444564047363,
+      "content": "的",
+      "id": "35dcd3bb-2668-4741-b2c3-6f9e6de454a0",
+      "createdAt": 1777435581872
+    },
+    {
+      "page": "/",
+      "context": "default",
+      "x": 43.22916666666667,
+      "y": 56.512378902045214,
+      "content": "的",
+      "id": "62cf013d-9e63-40f0-b609-389424c24a37",
+      "createdAt": 1777435786193
+    },
+    {
+      "page": "/batches",
+      "context": "default",
+      "x": 41.354166666666664,
+      "y": 63.18622174381054,
+      "content": "的",
+      "id": "5b764519-8e45-42d1-94b2-0075ff14bbd6",
+      "createdAt": 1777436142456
+    },
+    {
+      "page": "/scenarios/scenario-1/edit",
+      "context": "default",
+      "x": 20.625,
+      "y": 43.48762109795479,
+      "content": "的",
+      "id": "a75d36c9-37d6-4c05-ab42-bf59e2a8018e",
+      "createdAt": 1777437481897
+    },
+    {
+      "page": "/scenarios/scenario-1/edit/tasks",
+      "context": "default",
+      "x": 46.25,
+      "y": 37.13670613562971,
+      "content": "的",
+      "id": "ce699891-f20d-4f65-9630-6dc6517d013b",
+      "createdAt": 1777437488156
     }
   ],
   "comments": [

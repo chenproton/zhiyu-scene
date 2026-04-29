@@ -7,9 +7,21 @@ export function AnnotationEditor({ x, y, theme, onSave, onCancel }) {
     const [imageUrl, setImageUrl] = useState();
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
+    const containerRef = useRef(null);
     const primaryColor = theme?.primary ?? '#ef4444';
     useEffect(() => {
         inputRef.current?.focus();
+    }, []);
+    // 阻止 focusin 冒泡到 document，避免被 Dialog/Sheet 的 focus trap 抢回焦点
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el)
+            return;
+        const stopPropagation = (e) => {
+            e.stopPropagation();
+        };
+        el.addEventListener('focusin', stopPropagation, true);
+        return () => el.removeEventListener('focusin', stopPropagation, true);
     }, []);
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -27,7 +39,7 @@ export function AnnotationEditor({ x, y, theme, onSave, onCancel }) {
             reader.readAsDataURL(file);
         }
     };
-    return (_jsxs("div", { className: "absolute bg-white rounded-lg shadow-lg border border-gray-100 p-4 w-72 pointer-events-auto", style: {
+    return (_jsxs("div", { ref: containerRef, className: "absolute bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-72 pointer-events-auto", style: {
             left: `${x}%`,
             top: `${y}%`,
             transform: 'translate(-50%, -10px)',

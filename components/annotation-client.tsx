@@ -23,7 +23,7 @@ export function AnnotationClient() {
         panelBg: "#ffffff",
         panelText: "#1f2937",
       }}
-      zIndex={40}
+      zIndex={50}
     />
   )
 }
