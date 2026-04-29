@@ -69,6 +69,10 @@ export function PlatformTopNav({ config }) {
     return (_jsxs("header", { className: "fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-gray-100 bg-white px-6 shadow-sm", children: [_jsxs("div", { className: "flex items-center gap-8", children: [_jsxs(Link, { href: config.brandHref || "/", className: "flex items-center gap-2", children: [_jsx("div", { className: "flex h-8 w-8 items-center justify-center rounded-lg bg-primary", children: _jsx(BrandIcon, { className: "h-4 w-4 text-primary-foreground" }) }), _jsx("span", { className: "text-base font-semibold text-gray-800", children: config.brandTitle })] }), _jsx("nav", { className: "flex items-center gap-1", children: config.topNavItems.map((item) => {
                             const Icon = resolvePlatformIcon(item.icon);
                             const active = isTopItemActive(pathname, item);
+                            const disabled = item.id === "portal-home" || item.id === "workspace";
+                            if (disabled) {
+                                return (_jsxs("span", { className: "relative flex items-center gap-1.5 rounded-md px-4 py-2 text-sm text-gray-400 cursor-not-allowed", children: [_jsx(Icon, { className: "h-4 w-4" }), item.label] }, item.id));
+                            }
                             return (_jsxs(Link, { href: item.href, className: cn("relative flex items-center gap-1.5 rounded-md px-4 py-2 text-sm transition-colors", active ? "font-medium text-primary" : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"), children: [_jsx(Icon, { className: "h-4 w-4" }), item.label, active ? _jsx("span", { className: "absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-primary" }) : null] }, item.id));
                         }) })] }), _jsxs("div", { className: "flex items-center gap-6", children: [config.showCurrentTime !== false && mounted ? _jsx("div", { className: "text-sm text-gray-400", children: currentTime }) : null, config.showUserMenu !== false ? (_jsxs("div", { className: "relative", ref: menuRef, children: [_jsxs("button", { type: "button", onClick: () => setMenuOpen((value) => !value), className: "flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-gray-50", children: [_jsx("div", { className: "flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground", children: (config.currentUserName || "管理员").slice(0, 1) }), _jsxs("div", { className: "text-left", children: [_jsx("div", { className: "text-sm text-gray-700", children: config.currentUserName || "管理员" }), _jsx("div", { className: "text-xs text-gray-400", children: config.currentUserRoleLabel || config.currentPlatformLabel })] }), _jsx(ChevronDown, { className: "h-4 w-4 text-gray-400" })] }), menuOpen && userMenuItems.length > 0 ? (_jsx("div", { className: "absolute right-0 top-[calc(100%+0.5rem)] w-48 rounded-lg border border-gray-100 bg-white py-1 shadow-lg", children: userMenuItems.map((item, index) => {
                                     const Icon = item.icon ? resolvePlatformIcon(item.icon) : null;
@@ -99,9 +103,23 @@ export function PlatformSideNav({ config }) {
                     const hasChildren = Boolean(item.children?.length);
                     const active = isSideItemActive(pathname, item);
                     const isExpanded = expandedItems.includes(item.id);
-                    return (_jsxs("div", { className: "mb-1", children: [hasChildren ? (_jsxs("button", { type: "button", onClick: () => toggleExpand(item.id), className: cn("flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors", active ? "bg-primary/5 font-medium text-primary" : "text-gray-600 hover:bg-gray-50"), children: [_jsxs("div", { className: "flex items-center gap-2.5", children: [_jsx(Icon, { className: "h-4 w-4" }), item.label] }), isExpanded ? (_jsx(ChevronDown, { className: "h-4 w-4 text-gray-400" })) : (_jsx(ChevronRight, { className: "h-4 w-4 text-gray-400" }))] })) : (_jsxs(Link, { href: item.href || "/", className: cn("flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors", active ? "bg-primary text-white font-medium" : "text-gray-600 hover:bg-gray-50"), children: [_jsx(Icon, { className: "h-4 w-4" }), item.label] })), hasChildren && isExpanded ? (_jsx("div", { className: "ml-4 mt-1 space-y-0.5 border-l-2 border-gray-100 pl-3", children: item.children?.map((child) => (_jsx(Link, { href: child.href, className: cn("block rounded-lg px-3 py-2 text-sm transition-colors", matchesPath(pathname, child.href, child.matchers)
-                                        ? "bg-primary text-white font-medium"
-                                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"), children: child.label }, child.id))) })) : null] }, item.id));
+                    return (_jsxs("div", { className: "mb-1", children: [hasChildren ? (_jsxs("button", { type: "button", onClick: () => toggleExpand(item.id), className: cn("flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors", active ? "bg-primary/5 font-medium text-primary" : "text-gray-600 hover:bg-gray-50"), children: [_jsxs("div", { className: "flex items-center gap-2.5", children: [_jsx(Icon, { className: "h-4 w-4" }), item.label] }), isExpanded ? (_jsx(ChevronDown, { className: "h-4 w-4 text-gray-400" })) : (_jsx(ChevronRight, { className: "h-4 w-4 text-gray-400" }))] })) : (_jsxs(Link, { href: item.href || "/", className: cn("flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors", active ? "bg-primary text-white font-medium" : "text-gray-600 hover:bg-gray-50"), children: [_jsx(Icon, { className: "h-4 w-4" }), item.label] })), hasChildren && isExpanded ? (_jsx("div", { className: "ml-4 mt-1 space-y-0.5 border-l-2 border-gray-100 pl-3", children: (() => {
+                                    // 找出所有匹配的子菜单，选择 href 最长的作为最佳匹配（最精确）
+                                    const matchedChildren = item.children?.filter((child) => matchesPath(pathname, child.href, child.matchers)) || [];
+                                    const bestMatch = matchedChildren.reduce((best, child) => {
+                                        if (!best)
+                                            return child;
+                                        return (child.href?.length || 0) > (best.href?.length || 0)
+                                            ? child
+                                            : best;
+                                    }, null);
+                                    return item.children?.map((child) => {
+                                        const isChildActive = bestMatch?.id === child.id;
+                                        return (_jsx(Link, { href: child.href, className: cn("block rounded-lg px-3 py-2 text-sm transition-colors", isChildActive
+                                                ? "bg-primary text-white font-medium"
+                                                : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"), children: child.label }, child.id));
+                                    });
+                                })() })) : null] }, item.id));
                 }) })] }));
 }
 export function PlatformShell({ config, children, }) {

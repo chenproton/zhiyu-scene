@@ -62,6 +62,7 @@ exports.senceNavigationTemplate = {
                 { id: "batch-group", label: "批次分组管理", href: "/batches", matchers: ["/batches"] },
                 { id: "approval-workflow", label: "审批流程管理", href: "/workflows", matchers: ["/workflows"] },
                 { id: "resource-approval", label: "资源审批管理", href: "/approvals", matchers: ["/approvals"] },
+                { id: "student-grading", label: "学生评分管理", href: "/approvals/grading", matchers: ["/approvals/grading"] },
             ],
         },
     ],

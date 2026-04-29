@@ -235,10 +235,10 @@ const defaultDescriptionTemplate = `任务描述
 一票否决项：若出现 [如抄袭/泄密/核心事实错误]，视为未通过。`
 
 const defaultGradeMapping: GradeMapping[] = [
-  { id: "grade-1", grade: "A", minScore: 90, maxScore: 100, color: "bg-green-500" },
-  { id: "grade-2", grade: "B", minScore: 75, maxScore: 89, color: "bg-blue-500" },
-  { id: "grade-3", grade: "C", minScore: 60, maxScore: 74, color: "bg-yellow-500" },
-  { id: "grade-4", grade: "D", minScore: 0, maxScore: 59, color: "bg-red-500" },
+  { id: "grade-1", grade: "A", minScore: 90, maxScore: 100, color: "bg-green-500", remark: "表现卓越，完全超出预期要求，可作为标杆示范" },
+  { id: "grade-2", grade: "B", minScore: 75, maxScore: 89, color: "bg-blue-500", remark: "表现良好，达到预期要求，仅有少量可改进之处" },
+  { id: "grade-3", grade: "C", minScore: 60, maxScore: 74, color: "bg-yellow-500", remark: "基本达标，核心要求已满足，但存在明显不足" },
+  { id: "grade-4", grade: "D", minScore: 0, maxScore: 59, color: "bg-red-500", remark: "未达标准，核心要求未完成，需要重新学习或训练" },
 ]
 
 const questionBankLabels: Record<string, string> = {
@@ -331,6 +331,7 @@ interface EvalPoint {
   abilityPointIds?: string[]
   scoringMethod?: "score" | "level" | "rubric"
   gradeMapping?: GradeMapping[]
+  weight?: number
 }
 
 interface ScoringConfig {
@@ -433,20 +434,20 @@ const defaultEvalSubjects: EvalSubjectConfig[] = [
 ]
 
 const mockDefaultEvalPoints: EvalPoint[] = [
-  { id: "ep-mock-1", name: "组件封装与复用能力符合预期", desc: "", subType: "knowledge_mastery", knowledgePointIds: ["kp-1"], abilityPointIds: ["ab-1"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-2", name: "状态管理方案选择合理且运用熟练", desc: "", subType: "knowledge_mastery", knowledgePointIds: ["kp-2"], abilityPointIds: ["ab-2"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-3", name: "API接口设计清晰规范、易于维护", desc: "", subType: "operation_standard", knowledgePointIds: ["kp-4"], abilityPointIds: ["ab-3"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-4", name: "数据库模型设计高效且符合范式要求", desc: "", subType: "operation_standard", knowledgePointIds: ["kp-5"], abilityPointIds: ["ab-4"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-5", name: "功能需求实现完整，无明显遗漏", desc: "", subType: "task_completion", knowledgePointIds: ["kp-3"], abilityPointIds: ["ab-5"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-6", name: "代码规范性强，结构清晰易于维护", desc: "", subType: "result_quality", knowledgePointIds: ["kp-6"], abilityPointIds: ["ab-6"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-7", name: "团队沟通顺畅，协作配合积极主动", desc: "", subType: "communication", knowledgePointIds: ["kp-7"], abilityPointIds: ["ab-7"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-8", name: "问题分析思路清晰，解决方案有效", desc: "", subType: "knowledge_mastery", knowledgePointIds: ["kp-1"], abilityPointIds: ["ab-1"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-9", name: "响应式布局适配多种终端且表现一致", desc: "", subType: "operation_standard", knowledgePointIds: ["kp-2"], abilityPointIds: ["ab-2"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-10", name: "项目文档编写完整、准确、可读性强", desc: "", subType: "result_quality", knowledgePointIds: ["kp-3"], abilityPointIds: ["ab-3"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-11", name: "技术方案具有创新性，能突破常规思路", desc: "", subType: "innovation", knowledgePointIds: ["kp-4"], abilityPointIds: ["ab-4"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-12", name: "面对突发问题能冷静分析并快速解决", desc: "", subType: "adaptability", knowledgePointIds: ["kp-5"], abilityPointIds: ["ab-5"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-13", name: "职业素养良好，按时交付并遵守规范", desc: "", subType: "professionalism", knowledgePointIds: ["kp-6"], abilityPointIds: ["ab-6"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
-  { id: "ep-mock-14", name: "协作能力强，能有效推动团队目标达成", desc: "", subType: "collaboration", knowledgePointIds: ["kp-7"], abilityPointIds: ["ab-7"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+  { id: "ep-mock-1", name: "组件封装与复用能力符合预期", desc: "", subType: "knowledge_mastery", knowledgePointIds: ["kp-1"], abilityPointIds: ["ab-1"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-2", name: "状态管理方案选择合理且运用熟练", desc: "", subType: "knowledge_mastery", knowledgePointIds: ["kp-2"], abilityPointIds: ["ab-2"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-3", name: "API接口设计清晰规范、易于维护", desc: "", subType: "operation_standard", knowledgePointIds: ["kp-4"], abilityPointIds: ["ab-3"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-4", name: "数据库模型设计高效且符合范式要求", desc: "", subType: "operation_standard", knowledgePointIds: ["kp-5"], abilityPointIds: ["ab-4"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-5", name: "功能需求实现完整，无明显遗漏", desc: "", subType: "task_completion", knowledgePointIds: ["kp-3"], abilityPointIds: ["ab-5"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-6", name: "代码规范性强，结构清晰易于维护", desc: "", subType: "result_quality", knowledgePointIds: ["kp-6"], abilityPointIds: ["ab-6"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-7", name: "团队沟通顺畅，协作配合积极主动", desc: "", subType: "communication", knowledgePointIds: ["kp-7"], abilityPointIds: ["ab-7"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-8", name: "问题分析思路清晰，解决方案有效", desc: "", subType: "knowledge_mastery", knowledgePointIds: ["kp-1"], abilityPointIds: ["ab-1"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-9", name: "响应式布局适配多种终端且表现一致", desc: "", subType: "operation_standard", knowledgePointIds: ["kp-2"], abilityPointIds: ["ab-2"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-10", name: "项目文档编写完整、准确、可读性强", desc: "", subType: "result_quality", knowledgePointIds: ["kp-3"], abilityPointIds: ["ab-3"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-11", name: "技术方案具有创新性，能突破常规思路", desc: "", subType: "innovation", knowledgePointIds: ["kp-4"], abilityPointIds: ["ab-4"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-12", name: "面对突发问题能冷静分析并快速解决", desc: "", subType: "adaptability", knowledgePointIds: ["kp-5"], abilityPointIds: ["ab-5"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-13", name: "职业素养良好，按时交付并遵守规范", desc: "", subType: "professionalism", knowledgePointIds: ["kp-6"], abilityPointIds: ["ab-6"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
+  { id: "ep-mock-14", name: "协作能力强，能有效推动团队目标达成", desc: "", subType: "collaboration", knowledgePointIds: ["kp-7"], abilityPointIds: ["ab-7"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
 ]
 
 function makeDefaultTaskState(count: number, index: number): TaskState {
@@ -509,6 +510,7 @@ export default function TasksEditPage() {
         abilityPointIds: t.abilityPoints?.slice(0, 2),
         scoringMethod: "level",
         gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)),
+        weight: 10,
       }
       if (idx % 2 === 0) randomDraw.push(point)
       else review.push(point)
@@ -2725,6 +2727,9 @@ function EditCardDialog({
                         <Input type="number" value={g.maxScore} onChange={e => onChange(gradeMapping.map(x => x.id === g.id ? { ...x, maxScore: parseInt(e.target.value) || 0 } : x))} className="w-16 h-6 text-center text-xs" min={0} max={100} />
                         <span className="text-xs text-gray-500">分</span>
                       </div>
+                      <div className="mt-1.5">
+                        <Input value={g.remark || ""} onChange={e => onChange(gradeMapping.map(x => x.id === g.id ? { ...x, remark: e.target.value } : x))} className="h-7 text-[10px] bg-white/70" placeholder="等级备注说明（一句话辅助教师参考）" />
+                      </div>
                     </div>
                   )
                 })}
@@ -4011,6 +4016,7 @@ function EditCardDialog({
 
         const MethodDialogContent = ({ methodKey }: { methodKey: string }) => {
           const info = getMethodEvalInfo(methodKey)
+          const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
           const rubricIdField = methodKey === "random_draw" ? "randomDrawRubricId" : "reviewRubricId"
           const currentRubricId = (state as any)[rubricIdField] as string | null
           const view = methodDialogViews[methodKey] || "list"
@@ -4106,25 +4112,137 @@ function EditCardDialog({
                     </div>
                   </div>
                 </div>
-                <div className="border rounded-xl p-4">
+                <div className="border rounded-xl p-4 overflow-hidden">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium">评价点配置</p>
-                    <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })}>
-                      <Plus className="h-3.5 w-3.5 mr-1" />添加评价点
-                    </Button>
+                    <p className="text-sm font-medium">评价量规配置表</p>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setExpandedRows(prev => {
+                        if (prev.size === info.points.length) return new Set()
+                        return new Set(info.points.map(p => p.id))
+                      })}>
+                        {expandedRows.size === info.points.length ? "收起全部" : "展开全部"}
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })}>
+                        <Plus className="h-3.5 w-3.5 mr-1" />添加评价维度
+                      </Button>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    {info.points.map(ep => (
-                      <RubricEvalPointCard key={ep.id} ep={ep} field={info.field} />
-                    ))}
-                    {info.points.length === 0 && (
-                      <div className="text-center text-gray-400 py-8">
-                        <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">尚未添加评价点</p>
-                        <p className="text-xs mt-1">点击上方按钮添加第一个评价点</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse min-w-[900px]">
+                      <thead>
+                        <tr className="border-b bg-gray-50 text-gray-500 text-xs">
+                          <th className="py-2.5 px-2 text-left w-16">序号</th>
+                          <th className="py-2.5 px-2 text-left min-w-[160px]">评价维度</th>
+                          <th className="py-2.5 px-2 text-left min-w-[180px]">关联知识点</th>
+                          <th className="py-2.5 px-2 text-left min-w-[180px]">关联能力点</th>
+                          <th className="py-2.5 px-2 text-left min-w-[200px]">评分等级（展开查看）</th>
+                          <th className="py-2.5 px-2 text-center w-20">权重(%)</th>
+                          <th className="py-2.5 px-2 text-center w-16">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {info.points.map((ep, idx) => {
+                          const isExpanded = expandedRows.has(ep.id)
+                          const gradeCount = ep.gradeMapping?.length || 0
+                          return [
+                            <tr key={ep.id} className="border-b hover:bg-gray-50/50 transition-colors">
+                              <td className="py-2.5 px-2">
+                                <button onClick={() => setExpandedRows(prev => {
+                                  const next = new Set(prev)
+                                  if (next.has(ep.id)) next.delete(ep.id)
+                                  else next.add(ep.id)
+                                  return next
+                                })} className="mr-1 text-gray-400 hover:text-gray-600 align-middle">
+                                  {isExpanded ? <ChevronDown className="h-3.5 w-3.5 inline" /> : <ChevronRight className="h-3.5 w-3.5 inline" />}
+                                </button>
+                                <span className="text-gray-600 align-middle">{idx + 1}</span>
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <Input value={ep.name} onChange={e => updateEvalPoint(info.field, ep.id, { name: e.target.value })} className="h-8 text-sm" placeholder="输入评价维度" />
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <div className="flex flex-wrap gap-1 items-center">
+                                  {(ep.knowledgePointIds || []).map(kpid => {
+                                    const kp = knowledgePoints.find(k => k.id === kpid)
+                                    return kp ? (
+                                      <Badge key={kpid} variant="secondary" className="text-[10px] font-normal bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100">
+                                        {kp.name}
+                                        <button onClick={() => updateEvalPoint(info.field, ep.id, { knowledgePointIds: (ep.knowledgePointIds || []).filter(id => id !== kpid) })} className="ml-1 text-blue-400 hover:text-red-500">×</button>
+                                      </Badge>
+                                    ) : null
+                                  })}
+                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricKpDialog(ep.id, info.field)}>+ 关联</Button>
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <div className="flex flex-wrap gap-1 items-center">
+                                  {(ep.abilityPointIds || []).map(abId => {
+                                    const ab = abilityPoints.find(a => a.id === abId)
+                                    return ab ? (
+                                      <Badge key={abId} variant="secondary" className="text-[10px] font-normal bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100">
+                                        {ab.name}
+                                        <button onClick={() => updateEvalPoint(info.field, ep.id, { abilityPointIds: (ep.abilityPointIds || []).filter(id => id !== abId) })} className="ml-1 text-amber-400 hover:text-red-500">×</button>
+                                      </Badge>
+                                    ) : null
+                                  })}
+                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricAbDialog(ep.id, info.field)}>+ 关联</Button>
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <button
+                                  onClick={() => setExpandedRows(prev => {
+                                    const next = new Set(prev)
+                                    if (next.has(ep.id)) next.delete(ep.id)
+                                    else next.add(ep.id)
+                                    return next
+                                  })}
+                                  className="text-xs text-primary hover:underline whitespace-nowrap"
+                                >
+                                  {gradeCount} 个等级 {isExpanded ? "▲" : "▼"}
+                                </button>
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <Input type="number" value={ep.weight || 0} onChange={e => updateEvalPoint(info.field, ep.id, { weight: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })} className="h-8 text-sm text-center" />
+                              </td>
+                              <td className="py-2.5 px-2 text-center">
+                                <button className="text-red-500 hover:text-red-600 text-xs" onClick={() => removeEvalPoint(info.field, ep.id)}>删除</button>
+                              </td>
+                            </tr>,
+                            isExpanded && ep.gradeMapping ? (
+                              <tr key={`${ep.id}-expanded`} className="border-b">
+                                <td colSpan={7} className="px-4 py-3 bg-gray-50/50">
+                                  <LevelRuleEditor gradeMapping={ep.gradeMapping} onChange={gm => updateEvalPoint(info.field, ep.id, { gradeMapping: gm })} />
+                                </td>
+                              </tr>
+                            ) : null
+                          ].filter(Boolean)
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    <button onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-lg text-sm text-gray-500 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1">
+                      <Plus className="h-4 w-4" />添加评价维度
+                    </button>
+                    {info.points.length > 0 && (
+                      <div className="flex justify-end text-xs items-center gap-1">
+                        <span className="text-gray-500">维度权重合计：</span>
+                        <span className={cn("font-semibold", (info.points.reduce((sum, p) => sum + (p.weight || 0), 0)) === 100 ? "text-green-600" : "text-red-500")}>
+                          {info.points.reduce((sum, p) => sum + (p.weight || 0), 0)}%
+                        </span>
+                        {(info.points.reduce((sum, p) => sum + (p.weight || 0), 0)) !== 100 && (
+                          <span className="text-red-500">⚠️（需等于100%）</span>
+                        )}
                       </div>
                     )}
                   </div>
+                  {info.points.length === 0 && (
+                    <div className="text-center text-gray-400 py-8">
+                      <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">尚未添加评价点</p>
+                      <p className="text-xs mt-1">点击上方按钮添加第一个评价点</p>
+                    </div>
+                  )}
                 </div>
                 {editingRubricId && (
                   <div className="flex items-center gap-2">

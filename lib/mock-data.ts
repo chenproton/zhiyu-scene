@@ -218,6 +218,7 @@ export interface GradeMapping {
   minScore: number
   maxScore: number
   color: string
+  remark?: string
 }
 
 export interface GranularLesson {
@@ -368,10 +369,10 @@ const defaultRubricLevels: RubricLevel[] = [
 ]
 
 const defaultGradeMapping: GradeMapping[] = [
-  { id: "grade-1", grade: "A", minScore: 90, maxScore: 100, color: "bg-green-500" },
-  { id: "grade-2", grade: "B", minScore: 75, maxScore: 89, color: "bg-blue-500" },
-  { id: "grade-3", grade: "C", minScore: 60, maxScore: 74, color: "bg-yellow-500" },
-  { id: "grade-4", grade: "D", minScore: 0, maxScore: 59, color: "bg-red-500" },
+  { id: "grade-1", grade: "A", minScore: 90, maxScore: 100, color: "bg-green-500", remark: "表现卓越，完全超出预期要求，可作为标杆示范" },
+  { id: "grade-2", grade: "B", minScore: 75, maxScore: 89, color: "bg-blue-500", remark: "表现良好，达到预期要求，仅有少量可改进之处" },
+  { id: "grade-3", grade: "C", minScore: 60, maxScore: 74, color: "bg-yellow-500", remark: "基本达标，核心要求已满足，但存在明显不足" },
+  { id: "grade-4", grade: "D", minScore: 0, maxScore: 59, color: "bg-red-500", remark: "未达标准，核心要求未完成，需要重新学习或训练" },
 ]
 
 // Industries
@@ -1347,4 +1348,325 @@ export function getAbilityLevelColor(level: StudentAbilityScore["level"]): strin
     beginner: "bg-red-500",
   }
   return colors[level]
+}
+
+// ============================================================================
+// 教师评分相关数据模型
+// ============================================================================
+
+/** 学生任务提交记录 */
+export interface StudentSubmission {
+  id: string
+  studentId: string
+  scenarioId: string
+  scenarioName: string
+  taskId: string
+  taskName: string
+  assessmentType: "objective" | "subjective" | "mixed"
+  assessmentForm: string // 测评形式名称：试卷、题库、评审、现场问答、答辩等
+  status: "pending" | "graded"
+  submittedAt: string
+  objectiveAnswers?: ObjectiveSubmissionAnswer[]
+  subjectiveContent?: SubjectiveSubmissionContent
+  rubricScores?: RubricScoreRecord[]
+  objectiveTotalScore?: number
+  subjectiveTotalScore?: number
+  totalScore?: number
+  maxScore: number
+  teacherComment?: string
+  gradedAt?: string
+  gradedBy?: string
+}
+
+/** 客观题学生作答记录 */
+export interface ObjectiveSubmissionAnswer {
+  questionId: string
+  questionType: "single" | "multiple" | "judgment"
+  questionContent: string
+  options?: string[]
+  correctAnswer: string | string[]
+  studentAnswer: string | string[]
+  score: number
+  maxScore: number
+  isCorrect: boolean
+}
+
+/** 主观题学生提交内容 */
+export interface SubjectiveSubmissionContent {
+  textAnswer?: string
+  attachments?: SubmissionAttachment[]
+}
+
+/** 提交附件 */
+export interface SubmissionAttachment {
+  id: string
+  name: string
+  type: "document" | "code" | "video" | "image" | "other"
+  url: string
+}
+
+/** 教师对主观题维度的评分记录 */
+export interface RubricScoreRecord {
+  rubricPointId: string
+  rubricPointName: string
+  weight: number
+  maxScore: number
+  levelId?: string
+  levelName?: string
+  score: number
+  comment?: string
+}
+
+// ============================================================================
+// 教师评分 Mock 数据
+// ============================================================================
+
+export const studentSubmissions: StudentSubmission[] = [
+  {
+    id: "sub-1",
+    studentId: "stu-1",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    taskId: "task-1-1",
+    taskName: "项目初始化与架构搭建",
+    assessmentType: "objective",
+    assessmentForm: "试卷",
+    status: "pending",
+    submittedAt: "2026-04-20 14:30:00",
+    maxScore: 100,
+    objectiveAnswers: [
+      {
+        questionId: "q-1",
+        questionType: "single",
+        questionContent: "React 18 中引入的并发特性主要解决什么问题？",
+        options: ["性能优化", "代码复用", "状态管理", "路由控制"],
+        correctAnswer: "性能优化",
+        studentAnswer: "性能优化",
+        score: 10,
+        maxScore: 10,
+        isCorrect: true,
+      },
+      {
+        questionId: "q-2",
+        questionType: "judgment",
+        questionContent: "TypeScript 是 JavaScript 的超集",
+        correctAnswer: "true",
+        studentAnswer: "true",
+        score: 10,
+        maxScore: 10,
+        isCorrect: true,
+      },
+      {
+        questionId: "q-3",
+        questionType: "multiple",
+        questionContent: "以下哪些是常用的 React 状态管理方案？",
+        options: ["Redux", "MobX", "Zustand", "jQuery"],
+        correctAnswer: ["Redux", "MobX", "Zustand"],
+        studentAnswer: ["Redux", "MobX", "jQuery"],
+        score: 10,
+        maxScore: 20,
+        isCorrect: false,
+      },
+    ],
+  },
+  {
+    id: "sub-2",
+    studentId: "stu-2",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    taskId: "task-1-2",
+    taskName: "用户认证模块开发",
+    assessmentType: "subjective",
+    assessmentForm: "评审",
+    status: "pending",
+    submittedAt: "2026-04-21 09:15:00",
+    maxScore: 100,
+    subjectiveContent: {
+      textAnswer:
+        "我使用 React + TypeScript 完成了用户认证模块的开发。主要实现了以下功能：\n\n1. 登录页面：包含表单验证、密码加密传输\n2. 注册功能：邮箱验证、密码强度检测\n3. 权限控制：基于 JWT 的鉴权机制\n4. 路由守卫：未登录用户自动跳转登录页\n\n代码仓库地址：https://github.com/stu2/auth-demo",
+      attachments: [
+        {
+          id: "att-1",
+          name: "auth-module.zip",
+          type: "code",
+          url: "#",
+        },
+        {
+          id: "att-2",
+          name: "项目演示视频.mp4",
+          type: "video",
+          url: "#",
+        },
+      ],
+    },
+  },
+  {
+    id: "sub-3",
+    studentId: "stu-1",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    taskId: "task-1-3",
+    taskName: "核心业务组件开发",
+    assessmentType: "mixed",
+    assessmentForm: "混合测评",
+    status: "pending",
+    submittedAt: "2026-04-22 16:45:00",
+    maxScore: 100,
+    objectiveAnswers: [
+      {
+        questionId: "q-4",
+        questionType: "single",
+        questionContent: "React 中 useMemo 的主要作用是？",
+        options: ["缓存计算结果", "管理副作用", "处理事件", "路由跳转"],
+        correctAnswer: "缓存计算结果",
+        studentAnswer: "缓存计算结果",
+        score: 20,
+        maxScore: 20,
+        isCorrect: true,
+      },
+    ],
+    subjectiveContent: {
+      textAnswer:
+        "我开发了一个可复用的数据表格组件和图表展示组件。数据表格支持排序、筛选、分页功能；图表组件基于 ECharts 封装，支持柱状图、折线图、饼图三种类型。",
+      attachments: [
+        {
+          id: "att-3",
+          name: "components-demo.zip",
+          type: "code",
+          url: "#",
+        },
+      ],
+    },
+  },
+  {
+    id: "sub-4",
+    studentId: "stu-3",
+    scenarioId: "scenario-2",
+    scenarioName: "RESTful API 设计与开发",
+    taskId: "task-2-1",
+    taskName: "API 设计规范学习",
+    assessmentType: "objective",
+    assessmentForm: "题库",
+    status: "graded",
+    submittedAt: "2026-04-18 10:00:00",
+    maxScore: 100,
+    objectiveTotalScore: 85,
+    totalScore: 85,
+    teacherComment: "整体掌握较好，但在 RESTful 状态码使用上还需加强。",
+    gradedAt: "2026-04-19 11:30:00",
+    gradedBy: "张老师",
+    objectiveAnswers: [
+      {
+        questionId: "q-api-1",
+        questionType: "single",
+        questionContent: "HTTP GET 请求的幂等性是指什么？",
+        options: [
+          "多次请求结果一致",
+          "请求不会被缓存",
+          "请求体不能为空",
+          "响应状态码固定为 200",
+        ],
+        correctAnswer: "多次请求结果一致",
+        studentAnswer: "多次请求结果一致",
+        score: 20,
+        maxScore: 20,
+        isCorrect: true,
+      },
+      {
+        questionId: "q-api-2",
+        questionType: "multiple",
+        questionContent: "以下哪些 HTTP 状态码表示请求成功？",
+        options: ["200", "201", "301", "204"],
+        correctAnswer: ["200", "201", "204"],
+        studentAnswer: ["200", "201"],
+        score: 15,
+        maxScore: 20,
+        isCorrect: false,
+      },
+    ],
+  },
+  {
+    id: "sub-5",
+    studentId: "stu-4",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    taskId: "task-1-1",
+    taskName: "项目初始化与架构搭建",
+    assessmentType: "objective",
+    assessmentForm: "试卷",
+    status: "pending",
+    submittedAt: "2026-04-22 11:20:00",
+    maxScore: 100,
+    objectiveAnswers: [
+      {
+        questionId: "q-1",
+        questionType: "single",
+        questionContent: "React 18 中引入的并发特性主要解决什么问题？",
+        options: ["性能优化", "代码复用", "状态管理", "路由控制"],
+        correctAnswer: "性能优化",
+        studentAnswer: "状态管理",
+        score: 0,
+        maxScore: 10,
+        isCorrect: false,
+      },
+      {
+        questionId: "q-2",
+        questionType: "judgment",
+        questionContent: "TypeScript 是 JavaScript 的超集",
+        correctAnswer: "true",
+        studentAnswer: "true",
+        score: 10,
+        maxScore: 10,
+        isCorrect: true,
+      },
+      {
+        questionId: "q-3",
+        questionType: "multiple",
+        questionContent: "以下哪些是常用的 React 状态管理方案？",
+        options: ["Redux", "MobX", "Zustand", "jQuery"],
+        correctAnswer: ["Redux", "MobX", "Zustand"],
+        studentAnswer: ["Redux", "MobX", "Zustand"],
+        score: 20,
+        maxScore: 20,
+        isCorrect: true,
+      },
+    ],
+  },
+  {
+    id: "sub-6",
+    studentId: "stu-5",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    taskId: "task-1-2",
+    taskName: "用户认证模块开发",
+    assessmentType: "subjective",
+    assessmentForm: "现场问答",
+    status: "pending",
+    submittedAt: "2026-04-23 09:00:00",
+    maxScore: 100,
+    subjectiveContent: {
+      textAnswer:
+        "现场答辩记录：\n\n1. 请简述 JWT 鉴权流程：答对了基本流程，但缺少 Refresh Token 机制说明。\n2. 如何防止 XSS 攻击：提到了输入过滤和 CSP，但缺少输出编码。\n3. 密码加密方案：正确回答了 bcrypt 加盐哈希。",
+    },
+  },
+]
+
+// 测评形式配置（用于评分页面展示）
+export const assessmentFormConfig: Record<
+  string,
+  { label: string; category: string; icon: string; description: string }
+> = {
+  paper: { label: "试卷", category: "基础考核", icon: "fileText", description: "使用固定试卷进行考核" },
+  question_bank: { label: "题库", category: "基础考核", icon: "database", description: "从题库选题组成测评资源" },
+  quiz: { label: "随堂测", category: "基础考核", icon: "clipboardList", description: "课堂即时测验" },
+  ai_qa: { label: "AI 问答", category: "智能评测", icon: "bot", description: "AI 智能问答评测" },
+  random_draw: { label: "现场问答", category: "综合评估", icon: "mic", description: "从题库抽取题目，教师现场提问" },
+  review: { label: "评审", category: "综合评估", icon: "clipboardCheck", description: "教师根据表现/材料给评价点打分" },
+  outcome: { label: "成果评价", category: "综合评估", icon: "trophy", description: "对学习成果进行综合评价" },
+  peer: { label: "学生互评", category: "综合评估", icon: "users", description: "学生之间相互评价" },
+  defense: { label: "答辩", category: "互动评价", icon: "presentation", description: "学生答辩，教师评分" },
+  debate: { label: "辩论", category: "互动评价", icon: "messageSquare", description: "学生辩论表现评价" },
+  presentation: { label: "汇报", category: "互动评价", icon: "presentation", description: "学生汇报展示评价" },
+  practical: { label: "现场实操", category: "互动评价", icon: "wrench", description: "现场实际操作考核" },
+  roleplay: { label: "角色扮演", category: "互动评价", icon: "userCog", description: "角色扮演情境考核" },
 }
