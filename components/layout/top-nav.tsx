@@ -42,14 +42,14 @@ export function TopNav() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800 hover:bg-gray-50">
+          <span className="inline-flex items-center px-3 py-1.5 text-sm text-gray-400 cursor-not-allowed">
             <Home className="mr-1.5 h-4 w-4" />
             门户首页
-          </Button>
-          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800 hover:bg-gray-50">
+          </span>
+          <span className="inline-flex items-center px-3 py-1.5 text-sm text-gray-400 cursor-not-allowed">
             <LayoutGrid className="mr-1.5 h-4 w-4" />
             我的服务台
-          </Button>
+          </span>
           <Button variant="ghost" size="sm" className="text-primary bg-primary/5 hover:bg-primary/10">
             <Settings className="mr-1.5 h-4 w-4" />
             应用服务中心

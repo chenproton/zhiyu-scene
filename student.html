@@ -1047,6 +1047,14 @@
             min-height: calc(100vh - 140px);
         }
 
+        .learning-layout.task-learning-new {
+            grid-template-columns: 1fr;
+        }
+
+        .learning-layout.task-learning-new .step-sidebar {
+            display: none;
+        }
+
         @media (max-width: 1200px) {
             .learning-layout {
                 grid-template-columns: 1fr;
@@ -1597,6 +1605,240 @@
         .onsite-notice-title { font-weight: 500; margin-bottom: 4px; }
         .onsite-notice-desc { font-size: 13px; color: var(--text-secondary); }
 
+        /* ====== 视图切换与双布局 ====== */
+        .view-switcher {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .view-switch-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-white);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-switch-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .view-switch-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 悬浮视图 */
+        .float-resource-toggle {
+            position: fixed;
+            right: 32px;
+            bottom: 32px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(22, 119, 255, 0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .float-resource-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        .float-resource-toggle.visible {
+            display: flex;
+        }
+
+        .float-resource-panel {
+            position: fixed;
+            right: 24px;
+            bottom: 96px;
+            width: 360px;
+            max-height: 60vh;
+            background: var(--bg-white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-hover);
+            z-index: 99;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+        }
+
+        .float-resource-panel.active {
+            display: flex;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .float-resource-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .float-resource-close {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            background: #f5f5f5;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .float-resource-close:hover {
+            background: #ff4d4f;
+            color: white;
+        }
+
+        .float-resource-body {
+            padding: 14px 18px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* 左右视图 */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+        }
+
+        .split-main {
+            min-width: 0;
+        }
+
+        .split-sidebar {
+            border-left: 1px solid #f0f0f0;
+            padding-left: 20px;
+        }
+
+        .split-sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .split-sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .split-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .split-sidebar-title i {
+            color: var(--primary-color);
+            font-size: 13px;
+        }
+
+        .split-resource-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .split-resource-item:hover {
+            background: #fafafa;
+            color: var(--primary-color);
+        }
+
+        .split-resource-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 12px;
+        }
+
+        .split-resource-item:hover i {
+            color: var(--primary-color);
+        }
+
+        .split-knowledge-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            margin: 0 4px 6px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .split-knowledge-tag:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        @media (max-width: 1200px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+            }
+            .split-sidebar {
+                border-left: none;
+                border-top: 1px solid #f0f0f0;
+                padding-left: 0;
+                padding-top: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .float-resource-toggle {
+                right: 16px;
+                bottom: 16px;
+            }
+            .float-resource-panel {
+                right: 16px;
+                bottom: 80px;
+                width: calc(100vw - 32px);
+            }
+            .view-switcher {
+                overflow-x: auto;
+            }
+        }
+
         /* 步骤导航按钮 */
         .step-nav-buttons {
             display: flex;
@@ -1981,6 +2223,16 @@
 
                 <!-- 右侧内容区 -->
                 <div class="step-content-area">
+                    <!-- 视图切换 -->
+                    <div class="view-switcher">
+                        <button class="view-switch-btn active" data-view="float" onclick="switchView('float')">
+                            <i class="fas fa-layer-group"></i> 悬浮视图
+                        </button>
+                        <button class="view-switch-btn" data-view="split" onclick="switchView('split')">
+                            <i class="fas fa-columns"></i> 左右视图
+                        </button>
+                    </div>
+
                     <!-- 进度条 -->
                     <div class="step-progress-header">
                         <div class="step-progress-top">
@@ -2005,17 +2257,30 @@
 
                     <!-- 导航按钮 -->
                     <div class="step-nav-buttons">
-                        <button class="action-btn" id="prevStepBtn" onclick="goToPrevStep()">
-                            <i class="fas fa-chevron-left"></i>
-                            上一步
+                        <button class="action-btn" onclick="exitTaskLearning()">
+                            <i class="fas fa-arrow-left"></i>
+                            返回场景
                         </button>
-                        <button class="action-btn primary" id="nextStepBtn" onclick="goToNextStep()">
-                            标记完成，下一步
-                            <i class="fas fa-chevron-right"></i>
+                        <button class="action-btn primary" onclick="completeTask()">
+                            <i class="fas fa-check"></i>
+                            标记完成
                         </button>
                     </div>
                 </div>
             </div>
+            <!-- 悬浮资源面板 -->
+            <div class="float-resource-panel" id="floatResourcePanel">
+                <div class="float-resource-header">
+                    <span><i class="fas fa-book" style="color: var(--primary-color);"></i> 学习资源</span>
+                    <button class="float-resource-close" onclick="toggleFloatPanel()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="float-resource-body" id="floatResourceBody"></div>
+            </div>
+            <button class="float-resource-toggle" id="floatResourceToggle" onclick="toggleFloatPanel()">
+                <i class="fas fa-book"></i>
+            </button>
         </div>
     </main>
 
@@ -2223,6 +2488,8 @@
         let quizAnswers = {};  // taskId -> { questionId -> answer }
         let quizSubmitted = {}; // taskId -> boolean
         let stepCompleted = {}; // taskId -> { stepIndex -> boolean }
+        let currentViewMode = 'float'; // 'float' | 'split'
+        let floatPanelOpen = false;
 
         // ==================== 工具函数 ====================
         function getResourceById(id) {
@@ -2631,16 +2898,13 @@
             document.getElementById('learningTaskMeta').textContent = 
                 `${task.estimatedHours}课时 · ${'★'.repeat(task.difficulty)}${'☆'.repeat(5-task.difficulty)} · ${task.taskType === 'assessment' ? '考核任务' : '训练任务'}`;
 
-            // 渲染步骤导航
-            renderStepSidebar(task);
-
-            // 渲染当前步骤
-            renderCurrentStep();
-
             // 切换视图
             document.getElementById('scenarioDetailView').style.display = 'none';
             document.getElementById('taskLearningView').classList.add('active');
             document.getElementById('breadcrumbScenarioName').textContent = task.name;
+            
+            // 默认使用悬浮视图（会触发渲染）
+            switchView('float');
             window.scrollTo(0, 0);
         }
 
@@ -2648,6 +2912,10 @@
             document.getElementById('scenarioDetailView').style.display = 'grid';
             document.getElementById('taskLearningView').classList.remove('active');
             document.getElementById('breadcrumbScenarioName').textContent = SCENARIO.name;
+            
+            // 关闭悬浮面板
+            document.getElementById('floatResourcePanel')?.classList.remove('active');
+            floatPanelOpen = false;
             currentTaskId = null;
             currentStepIndex = 0;
             window.scrollTo(0, 0);
@@ -2704,7 +2972,20 @@
             `;
 
             const body = document.getElementById('stepContentBody');
-            body.innerHTML = renderStepContent(task, step);
+            
+            if (currentViewMode === 'split') {
+                const stepHtml = renderStepContent(task, step);
+                const sidebarHtml = renderResourceSidebar(task);
+                body.innerHTML = `
+                    <div class="split-layout">
+                        <div class="split-main">${stepHtml}</div>
+                        <div class="split-sidebar">${sidebarHtml}</div>
+                    </div>
+                `;
+            } else {
+                body.innerHTML = renderStepContent(task, step);
+                updateFloatPanel(task);
+            }
 
             // 更新按钮
             const prevBtn = document.getElementById('prevStepBtn');
@@ -3221,6 +3502,97 @@
             setTimeout(() => {
                 alert(`提交成功！\n得分：${earnedScore}/${totalScore} 分`);
             }, 300);
+        }
+
+        // ==================== 视图切换逻辑 ====================
+
+        function switchView(mode) {
+            currentViewMode = mode;
+
+            document.querySelectorAll('.view-switch-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === mode);
+            });
+
+            const toggleBtn = document.getElementById('floatResourceToggle');
+            if (toggleBtn) {
+                toggleBtn.classList.toggle('visible', mode === 'float');
+            }
+
+            if (mode === 'split') {
+                document.getElementById('floatResourcePanel')?.classList.remove('active');
+                floatPanelOpen = false;
+            }
+
+            if (currentTaskId) {
+                renderCurrentStep();
+            }
+        }
+
+        function toggleFloatPanel() {
+            const panel = document.getElementById('floatResourcePanel');
+            if (!panel) return;
+            floatPanelOpen = !floatPanelOpen;
+            panel.classList.toggle('active', floatPanelOpen);
+        }
+
+        function renderResourceSidebar(task) {
+            const kps = getTaskKnowledgePoints(task);
+            const resources = getTaskResources(task);
+            const abilityIds = task.abilityPoints || [];
+            const abilities = abilityIds.map(id => getAbilityPointById(id)).filter(Boolean);
+
+            let html = '';
+
+            if (kps.length > 0) {
+                html += `
+                    <div class="split-sidebar-section">
+                        <div class="split-sidebar-title"><i class="fas fa-lightbulb"></i> 知识点</div>
+                        <div>
+                            ${kps.map(kp => `<span class="split-knowledge-tag">${kp.name}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (resources.length > 0) {
+                html += `
+                    <div class="split-sidebar-section">
+                        <div class="split-sidebar-title"><i class="fas fa-folder-open"></i> 学习资源</div>
+                        <div>
+                            ${resources.map(r => `
+                                <div class="split-resource-item">
+                                    <i class="fas ${getResourceIcon(r.type)}"></i>
+                                    ${r.name}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (abilities.length > 0) {
+                html += `
+                    <div class="split-sidebar-section">
+                        <div class="split-sidebar-title"><i class="fas fa-star"></i> 能力要求</div>
+                        <div>
+                            ${abilities.map(a => `<span class="split-knowledge-tag" style="background: #f6ffed; color: #52c41a;">${a.name}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (html === '') {
+                html = '<p style="color: var(--text-tertiary); font-size: 13px;">暂无相关资源</p>';
+            }
+
+            return html;
+        }
+
+        function updateFloatPanel(task) {
+            const panelBody = document.getElementById('floatResourceBody');
+            if (panelBody) {
+                panelBody.innerHTML = renderResourceSidebar(task);
+            }
         }
 
         // 知识树展开/折叠

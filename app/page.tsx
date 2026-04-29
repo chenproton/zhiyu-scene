@@ -853,13 +853,13 @@ export default function SceneHallPage() {
               <Undo2 className="mr-1 h-3 w-3" />
               撤回审批
             </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchUnpublish} onClick={handleBatchUnpublish}>
-              <ArrowDownFromLine className="mr-1 h-3 w-3" />
-              下架
-            </Button>
             <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchPublish} onClick={handleBatchPublish}>
               <ArrowUpFromLine className="mr-1 h-3 w-3" />
-              上架
+              发布
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchUnpublish} onClick={handleBatchUnpublish}>
+              <ArrowDownFromLine className="mr-1 h-3 w-3" />
+              取消发布
             </Button>
             <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchDelete} onClick={handleBatchDelete}>
               <Trash2 className="mr-1 h-3 w-3" />

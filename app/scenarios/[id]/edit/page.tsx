@@ -149,7 +149,7 @@ export default function ScenarioEditPage() {
     <div className="fixed inset-0 bg-background z-50 overflow-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={() => router.push("/")}>
               <X className="h-4 w-4 mr-2" />
@@ -182,7 +182,7 @@ export default function ScenarioEditPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-[1400px] mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-800">
             {existingScenario ? "编辑实践场景" : "新建实践场景"}
