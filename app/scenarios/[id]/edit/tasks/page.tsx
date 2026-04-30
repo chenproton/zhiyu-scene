@@ -129,14 +129,14 @@ import {
 type CardType = "info" | "description" | "knowledge" | "ability" | "resources" | "evaluation" | "evaluationRules" | "weight"
 
 const cardConfigs: { type: CardType; title: string; icon: React.ReactNode }[] = [
-  { type: "info", title: "配置任务\n基础信息", icon: <FileText className="h-4 w-4" /> },
-  { type: "description", title: "配置任务\n说明", icon: <Book className="h-4 w-4" /> },
-  { type: "knowledge", title: "考查\n知识点", icon: <Lightbulb className="h-4 w-4" /> },
-  { type: "ability", title: "考查\n能力点", icon: <Award className="h-4 w-4" /> },
-  { type: "resources", title: "配置任务\n资源", icon: <Link2 className="h-4 w-4" /> },
-  { type: "evaluation", title: "配置任务\n测评形式", icon: <CheckCircle2 className="h-4 w-4" /> },
-  { type: "evaluationRules", title: "配置任务\n评价规则", icon: <Gavel className="h-4 w-4" /> },
-  { type: "weight", title: "配置任务\n权重", icon: <Scale className="h-4 w-4" /> },
+  { type: "info", title: "配置任务基础信息", icon: <FileText className="h-4 w-4" /> },
+  { type: "description", title: "配置任务说明", icon: <Book className="h-4 w-4" /> },
+  { type: "knowledge", title: "考查知识点", icon: <Lightbulb className="h-4 w-4" /> },
+  { type: "ability", title: "考查能力点", icon: <Award className="h-4 w-4" /> },
+  { type: "resources", title: "配置任务资源", icon: <Link2 className="h-4 w-4" /> },
+  { type: "evaluation", title: "配置任务测评形式", icon: <CheckCircle2 className="h-4 w-4" /> },
+  { type: "evaluationRules", title: "配置任务评价规则", icon: <Gavel className="h-4 w-4" /> },
+  { type: "weight", title: "配置任务权重", icon: <Scale className="h-4 w-4" /> },
 ]
 
 const resourceTypeIcons: Record<string, React.ReactNode> = {
@@ -205,34 +205,34 @@ const abilityLevels = ["了解", "理解", "掌握", "熟练", "精通"]
 
 const defaultDescriptionTemplate = `任务描述
 
-你需要完成 [具体任务]。该任务基于 [背景/前提]，要求你 [核心动作]。执行时请注意 [关键约束]，确保理解需求后再开始。
+你需要完成[具体任务]。该任务基于[背景/前提],要求你[核/心动作]。执行时请注意[关键约束],确保理解需求后再开始。
 
 任务目标
 
-• 核心目标：[一句话概括最终成果]
-• 目标一：[具体子目标]
-• 目标二：[具体子目标]
-• 目标三：[具体子目标]
-• 成功标准：[任务完成的具体标志]
+·核心目标:[一句话概括最终成果]
+·目标一:[具体子目标]
+·目标二:[具体子目标]
+·目标三:[具体子目标]
+·成功标准:[任务完成的具体标志]
 
 任务结果
 
-请提交以下内容：
+请提交以下内容:
 
-• 主交付物：[如报告/代码/方案]
-• 格式要求：[如 Markdown/JSON/纯文本]
-• 附属说明：[假设、来源、取舍等]
-• 篇幅要求：[如不少于 500 字/代码 100 行内]
+·主交付物:[如报告/代码/方案]
+格式要求:[如Markdown/JSON/纯文本]
+·附属说明:[假设、来源、取舍等]
+篇幅要求:[如不少于500字/代码100行内]
 
 测评要求
 
-• 准确性（30%）：内容正确，逻辑清晰，来源可靠
-• 完整性（25%）：覆盖所有子目标，无遗漏
-• 清晰度（20%）：结构分明，表达简洁
-• 实用性（15%）：结论可操作，建议可落地
-• 规范性（10%）：符合格式，术语统一，无明显错误
+·准确性(30%):内容正确,逻辑清晰,来源可靠
+·完整性(25%):覆盖所有子目标,无遗漏
+清晰度(20%):结构分明,表达简洁
+·实用性(15%):结论可操作,建议可落地
+规范性(10%):符合格式,术语统一,无明显错误
 
-一票否决项：若出现 [如抄袭/泄密/核心事实错误]，视为未通过。`
+一票否决项:若出现[如抄袭/泄密/核心事实错误],视为未通过。`
 
 const defaultGradeMapping: GradeMapping[] = [
   { id: "grade-1", grade: "A", minScore: 90, maxScore: 100, color: "bg-green-500", remark: "表现卓越，完全超出预期要求，可作为标杆示范" },
@@ -368,6 +368,7 @@ interface TaskState {
   evalSubjects: EvalSubjectConfig[]
   methodEvalObjects: Record<string, EvalObjectType>
   methodEvalSubjects: Record<string, EvalSubjectConfig[]>
+  methodWeights: Record<string, number>
 }
 
 const defaultEvalSubjects: EvalSubjectConfig[] = [
@@ -460,6 +461,7 @@ function makeDefaultTaskState(count: number, index: number): TaskState {
     abilityLevelMappings: [],
     resources: [],
     evaluationMethods: ["random_draw", "review", "paper", "question_bank"],
+    methodWeights: { random_draw: 25, review: 25, paper: 25, question_bank: 25 },
     randomDrawQuestions: allQuestions.slice(0, 2).map(q => q.id),
     randomDrawEvalPoints: [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1], mockDefaultEvalPoints[7], mockDefaultEvalPoints[8]],
     randomDrawScoreType: "eval_points",
@@ -561,6 +563,11 @@ export default function TasksEditPage() {
         evalSubjects: JSON.parse(JSON.stringify(defaultEvalSubjects)),
         methodEvalObjects: {},
         methodEvalSubjects: {},
+        methodWeights: methods.reduce((acc, m, i, arr) => {
+          const base = Math.floor(100 / arr.length)
+          acc[m] = base + (i < 100 % arr.length ? 1 : 0)
+          return acc
+        }, {} as Record<string, number>),
       }
     })
     return states
@@ -636,7 +643,13 @@ export default function TasksEditPage() {
           if (m === "question_bank") return state.questionBankQuestions.length > 0
           return false
         })
-        return configuredMethods.length > 0 ? `已配置 ${configuredMethods.length} 种` : "待配置"
+        const methodWeightTotal2 = state.evaluationMethods.reduce((sum, m) => sum + (state.methodWeights[m] || 0), 0)
+        if (configuredMethods.length === 0) return "待配置"
+        const weightSummary = state.evaluationMethods.map(m => {
+          const label = evaluationMethodOptions.find(o => o.key === m)?.label || m
+          return `${label}${state.methodWeights[m] || 0}%`
+        }).join("、")
+        return `${weightSummary}\n权重合计 ${methodWeightTotal2}%${methodWeightTotal2 !== 100 ? " (需等于100%)" : ""}`
       case "weight":
         return `${state.weight}%`
     }
@@ -1228,6 +1241,40 @@ function EditCardDialog({
   const handleSave = () => {
     if (cardType === "info") {
       updateTask({ name: localTask.name, taskType: localTask.type as "assessment"|"training", difficulty: localTask.difficulty as 1|2|3|4|5, estimatedHours: localTask.hours, background: localTask.background })
+    } else if (cardType === "evaluationRules") {
+      const toTaskEvalPoint = (ep: EvalPoint): import("@/lib/mock-data").TaskEvalPoint => {
+        const gmMax = ep.gradeMapping && ep.gradeMapping.length > 0
+          ? Math.max(...ep.gradeMapping.map(g => g.maxScore))
+          : 100
+        return {
+          id: ep.id,
+          name: ep.name,
+          desc: ep.desc,
+          weight: ep.weight || 0,
+          maxScore: ep.weight || gmMax,
+          scoringMethod: ep.scoringMethod,
+          gradeMapping: ep.gradeMapping,
+          subType: ep.subType,
+          types: ep.types,
+          knowledgePointIds: ep.knowledgePointIds,
+          abilityPointIds: ep.abilityPointIds,
+        }
+      }
+      updateTask({
+        evalPoints: {
+          randomDraw: state.randomDrawEvalPoints.map(toTaskEvalPoint),
+          review: state.reviewEvalPoints.map(toTaskEvalPoint),
+          paper: state.paperEvalPoints.map(toTaskEvalPoint),
+          questionBank: state.questionBankEvalPoints.map(toTaskEvalPoint),
+        },
+        reviewSteps: reviewSteps.filter(s => s.enabled).map(s => ({
+          id: s.id,
+          label: s.label,
+          desc: s.desc,
+          enabled: s.enabled,
+          subjectType: s.subjectType,
+        })),
+      })
     }
     onClose()
   }
@@ -2509,13 +2556,13 @@ function EditCardDialog({
               const catMethods = evaluationMethodOptions.filter(m => m.category === cat)
               const bgClass = categoryBgColors[cat] || "bg-gray-50/50"
               return (
-                <div key={cat} className={cn("rounded-2xl p-5 border", bgClass, "border-gray-100")}>
-                  <div className="flex items-center gap-2 mb-4">
+                <div key={cat} className={cn("rounded-xl p-3.5 border", bgClass, "border-gray-100")}>
+                  <div className="flex items-center gap-2 mb-3">
                     <h3 className="text-sm font-bold text-gray-800">{cat}</h3>
                     <div className="h-px flex-1 bg-gray-200/60" />
                     <span className="text-xs text-gray-400">{catMethods.length} 种</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {catMethods.map(method => {
                       const enabled = state.evaluationMethods.includes(method.key)
                       return (
@@ -2524,7 +2571,7 @@ function EditCardDialog({
                           disabled={!method.available}
                           onClick={() => toggleMethod(method.key)}
                           className={cn(
-                            "p-4 rounded-xl border text-left transition-all flex flex-col gap-2.5 relative overflow-hidden",
+                            "p-2.5 rounded-lg border text-left transition-all flex flex-col gap-1.5 relative overflow-hidden",
                             !method.available
                               ? "opacity-50 cursor-not-allowed bg-white border-gray-200"
                               : enabled
@@ -4443,6 +4490,25 @@ function EditCardDialog({
           )
         }
 
+        const methodWeightTotal = state.evaluationMethods.reduce((sum, m) => sum + (state.methodWeights[m] || 0), 0)
+
+        const updateMethodWeight = (methodKey: string, value: number) => {
+          const clamped = Math.max(0, Math.min(100, value))
+          updateState({ methodWeights: { ...state.methodWeights, [methodKey]: clamped } })
+        }
+
+        const distributeMethodWeights = () => {
+          const count = state.evaluationMethods.length
+          if (count === 0) return
+          const base = Math.floor(100 / count)
+          const remainder = 100 % count
+          const newWeights: Record<string, number> = {}
+          state.evaluationMethods.forEach((m, i) => {
+            newWeights[m] = base + (i < remainder ? 1 : 0)
+          })
+          updateState({ methodWeights: newWeights })
+        }
+
         return (
           <div className="h-full flex flex-col">
             {state.evaluationMethods.length === 0 ? (
@@ -4453,6 +4519,57 @@ function EditCardDialog({
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto space-y-5 p-1">
+                {/* 评价方式权重配置 */}
+                <div className="border rounded-xl p-4 bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Scale className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold">评价方式权重配置</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium",
+                        methodWeightTotal === 100 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                      )}>
+                        <span>合计</span>
+                        <span>{methodWeightTotal}%</span>
+                        {methodWeightTotal !== 100 && <span className="text-[10px]">(需等于100%)</span>}
+                      </div>
+                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={distributeMethodWeights}>
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />一键平均
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {state.evaluationMethods.map(methodKey => {
+                      const method = evaluationMethodOptions.find(o => o.key === methodKey)
+                      if (!method) return null
+                      const weight = state.methodWeights[methodKey] || 0
+                      return (
+                        <div key={methodKey} className="flex items-center gap-2.5 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                          <div className={cn("p-1.5 rounded-md shrink-0", method.color)}>
+                            {method.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-gray-700 truncate">{method.label}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <Input
+                                type="number"
+                                value={weight}
+                                onChange={e => updateMethodWeight(methodKey, parseInt(e.target.value) || 0)}
+                                className="h-7 text-xs w-16 text-center"
+                                min={0}
+                                max={100}
+                              />
+                              <span className="text-xs text-gray-400">%</span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
                 {state.evaluationMethods.map(methodKey => {
                   const method = evaluationMethodOptions.find(o => o.key === methodKey)
                   if (!method) return null
@@ -5119,15 +5236,17 @@ function EditCardDialog({
     }
   }
 
-  const isFullScreen = cardType === "evaluationRules" || cardType === "weight" || cardType === "evaluation" || cardType === "knowledge" || cardType === "ability" || cardType === "resources"
+  const isFullScreen = cardType === "evaluationRules" || cardType === "weight" || cardType === "knowledge" || cardType === "ability" || cardType === "resources"
   const dialogSizeClass =
     isFullScreen
       ? "sm:max-w-[95vw] max-h-[95vh] h-[95vh]"
-      : cardType === "description"
-        ? "sm:max-w-[900px] max-h-[90vh]"
-        : cardType === "info"
-          ? "sm:max-w-[650px] max-h-[85vh]"
-          : "sm:max-w-[550px] max-h-[85vh]"
+      : cardType === "evaluation"
+        ? "sm:max-w-[720px] max-h-[85vh]"
+        : cardType === "description"
+          ? "sm:max-w-[900px] max-h-[90vh]"
+          : cardType === "info"
+            ? "sm:max-w-[650px] max-h-[85vh]"
+            : "sm:max-w-[550px] max-h-[85vh]"
 
   return (
     <Dialog open onOpenChange={onClose}>

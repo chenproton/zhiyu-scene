@@ -1,0 +1,2467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>场景详情 - 实践场景学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1677ff;
+            --primary-hover: #4096ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #ff4d4f;
+            --text-primary: #000000e0;
+            --text-secondary: #00000073;
+            --text-tertiary: #00000040;
+            --border-color: #d9d9d9;
+            --bg-color: #f5f5f5;
+            --bg-white: #ffffff;
+            --shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+            --shadow-hover: 0 6px 16px -8px rgba(0, 0, 0, 0.08), 0 9px 28px 0 rgba(0, 0, 0, 0.05), 0 12px 48px 16px rgba(0, 0, 0, 0.03);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5714285714;
+            font-size: 14px;
+        }
+
+        /* 页眉样式 */
+        .header {
+            background: var(--bg-white);
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary-color), #69b1ff);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+            padding-left: 8px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-white);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .datetime {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .datetime i {
+            margin-right: 6px;
+            color: var(--text-tertiary);
+        }
+
+        .nav-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-btn.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-btn.primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* 主内容区 */
+        .main-container {
+            margin-top: 64px;
+            padding: 24px;
+            min-height: calc(100vh - 64px);
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 面包屑 */
+        .breadcrumb {
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-color);
+        }
+
+        .breadcrumb span {
+            color: var(--text-tertiary);
+            margin: 0 8px;
+        }
+
+        .breadcrumb .current {
+            color: var(--text-primary);
+        }
+
+        /* 内容布局 */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 16px;
+            }
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--primary-color);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* 场景详情卡片 */
+        .scene-card {
+            margin-bottom: 24px;
+        }
+
+        .scene-header {
+            display: flex;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        .scene-cover {
+            width: 280px;
+            height: 180px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scene-cover i {
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .scene-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scene-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .scene-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .scene-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-white);
+            color: var(--text-primary);
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.primary:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .action-btn.success {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .action-btn.success:hover {
+            background: #73d13d;
+            border-color: #73d13d;
+        }
+
+        .scene-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .scene-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scene-meta-item i {
+            color: var(--text-tertiary);
+        }
+
+        .scene-desc {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+
+        .scene-tags {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tag-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            min-width: 70px;
+            flex-shrink: 0;
+        }
+
+        .tag-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tag.blue {
+            background: #e6f4ff;
+            color: #1677ff;
+            border: 1px solid #91caff;
+        }
+
+        .tag.green {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .tag.orange {
+            background: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .tag.purple {
+            background: #f9f0ff;
+            color: #722ed1;
+            border: 1px solid #d3adf7;
+        }
+
+        .tag.cyan {
+            background: #e6fffb;
+            color: #13c2c2;
+            border: 1px solid #87e8de;
+        }
+
+        .tag.red {
+            background: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+
+        /* 标签页 */
+        .tabs-card {
+            margin-bottom: 24px;
+        }
+
+        .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 0 24px;
+            background: var(--bg-white);
+        }
+
+        .tab-item {
+            padding: 16px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            position: relative;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-item:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-item.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .tab-badge {
+            background: #f0f0f0;
+            color: var(--text-secondary);
+            padding: 0 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .tab-item.active .tab-badge {
+            background: #e6f4ff;
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 任务列表 */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .task-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(22, 119, 255, 0.1);
+        }
+
+        .task-index {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e6f4ff;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .task-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .task-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .task-arrow {
+            color: var(--text-tertiary);
+            font-size: 16px;
+            margin-left: 16px;
+            align-self: center;
+        }
+
+        /* 资源列表 */
+        .resource-section {
+            margin-bottom: 24px;
+        }
+
+        .resource-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .resource-section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .resource-section-title i {
+            color: var(--primary-color);
+        }
+
+        .resource-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .resource-item:hover {
+            border-color: var(--primary-color);
+            background: #fafafa;
+        }
+
+        .resource-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .resource-icon.pdf {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+
+        .resource-icon.video {
+            background: #e6f4ff;
+            color: #1677ff;
+        }
+
+        .resource-icon.ppt {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .resource-icon.doc {
+            background: #e6f4ff;
+            color: #1677ff;
+        }
+
+        .resource-icon.link {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .resource-icon.image {
+            background: #f9f0ff;
+            color: #722ed1;
+        }
+
+        .resource-icon.audio {
+            background: #e6fffb;
+            color: #13c2c2;
+        }
+
+        .resource-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .resource-name {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .resource-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .resource-action {
+            color: var(--primary-color);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .resource-item:hover .resource-action {
+            opacity: 1;
+        }
+
+        /* 能力列表 */
+        .ability-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ability-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .ability-item:hover {
+            border-color: var(--primary-color);
+        }
+
+        .ability-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 12px;
+        }
+
+        .ability-info {
+            flex: 1;
+        }
+
+        .ability-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .ability-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .ability-level {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .level-star {
+            color: #fadb14;
+            font-size: 12px;
+        }
+
+        .level-star.empty {
+            color: #d9d9d9;
+        }
+
+        /* 知识体系 */
+        .knowledge-tree {
+            padding-left: 0;
+        }
+
+        .tree-node {
+            list-style: none;
+        }
+
+        .tree-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .tree-item:hover {
+            background: #fafafa;
+        }
+
+        .tree-toggle {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            color: var(--text-tertiary);
+            transition: transform 0.2s;
+        }
+
+        .tree-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .tree-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .tree-icon.folder {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .tree-icon.file {
+            background: #e6f4ff;
+            color: #1677ff;
+        }
+
+        .tree-label {
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .tree-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            background: #f5f5f5;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .tree-children {
+            padding-left: 28px;
+            display: none;
+        }
+
+        .tree-children.expanded {
+            display: block;
+        }
+
+        /* 评价量规 */
+        .rubric-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .rubric-table th,
+        .rubric-table td {
+            border: 1px solid #f0f0f0;
+            padding: 12px 16px;
+            text-align: left;
+        }
+
+        .rubric-table th {
+            background: #fafafa;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .rubric-table td {
+            color: var(--text-secondary);
+        }
+
+        .rubric-table tr:hover td {
+            background: #fafafa;
+        }
+
+        .rubric-level {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .rubric-level.excellent {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .rubric-level.good {
+            background: #e6f4ff;
+            color: #1677ff;
+        }
+
+        .rubric-level.pass {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .rubric-level.fail {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+
+        .rubric-dimension {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .rubric-weight {
+            font-size: 12px;
+            color: var(--primary-color);
+            background: #e6f4ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 课时统计 */
+        .stat-chart {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .chart-ring {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--primary-color) 0deg 216deg,
+                var(--success-color) 216deg 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .chart-ring::before {
+            content: '';
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+        }
+
+        .chart-center {
+            position: relative;
+            text-align: center;
+        }
+
+        .chart-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .stat-legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.theory {
+            background: var(--primary-color);
+        }
+
+        .legend-dot.practice {
+            background: var(--success-color);
+        }
+
+        /* 岗位能力要求 */
+        .job-ability-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .job-group {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .job-header {
+            padding: 12px 16px;
+            background: #fafafa;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .job-header i {
+            color: var(--primary-color);
+        }
+
+        .job-abilities {
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .job-ability-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .job-ability-name {
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .job-ability-name i {
+            color: var(--text-tertiary);
+            font-size: 12px;
+        }
+
+        /* 测评资源 */
+        .assess-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .assess-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .assess-item:hover {
+            border-color: var(--primary-color);
+            background: #fafafa;
+        }
+
+        .assess-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .assess-icon.quiz {
+            background: #e6f4ff;
+            color: #1677ff;
+        }
+
+        .assess-icon.exam {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .assess-icon.bank {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .assess-info {
+            flex: 1;
+        }
+
+        .assess-name {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .assess-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* 其他资源 */
+        .other-resource-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .other-resource-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .other-resource-item:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .other-resource-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+            color: var(--text-tertiary);
+        }
+
+        .other-resource-item:hover i {
+            color: var(--primary-color);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+            }
+
+            .logo-subtitle {
+                display: none;
+            }
+
+            .datetime {
+                display: none;
+            }
+
+            .main-container {
+                padding: 16px;
+            }
+
+            .scene-header {
+                flex-direction: column;
+            }
+
+            .scene-cover {
+                width: 100%;
+                height: 160px;
+            }
+
+            .scene-title-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .scene-actions {
+                width: 100%;
+            }
+
+            .scene-actions .action-btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .tabs-nav {
+                overflow-x: auto;
+                padding: 0 16px;
+            }
+
+            .tab-item {
+                white-space: nowrap;
+                padding: 12px 16px;
+            }
+
+            .resource-list {
+                grid-template-columns: 1fr;
+            }
+
+            .rubric-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页眉 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-icon">知</div>
+                <span class="logo-text">知与</span>
+                <span class="logo-subtitle">实践场景学习平台</span>
+            </div>
+            <button class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                返回首页
+            </button>
+        </div>
+        <div class="header-right">
+            <div class="datetime">
+                <span><i class="far fa-calendar"></i><span id="currentDate">2024年1月15日</span></span>
+                <span><i class="far fa-clock"></i><span id="currentTime">14:30:25</span></span>
+            </div>
+            <div class="nav-btns">
+                <button class="nav-btn primary">
+                    <i class="fas fa-plus"></i>
+                    新建场景
+                </button>
+                <button class="nav-btn">
+                    <i class="fas fa-folder"></i>
+                    我的场景
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-container">
+        <!-- 面包屑 -->
+        <div class="breadcrumb">
+            <a href="#">首页</a>
+            <span>/</span>
+            <a href="#">场景库</a>
+            <span>/</span>
+            <span class="current">企业级Web应用开发实战</span>
+        </div>
+
+        <div class="content-wrapper">
+            <!-- 左侧主内容 -->
+            <div class="main-content">
+                <!-- 场景详情卡片 -->
+                <div class="card scene-card">
+                    <div class="scene-header">
+                        <div class="scene-cover">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <div class="scene-info">
+                            <div class="scene-title-row">
+                                <h1 class="scene-title">企业级Web应用开发实战</h1>
+                                <div class="scene-actions">
+                                    <button class="action-btn">
+                                        <i class="fas fa-share-alt"></i>
+                                        分享
+                                    </button>
+                                    <button class="action-btn">
+                                        <i class="far fa-star"></i>
+                                        收藏
+                                    </button>
+                                    <button class="action-btn success">
+                                        <i class="fas fa-play"></i>
+                                        开始学习
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="scene-meta">
+                                <span class="scene-meta-item">
+                                    <i class="far fa-user"></i>
+                                    创建者：张老师
+                                </span>
+                                <span class="scene-meta-item">
+                                    <i class="far fa-clock"></i>
+                                    更新于 2024-01-10
+                                </span>
+                                <span class="scene-meta-item">
+                                    <i class="far fa-eye"></i>
+                                    浏览 1,234 次
+                                </span>
+                                <span class="scene-meta-item">
+                                    <i class="far fa-heart"></i>
+                                    收藏 89 次
+                                </span>
+                            </div>
+                            <p class="scene-desc">
+                                本场景以真实企业项目为背景，系统性地培养学生从需求分析、系统设计到编码实现、测试部署的全栈开发能力。通过完成一个完整的企业级电商后台管理系统，掌握主流技术栈的应用，培养工程化思维和团队协作能力。
+                            </p>
+                            <div class="scene-tags">
+                                <div class="tag-row">
+                                    <span class="tag-label">面向专业：</span>
+                                    <div class="tag-values">
+                                        <span class="tag blue">软件工程</span>
+                                        <span class="tag blue">计算机科学与技术</span>
+                                        <span class="tag blue">信息管理与信息系统</span>
+                                    </div>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag-label">所属院系：</span>
+                                    <div class="tag-values">
+                                        <span class="tag green">计算机学院</span>
+                                        <span class="tag green">信息工程学院</span>
+                                    </div>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag-label">行业领域：</span>
+                                    <div class="tag-values">
+                                        <span class="tag orange">互联网</span>
+                                        <span class="tag orange">电子商务</span>
+                                        <span class="tag orange">企业服务</span>
+                                    </div>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag-label">关联岗位：</span>
+                                    <div class="tag-values">
+                                        <span class="tag purple">Java开发工程师</span>
+                                        <span class="tag purple">前端开发工程师</span>
+                                        <span class="tag purple">全栈开发工程师</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 标签页内容 -->
+                <div class="card tabs-card">
+                    <div class="tabs-nav">
+                        <div class="tab-item active" data-tab="tasks">
+                            <i class="fas fa-tasks"></i>
+                            任务活动
+                            <span class="tab-badge">6</span>
+                        </div>
+                        <div class="tab-item" data-tab="resources">
+                            <i class="fas fa-book"></i>
+                            学习资源
+                            <span class="tab-badge">24</span>
+                        </div>
+                        <div class="tab-item" data-tab="abilities">
+                            <i class="fas fa-star"></i>
+                            关联能力点
+                            <span class="tab-badge">12</span>
+                        </div>
+                        <div class="tab-item" data-tab="rubric">
+                            <i class="fas fa-clipboard-check"></i>
+                            评价量规
+                            <span class="tab-badge">4</span>
+                        </div>
+                        <div class="tab-item" data-tab="knowledge">
+                            <i class="fas fa-sitemap"></i>
+                            知识体系
+                        </div>
+                    </div>
+
+                    <!-- 任务活动 -->
+                    <div class="tab-content active" id="tasks">
+                        <div class="task-list">
+                            <div class="task-item">
+                                <div class="task-index">1</div>
+                                <div class="task-content">
+                                    <div class="task-title">需求分析与系统设计</div>
+                                    <div class="task-desc">理解业务需求，完成需求规格说明书编写；进行系统架构设计，绘制UML图，完成数据库设计。</div>
+                                    <div class="task-meta">
+                                        <span class="task-meta-item"><i class="far fa-clock"></i> 8课时</span>
+                                        <span class="task-meta-item"><i class="fas fa-layer-group"></i> 理论+实践</span>
+                                        <span class="task-meta-item"><i class="fas fa-file-alt"></i> 3个资源</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right task-arrow"></i>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-index">2</div>
+                                <div class="task-content">
+                                    <div class="task-title">开发环境搭建与项目初始化</div>
+                                    <div class="task-desc">配置开发环境，包括JDK、Maven、Git等工具；使用Spring Boot初始化项目，配置MyBatis、Redis等中间件。</div>
+                                    <div class="task-meta">
+                                        <span class="task-meta-item"><i class="far fa-clock"></i> 4课时</span>
+                                        <span class="task-meta-item"><i class="fas fa-layer-group"></i> 实践</span>
+                                        <span class="task-meta-item"><i class="fas fa-file-alt"></i> 5个资源</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right task-arrow"></i>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-index">3</div>
+                                <div class="task-content">
+                                    <div class="task-title">后端核心功能开发</div>
+                                    <div class="task-desc">实现用户认证授权、商品管理、订单管理等核心业务模块；编写RESTful API接口，进行单元测试。</div>
+                                    <div class="task-meta">
+                                        <span class="task-meta-item"><i class="far fa-clock"></i> 16课时</span>
+                                        <span class="task-meta-item"><i class="fas fa-layer-group"></i> 实践</span>
+                                        <span class="task-meta-item"><i class="fas fa-file-alt"></i> 8个资源</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right task-arrow"></i>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-index">4</div>
+                                <div class="task-content">
+                                    <div class="task-title">前端页面开发</div>
+                                    <div class="task-desc">使用Vue.js开发管理后台前端；实现组件化开发，对接后端API，完成页面交互功能。</div>
+                                    <div class="task-meta">
+                                        <span class="task-meta-item"><i class="far fa-clock"></i> 12课时</span>
+                                        <span class="task-meta-item"><i class="fas fa-layer-group"></i> 实践</span>
+                                        <span class="task-meta-item"><i class="fas fa-file-alt"></i> 6个资源</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right task-arrow"></i>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-index">5</div>
+                                <div class="task-content">
+                                    <div class="task-title">系统测试与优化</div>
+                                    <div class="task-desc">编写集成测试用例，进行性能测试；分析系统瓶颈，进行代码优化和SQL优化。</div>
+                                    <div class="task-meta">
+                                        <span class="task-meta-item"><i class="far fa-clock"></i> 6课时</span>
+                                        <span class="task-meta-item"><i class="fas fa-layer-group"></i> 实践</span>
+                                        <span class="task-meta-item"><i class="fas fa-file-alt"></i> 4个资源</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right task-arrow"></i>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-index">6</div>
+                                <div class="task-content">
+                                    <div class="task-title">项目部署与答辩</div>
+                                    <div class="task-desc">使用Docker容器化部署，配置Nginx反向代理；准备项目文档，进行项目答辩和成果展示。</div>
+                                    <div class="task-meta">
+                                        <span class="task-meta-item"><i class="far fa-clock"></i> 6课时</span>
+                                        <span class="task-meta-item"><i class="fas fa-layer-group"></i> 理论+实践</span>
+                                        <span class="task-meta-item"><i class="fas fa-file-alt"></i> 3个资源</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right task-arrow"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 学习资源 -->
+                    <div class="tab-content" id="resources">
+                        <div class="resource-section">
+                            <div class="resource-section-title">
+                                <i class="fas fa-video"></i>
+                                视频教程
+                            </div>
+                            <div class="resource-list">
+                                <div class="resource-item">
+                                    <div class="resource-icon video">
+                                        <i class="fas fa-play-circle"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">Spring Boot入门到精通</div>
+                                        <div class="resource-meta">视频 · 12集 · 6.5小时</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon video">
+                                        <i class="fas fa-play-circle"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">Vue.js 3.0 实战教程</div>
+                                        <div class="resource-meta">视频 · 18集 · 9小时</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon video">
+                                        <i class="fas fa-play-circle"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">MySQL数据库优化实战</div>
+                                        <div class="resource-meta">视频 · 8集 · 4小时</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon video">
+                                        <i class="fas fa-play-circle"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">Docker容器化部署详解</div>
+                                        <div class="resource-meta">视频 · 6集 · 3小时</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-section">
+                            <div class="resource-section-title">
+                                <i class="fas fa-file-pdf"></i>
+                                文档资料
+                            </div>
+                            <div class="resource-list">
+                                <div class="resource-item">
+                                    <div class="resource-icon pdf">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">需求规格说明书模板.pdf</div>
+                                        <div class="resource-meta">PDF · 2.3 MB · 下载 156 次</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon pdf">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">系统设计文档规范.pdf</div>
+                                        <div class="resource-meta">PDF · 1.8 MB · 下载 132 次</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon doc">
+                                        <i class="fas fa-file-word"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">API接口设计规范.docx</div>
+                                        <div class="resource-meta">Word · 856 KB · 下载 98 次</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon pdf">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">数据库设计指南.pdf</div>
+                                        <div class="resource-meta">PDF · 3.1 MB · 下载 178 次</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-section">
+                            <div class="resource-section-title">
+                                <i class="fas fa-file-powerpoint"></i>
+                                课件演示
+                            </div>
+                            <div class="resource-list">
+                                <div class="resource-item">
+                                    <div class="resource-icon ppt">
+                                        <i class="fas fa-file-powerpoint"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">第1章-需求分析方法论.pptx</div>
+                                        <div class="resource-meta">PPT · 45页 · 8.2 MB</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon ppt">
+                                        <i class="fas fa-file-powerpoint"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">第2章-系统架构设计.pptx</div>
+                                        <div class="resource-meta">PPT · 62页 · 12.5 MB</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon ppt">
+                                        <i class="fas fa-file-powerpoint"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">第3章-Spring Boot核心.pptx</div>
+                                        <div class="resource-meta">PPT · 58页 · 10.8 MB</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon ppt">
+                                        <i class="fas fa-file-powerpoint"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">第4章-前端工程化实践.pptx</div>
+                                        <div class="resource-meta">PPT · 52页 · 9.6 MB</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-section">
+                            <div class="resource-section-title">
+                                <i class="fas fa-code"></i>
+                                代码资源
+                            </div>
+                            <div class="resource-list">
+                                <div class="resource-item">
+                                    <div class="resource-icon link">
+                                        <i class="fab fa-github"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">项目脚手架源码</div>
+                                        <div class="resource-meta">GitHub · ⭐ 234 · 更新于 3天前</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon link">
+                                        <i class="fab fa-github"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">后端示例代码仓库</div>
+                                        <div class="resource-meta">GitHub · ⭐ 189 · 更新于 1周前</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon link">
+                                        <i class="fab fa-github"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">前端Vue项目模板</div>
+                                        <div class="resource-meta">GitHub · ⭐ 156 · 更新于 5天前</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-section">
+                            <div class="resource-section-title">
+                                <i class="fas fa-link"></i>
+                                参考链接
+                            </div>
+                            <div class="resource-list">
+                                <div class="resource-item">
+                                    <div class="resource-icon link">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">Spring官方文档</div>
+                                        <div class="resource-meta">外部链接 · spring.io</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon link">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">Vue.js官方教程</div>
+                                        <div class="resource-meta">外部链接 · vuejs.org</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                                <div class="resource-item">
+                                    <div class="resource-icon link">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">MyBatis-Plus文档</div>
+                                        <div class="resource-meta">外部链接 · baomidou.com</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt resource-action"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 关联能力点 -->
+                    <div class="tab-content" id="abilities">
+                        <div class="ability-list">
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">需求分析能力</div>
+                                    <div class="ability-desc">能够准确理解业务需求，编写规范的需求文档</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fas fa-sitemap"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">系统设计能力</div>
+                                    <div class="ability-desc">能够进行合理的系统架构设计和数据库设计</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fab fa-java"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">Java后端开发</div>
+                                    <div class="ability-desc">熟练使用Spring Boot框架进行后端开发</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fab fa-vuejs"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">前端开发能力</div>
+                                    <div class="ability-desc">熟练使用Vue.js进行前端页面开发</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">数据库设计与优化</div>
+                                    <div class="ability-desc">能够设计合理的数据库结构并进行SQL优化</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fas fa-vial"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">软件测试能力</div>
+                                    <div class="ability-desc">能够编写单元测试和集成测试用例</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fab fa-docker"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">容器化部署能力</div>
+                                    <div class="ability-desc">能够使用Docker进行应用容器化部署</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="ability-info">
+                                    <div class="ability-name">团队协作能力</div>
+                                    <div class="ability-desc">能够使用Git进行版本控制和团队协作开发</div>
+                                </div>
+                                <div class="ability-level">
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                    <i class="fas fa-star level-star empty"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 评价量规 -->
+                    <div class="tab-content" id="rubric">
+                        <table class="rubric-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 180px;">评价维度</th>
+                                    <th><span class="rubric-level excellent">优秀 (90-100)</span></th>
+                                    <th><span class="rubric-level good">良好 (80-89)</span></th>
+                                    <th><span class="rubric-level pass">合格 (60-79)</span></th>
+                                    <th><span class="rubric-level fail">不合格 (&lt;60)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="rubric-dimension">需求分析与设计</span>
+                                        <span class="rubric-weight">20%</span>
+                                    </td>
+                                    <td>需求理解准确全面，文档规范完整，UML图绘制标准，数据库设计合理优化</td>
+                                    <td>需求理解基本准确，文档较为规范，UML图基本正确，数据库设计合理</td>
+                                    <td>需求理解有偏差，文档格式基本正确，UML图有少量错误，数据库设计基本可用</td>
+                                    <td>需求理解错误，文档不规范，UML图错误较多，数据库设计存在明显问题</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="rubric-dimension">后端开发能力</span>
+                                        <span class="rubric-weight">30%</span>
+                                    </td>
+                                    <td>代码规范优雅，架构清晰，API设计合理，单元测试覆盖率高，性能优良</td>
+                                    <td>代码较为规范，架构基本清晰，API设计合理，有单元测试，性能良好</td>
+                                    <td>代码基本可读，功能基本实现，API能正常工作，测试覆盖不足</td>
+                                    <td>代码混乱，功能实现不完整，API存在bug，无测试或测试不通过</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="rubric-dimension">前端开发能力</span>
+                                        <span class="rubric-weight">25%</span>
+                                    </td>
+                                    <td>页面美观响应式，组件化程度高，代码规范，用户体验优秀，兼容性好</td>
+                                    <td>页面布局合理，有组件化意识，代码较规范，用户体验良好</td>
+                                    <td>页面能正常显示，基本功能可用，代码可维护性一般</td>
+                                    <td>页面显示异常，功能不完整，代码难以维护，存在明显bug</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="rubric-dimension">部署与文档</span>
+                                        <span class="rubric-weight">15%</span>
+                                    </td>
+                                    <td>Docker部署配置完善，CI/CD流程完整，文档详细清晰，演示流畅专业</td>
+                                    <td>能正确进行Docker部署，文档较为完整，演示基本流畅</td>
+                                    <td>能完成基本部署，文档基本可用，演示有准备</td>
+                                    <td>无法正确部署，文档缺失或错误，演示准备不足</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="rubric-dimension">团队协作</span>
+                                        <span class="rubric-weight">10%</span>
+                                    </td>
+                                    <td>Git使用规范，提交记录清晰，分支管理合理，代码评审认真，协作高效</td>
+                                    <td>能正确使用Git，提交较为规范，有分支意识，参与代码评审</td>
+                                    <td>会基本的Git操作，提交记录较少，协作意识一般</td>
+                                    <td>不会使用Git或使用不当，无协作记录，团队贡献不明确</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 知识体系 -->
+                    <div class="tab-content" id="knowledge">
+                        <ul class="knowledge-tree">
+                            <li class="tree-node">
+                                <div class="tree-item" onclick="toggleTree(this)">
+                                    <span class="tree-toggle expanded"><i class="fas fa-chevron-right"></i></span>
+                                    <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                    <span class="tree-label">软件工程基础</span>
+                                    <span class="tree-count">12个知识点</span>
+                                </div>
+                                <ul class="tree-children expanded">
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">需求工程</span>
+                                            <span class="tree-count">4个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">需求获取方法</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">需求分析技术</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">需求规格说明</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">需求变更管理</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">系统设计</span>
+                                            <span class="tree-count">5个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">架构设计模式</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">UML建模</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">数据库设计</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">接口设计规范</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">安全设计</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">软件测试</span>
+                                            <span class="tree-count">3个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">单元测试</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">集成测试</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">性能测试</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="tree-node">
+                                <div class="tree-item" onclick="toggleTree(this)">
+                                    <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                    <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                    <span class="tree-label">后端开发技术</span>
+                                    <span class="tree-count">18个知识点</span>
+                                </div>
+                                <ul class="tree-children">
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">Spring Boot框架</span>
+                                            <span class="tree-count">8个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">自动配置原理</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">依赖注入</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">AOP编程</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">数据库技术</span>
+                                            <span class="tree-count">6个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">MyBatis-Plus</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">事务管理</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">Redis缓存</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">安全认证</span>
+                                            <span class="tree-count">4个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">JWT认证</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">Spring Security</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="tree-node">
+                                <div class="tree-item" onclick="toggleTree(this)">
+                                    <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                    <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                    <span class="tree-label">前端开发技术</span>
+                                    <span class="tree-count">15个知识点</span>
+                                </div>
+                                <ul class="tree-children">
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">Vue.js框架</span>
+                                            <span class="tree-count">8个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">组合式API</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">状态管理Pinia</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">Vue Router</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item" onclick="toggleTree(this)">
+                                            <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                            <span class="tree-label">工程化工具</span>
+                                            <span class="tree-count">4个知识点</span>
+                                        </div>
+                                        <ul class="tree-children">
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">Vite构建工具</span>
+                                                </div>
+                                            </li>
+                                            <li class="tree-node">
+                                                <div class="tree-item">
+                                                    <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                                    <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                                    <span class="tree-label">ESLint代码规范</span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="tree-node">
+                                <div class="tree-item" onclick="toggleTree(this)">
+                                    <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                    <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                    <span class="tree-label">DevOps实践</span>
+                                    <span class="tree-count">8个知识点</span>
+                                </div>
+                                <ul class="tree-children">
+                                    <li class="tree-node">
+                                        <div class="tree-item">
+                                            <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                            <span class="tree-label">Docker容器化</span>
+                                        </div>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item">
+                                            <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                            <span class="tree-label">Nginx配置</span>
+                                        </div>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item">
+                                            <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                            <span class="tree-label">CI/CD流水线</span>
+                                        </div>
+                                    </li>
+                                    <li class="tree-node">
+                                        <div class="tree-item">
+                                            <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                            <span class="tree-label">日志监控</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧边栏 -->
+            <aside class="sidebar">
+                <!-- 课时统计 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            课时统计
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-chart">
+                            <div class="chart-ring">
+                                <div class="chart-center">
+                                    <div class="chart-value">52</div>
+                                    <div class="chart-label">总课时</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot theory"></span>
+                                <span>理论 14课时</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot practice"></span>
+                                <span>实践 38课时</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 岗位能力要求 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-briefcase"></i>
+                            岗位能力要求
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="job-ability-list">
+                            <div class="job-group">
+                                <div class="job-header">
+                                    <i class="fab fa-java"></i>
+                                    Java开发工程师
+                                </div>
+                                <div class="job-abilities">
+                                    <div class="job-ability-item">
+                                        <span class="job-ability-name"><i class="fas fa-check-circle"></i> Spring Boot开发</span>
+                                        <div class="ability-level">
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                        </div>
+                                    </div>
+                                    <div class="job-ability-item">
+                                        <span class="job-ability-name"><i class="fas fa-check-circle"></i> MySQL数据库</span>
+                                        <div class="ability-level">
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                        </div>
+                                    </div>
+                                    <div class="job-ability-item">
+                                        <span class="job-ability-name"><i class="fas fa-check-circle"></i> RESTful API设计</span>
+                                        <div class="ability-level">
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="job-group">
+                                <div class="job-header">
+                                    <i class="fab fa-vuejs"></i>
+                                    前端开发工程师
+                                </div>
+                                <div class="job-abilities">
+                                    <div class="job-ability-item">
+                                        <span class="job-ability-name"><i class="fas fa-check-circle"></i> Vue.js框架</span>
+                                        <div class="ability-level">
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                        </div>
+                                    </div>
+                                    <div class="job-ability-item">
+                                        <span class="job-ability-name"><i class="fas fa-check-circle"></i> 组件化开发</span>
+                                        <div class="ability-level">
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                            <i class="fas fa-star level-star empty"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 测评资源 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-clipboard-list"></i>
+                            测评资源
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="assess-list">
+                            <div class="assess-item">
+                                <div class="assess-icon quiz">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div class="assess-info">
+                                    <div class="assess-name">随堂测验</div>
+                                    <div class="assess-meta">6套 · 共60题</div>
+                                </div>
+                            </div>
+                            <div class="assess-item">
+                                <div class="assess-icon exam">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="assess-info">
+                                    <div class="assess-name">综合试卷</div>
+                                    <div class="assess-meta">2套 · 期中/期末</div>
+                                </div>
+                            </div>
+                            <div class="assess-item">
+                                <div class="assess-icon bank">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="assess-info">
+                                    <div class="assess-name">练习题库</div>
+                                    <div class="assess-meta">500+ 道题目</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他资源 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-toolbox"></i>
+                            其他资源
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="other-resource-list">
+                            <div class="other-resource-item">
+                                <i class="fas fa-tools"></i>
+                                开发工具包 (JDK, Maven, Git)
+                            </div>
+                            <div class="other-resource-item">
+                                <i class="fas fa-laptop"></i>
+                                实验室机房 - 3号楼201
+                            </div>
+                            <div class="other-resource-item">
+                                <i class="fas fa-server"></i>
+                                云服务器资源 (阿里云ECS)
+                            </div>
+                            <div class="other-resource-item">
+                                <i class="fas fa-code-branch"></i>
+                                GitLab代码托管平台
+                            </div>
+                            <div class="other-resource-item">
+                                <i class="fas fa-comments"></i>
+                                技术交流群 (QQ/钉钉)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        // 更新日期时间
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', dateOptions);
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('zh-CN', timeOptions);
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // 标签页切换
+        const tabItems = document.querySelectorAll('.tab-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.getAttribute('data-tab');
+                
+                tabItems.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                item.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // 知识树展开/折叠
+        function toggleTree(element) {
+            const toggle = element.querySelector('.tree-toggle');
+            const children = element.parentElement.querySelector('.tree-children');
+            
+            if (children) {
+                toggle.classList.toggle('expanded');
+                children.classList.toggle('expanded');
+            }
+        }
+
+        // 收藏按钮交互
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            if (btn.innerHTML.includes('收藏')) {
+                btn.addEventListener('click', function() {
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        this.style.color = '#faad14';
+                        this.style.borderColor = '#faad14';
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        this.style.color = '';
+                        this.style.borderColor = '';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

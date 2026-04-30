@@ -106,6 +106,28 @@ export interface Scenario {
   publishTime?: string
 }
 
+export interface TaskEvalPoint {
+  id: string
+  name: string
+  desc: string
+  weight: number
+  maxScore: number
+  scoringMethod?: "score" | "level" | "rubric"
+  gradeMapping?: GradeMapping[]
+  subType?: string
+  types?: string[]
+  knowledgePointIds?: string[]
+  abilityPointIds?: string[]
+}
+
+export interface ReviewStep {
+  id: string
+  label: string
+  desc: string
+  enabled: boolean
+  subjectType: string | null
+}
+
 export interface Task {
   id: string
   name: string
@@ -126,6 +148,13 @@ export interface Task {
   isReferenced?: boolean
   sourceScenarioId?: string
   sourceScenarioName?: string
+  evalPoints?: {
+    randomDraw?: TaskEvalPoint[]
+    review?: TaskEvalPoint[]
+    paper?: TaskEvalPoint[]
+    questionBank?: TaskEvalPoint[]
+  }
+  reviewSteps?: ReviewStep[]
 }
 
 export interface TaskDeliverable {
@@ -361,7 +390,7 @@ export const professions: Profession[] = [
   },
 ]
 
-const defaultRubricLevels: RubricLevel[] = [
+export const defaultRubricLevels: RubricLevel[] = [
   { id: "level-1", name: "优秀", minScore: 90, maxScore: 100, description: "表现卓越，超出预期", color: "bg-green-500" },
   { id: "level-2", name: "良好", minScore: 75, maxScore: 89, description: "表现良好，达到预期", color: "bg-blue-500" },
   { id: "level-3", name: "及格", minScore: 60, maxScore: 74, description: "基本合格，有待提升", color: "bg-yellow-500" },
@@ -618,7 +647,7 @@ export const scenarios: Scenario[] = [
         code: "T-001-001",
         order: 1,
         description: "使用 React + TypeScript 技术栈搭建项目基础架构，配置开发环境和工具链。",
-        detailedDescription: "<p>本任务要求学员从零开始搭建一个企业级前端项目，需要完成以下内容：</p><ul><li>使用 Vite 或 Create React App 初始化项目</li><li>配置 TypeScript 环境</li><li>设置 ESLint 和 Prettier 代���规范</li><li>配置路由和状态管理</li></ul>",
+        detailedDescription: `任务描述\n\n你需要完成企业级前端项目初始化与架构搭建。该任务基于React+TypeScript技术栈,要求你从零开始搭建规范的项目基础框架。执行时请注意工程化配置完整性,确保理解需求后再开始。\n\n任务目标\n\n·核心目标:搭建一个符合企业规范的前端项目基础架构\n·目标一:完成项目脚手架初始化与目录结构设计\n·目标二:配置TypeScript、ESLint、Prettier等开发环境\n·目标三:集成路由、状态管理和UI组件库\n·成功标准:项目能正常启动运行,目录结构清晰规范\n\n任务结果\n\n请提交以下内容:\n\n·主交付物:项目代码仓库\n格式要求:Git仓库,包含完整的README文档\n·附属说明:技术选型理由、环境依赖版本说明\n篇幅要求:代码不少于300行,README不少于500字\n\n测评要求\n\n·准确性(30%):配置正确无误,项目可正常运行\n·完整性(25%):覆盖所有技术栈配置要求\n清晰度(20%):目录结构清晰,文档表达简洁\n·实用性(15%):工程化方案可复用,易于维护\n规范性(10%):代码规范,术语统一,无明显错误\n\n一票否决项:若出现抄袭他人项目架构或核心配置错误导致无法运行,视为未通过。`,
         estimatedHours: 8,
         taskType: "assessment",
         difficulty: 3,
@@ -645,6 +674,14 @@ export const scenarios: Scenario[] = [
             ],
           },
         },
+        evalPoints: {
+          randomDraw: [
+            { id: "rep-1", name: "理论知识掌握程度", desc: "对前端框架核心概念、生命周期、状态管理等理论知识的理解深度", weight: 40, maxScore: 40, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rep-2", name: "问题分析思路", desc: "面对技术问题时能否条理清晰地分析原因、提出解决方案", weight: 30, maxScore: 30, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rep-3", name: "表达与沟通能力", desc: "回答是否逻辑清晰、表达流畅、能够准确传达技术观点", weight: 20, maxScore: 20, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rep-4", name: "临场应变能力", desc: "面对追问或意外问题时能否沉着应对、灵活调整", weight: 10, maxScore: 10, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+          ],
+        },
       },
       {
         id: "task-1-2",
@@ -652,7 +689,7 @@ export const scenarios: Scenario[] = [
         code: "T-001-002",
         order: 2,
         description: "实现用户登录、注册、权限验证等认证相关功能。",
-        detailedDescription: "<p>认证模块是企业应用的核心功能，本任务要求实现完整的用户认证流程。</p>",
+        detailedDescription: `任务描述\n\n你需要完成用户认证模块的开发。该任务基于企业级管理后台场景,要求你实现完整的登录注册及权限验证功能。执行时请注意安全性约束,确保理解需求后再开始。\n\n任务目标\n\n·核心目标:实现安全可靠的用户认证系统\n·目标一:完成用户登录、注册功能的前端实现\n·目标二:实现JWT Token的获取、存储和自动刷新\n·目标三:完成路由级别的权限控制与页面守卫\n·成功标准:认证流程完整,无明显安全漏洞\n\n任务结果\n\n请提交以下内容:\n\n·主交付物:认证模块源代码\n格式要求:React组件+自定义Hooks,TypeScript类型完整\n·附属说明:安全策略说明、接口对接文档\n篇幅要求:核心代码不少于200行\n\n测评要求\n\n·准确性(30%):功能正确,认证逻辑清晰可靠\n·完整性(25%):覆盖登录、注册、登出、权限校验等场景\n清晰度(20%):代码结构分明,注释简洁清晰\n·实用性(15%):方案可落地,易于集成到现有项目\n规范性(10%):符合代码规范,术语统一,无明显错误\n\n一票否决项:若出现明文存储密码、Token硬编码等安全问题,视为未通过。`,
         estimatedHours: 12,
         taskType: "assessment",
         difficulty: 4,
@@ -680,6 +717,18 @@ export const scenarios: Scenario[] = [
             synthesisRule: "weighted",
           },
         },
+        evalPoints: {
+          review: [
+            { id: "rev-1", name: "代码规范性", desc: "代码结构清晰、命名规范、注释完整，符合团队编码规范", weight: 25, maxScore: 25, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rev-2", name: "功能实现完整性", desc: "登录、注册、权限验证等核心功能是否完整实现，边界场景是否考虑", weight: 30, maxScore: 30, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rev-3", name: "安全设计意识", desc: "密码加密、XSS防护、CSRF防护、Token安全等安全措施是否到位", weight: 25, maxScore: 25, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rev-4", name: "方案可维护性", desc: "代码是否易于扩展和维护，错误处理是否完善，日志是否规范", weight: 20, maxScore: 20, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+          ],
+        },
+        reviewSteps: [
+          { id: "rs-1", label: "初评", desc: "由指导教师进行第一轮评审", enabled: true, subjectType: "teacher" },
+          { id: "rs-2", label: "复评", desc: "由专家组进行第二轮复核", enabled: true, subjectType: "teacher" },
+        ],
       },
       {
         id: "task-1-3",
@@ -687,6 +736,36 @@ export const scenarios: Scenario[] = [
         code: "T-001-003",
         order: 3,
         description: "开发数据表格、图表展示、表单处理等核心业务组件。",
+        detailedDescription: `任务描述
+
+你需要完成数据表格、图表展示、表单处理等核心业务组件的开发。该任务基于中后台管理系统场景,要求你开发一套可复用的高质量业务组件。执行时请注意组件设计规范,确保理解需求后再开始。
+
+任务目标
+
+·核心目标:开发一套高质量、可复用的核心业务组件库
+·目标一:实现支持排序、筛选、分页的高级数据表格
+·目标二:开发基于ECharts的数据可视化图表组件
+·目标三:完成表单验证、动态表单项等复杂表单处理
+·成功标准:组件功能完整,接口设计合理,文档齐全
+
+任务结果
+
+请提交以下内容:
+
+·主交付物:组件源码及使用文档
+格式要求:React组件,包含Storybook或Markdown文档
+·附属说明:组件设计思路、接口说明、使用示例
+篇幅要求:核心代码不少于400行
+
+测评要求
+
+·准确性(30%):组件功能正确,逻辑清晰
+·完整性(25%):覆盖需求中所有组件类型
+清晰度(20%):接口文档清晰,示例完整
+·实用性(15%):组件可复用性强,易于扩展
+规范性(10%):符合代码规范,命名统一,无明显错误
+
+一票否决项:若出现严重Bug或组件完全无法使用,视为未通过。`,
         estimatedHours: 16,
         taskType: "training",
         difficulty: 4,
@@ -719,6 +798,19 @@ export const scenarios: Scenario[] = [
           },
           mixedWeights: { objective: 40, subjective: 60 },
         },
+        evalPoints: {
+          review: [
+            { id: "rev-c-1", name: "组件设计合理性", desc: "组件接口设计是否清晰、props定义是否规范、组件拆分粒度是否合理", weight: 30, maxScore: 30, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rev-c-2", name: "代码复用与封装", desc: "组件是否具有良好的复用性，逻辑复用是否合理（Hooks/高阶组件等）", weight: 25, maxScore: 25, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rev-c-3", name: "功能完整度", desc: "数据表格、图表、表单等核心功能是否完整实现，交互体验是否流畅", weight: 25, maxScore: 25, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "rev-c-4", name: "文档与演示", desc: "使用文档是否清晰、演示是否流畅、能否准确表达设计思路", weight: 20, maxScore: 20, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+          ],
+        },
+        reviewSteps: [
+          { id: "rs-1", label: "初评", desc: "由指导教师进行第一轮评审", enabled: true, subjectType: "teacher" },
+          { id: "rs-2", label: "复评", desc: "由教研室主任进行复核", enabled: true, subjectType: "teacher" },
+          { id: "rs-3", label: "终评", desc: "答辩委员会最终评定", enabled: false, subjectType: null },
+        ],
       },
       {
         id: "task-1-4",
@@ -726,6 +818,36 @@ export const scenarios: Scenario[] = [
         code: "T-001-004",
         order: 4,
         description: "进行性能优化、打包配置，完成项目部署上线。",
+        detailedDescription: `任务描述
+
+你需要完成前端项目的性能优化与生产环境部署。该任务基于已完成开发的管理后台项目,要求你对项目进行打包优化并成功部署上线。执行时请注意性能指标要求,确保理解需求后再开始。
+
+任务目标
+
+·核心目标:将项目优化至符合生产环境部署标准
+·目标一:完成构建体积分析与优化,减少打包体积
+·目标二:配置代码分割、懒加载、资源缓存等策略
+·目标三:完成项目部署,提供可访问的线上地址
+·成功标准:首屏加载时间小于2秒,构建体积合理
+
+任务结果
+
+请提交以下内容:
+
+·主交付物:优化后的项目代码及部署报告
+格式要求:Markdown文档+线上访问链接
+·附属说明:优化措施说明、性能指标对比数据
+篇幅要求:报告不少于800字
+
+测评要求
+
+·准确性(30%):优化措施有效,性能数据真实可靠
+·完整性(25%):覆盖构建优化、运行时优化、部署方案
+清晰度(20%):报告结构分明,数据表达清晰
+·实用性(15%):优化方案可操作,建议可落地
+规范性(10%):符合文档规范,术语统一,无明显错误
+
+一票否决项:若出现虚假性能数据或项目无法正常访问,视为未通过。`,
         estimatedHours: 8,
         taskType: "assessment",
         difficulty: 3,
@@ -781,6 +903,36 @@ export const scenarios: Scenario[] = [
         code: "T-002-001",
         order: 1,
         description: "学习 RESTful API 设计原则和规范。",
+        detailedDescription: `任务描述
+
+你需要完成RESTful API设计规范的学习与实践。该任务基于后端服务开发场景,要求你掌握API设计原则并完成一套接口设计文档。执行时请注意RESTful规范约束,确保理解需求后再开始。
+
+任务目标
+
+·核心目标:掌握RESTful API设计规范并完成接口设计
+·目标一:学习HTTP方法、状态码、资源命名等核心规范
+·目标二:完成用户管理模块的API接口设计文档
+·目标三:掌握API版本控制、分页、错误处理等最佳实践
+·成功标准:接口设计符合RESTful规范,文档清晰完整
+
+任务结果
+
+请提交以下内容:
+
+·主交付物:API接口设计文档
+格式要求:Markdown或YAML格式,包含OpenAPI规范
+·附属说明:设计思路、接口变更记录
+篇幅要求:文档不少于1000字
+
+测评要求
+
+·准确性(30%):接口设计符合RESTful规范,URI命名合理
+·完整性(25%):覆盖CRUD操作及错误处理场景
+清晰度(20%):文档结构清晰,参数说明完整
+·实用性(15%):接口设计可落地,易于前后端对接
+规范性(10%):符合文档规范,术语统一,无明显错误
+
+一票否决项:若出现严重违反RESTful原则或接口无法描述清楚,视为未通过。`,
         estimatedHours: 6,
         taskType: "training",
         difficulty: 2,
@@ -791,6 +943,14 @@ export const scenarios: Scenario[] = [
         knowledgePoints: ["kp-4"],
         abilityPoints: ["ab-3"],
         assessment: null,
+        evalPoints: {
+          questionBank: [
+            { id: "qb-eval-1", name: "HTTP 规范掌握度", desc: "对 HTTP 方法、状态码、头部字段等基础规范的掌握程度", weight: 30, maxScore: 30, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "qb-eval-2", name: "接口设计合理性", desc: "URI 命名是否规范、资源划分是否合理、版本控制是否得当", weight: 30, maxScore: 30, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "qb-eval-3", name: "文档完整性", desc: "API 文档是否包含参数说明、示例、错误处理等必要内容", weight: 25, maxScore: 25, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+            { id: "qb-eval-4", name: "安全与异常意识", desc: "是否考虑了认证授权、输入校验、错误返回等安全因素", weight: 15, maxScore: 15, scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) },
+          ],
+        },
       },
       {
         id: "task-2-2",
@@ -798,6 +958,36 @@ export const scenarios: Scenario[] = [
         code: "T-002-002",
         order: 2,
         description: "设计数据库模型和关系。",
+        detailedDescription: `任务描述
+
+你需要完成电商后台管理系统的数据库设计。该任务基于业务系统开发场景,要求你设计高效规范的数据库表结构并建立正确关系。执行时请注意数据库范式要求,确保理解需求后再开始。
+
+任务目标
+
+·核心目标:设计一套规范、高效的电商系统数据库模型
+·目标一:完成用户、商品、订单等核心实体的表结构设计
+·目标二:建立正确的表间关系,配置外键约束和索引
+·目标三:编写DDL脚本,包含建表语句和初始化数据
+·成功标准:表结构符合三范式,关系设计合理,脚本可执行
+
+任务结果
+
+请提交以下内容:
+
+·主交付物:数据库设计文档及DDL脚本
+格式要求:Markdown文档+SQL文件
+·附属说明:ER图说明、索引设计理由、数据字典
+篇幅要求:文档不少于800字,SQL不少于100行
+
+测评要求
+
+·准确性(30%):表结构设计正确,关系建立无误
+·完整性(25%):覆盖所有业务实体及关联关系
+清晰度(20%):文档和脚本表达清晰,注释完整
+·实用性(15%):设计方案可落地,易于扩展维护
+规范性(10%):符合命名规范,术语统一,无明显错误
+
+一票否决项:若出现严重违反数据库范式或脚本无法执行,视为未通过。`,
         estimatedHours: 8,
         taskType: "assessment",
         difficulty: 3,
@@ -1003,16 +1193,16 @@ export const abilityPoints: AbilityPoint[] = [
   { id: "ab-3", name: "接口设计能力", description: "设计清晰、规范的 API 接口", category: "设计能力", domain: "系统设计", proficiencyDesc: "L1:能调用现成接口; L2:能编写简单CRUD; L3:能设计RESTful接口; L4:能设计版本兼容策略; L5:能设计高并发接口架构", code: "AB-003", positionIds: ["pos-2", "pos-3"], requiredLevel: "精通" },
   { id: "ab-4", name: "数据库建模能力", description: "设计高效、规范的数据库表结构", category: "设计能力", domain: "系统设计", proficiencyDesc: "L1:能写基本SQL; L2:能设计单表结构; L3:能设计多表关联; L4:能优化查询性能; L5:能设计分库分表方案", code: "AB-004", positionIds: ["pos-2", "pos-3", "pos-4"], requiredLevel: "熟练" },
   { id: "ab-5", name: "安全编码能力", description: "编写安全的代码，防范常见安全漏洞", category: "开发能力", domain: "质量保障", proficiencyDesc: "L1:了解常见漏洞概念; L2:能避免XSS/SQL注入; L3:能实施认证授权; L4:能进行安全审计; L5:能设计安全架构", code: "AB-005", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "理解" },
-  { id: "ab-6", name: "性能优化能力", description: "识别性能瓶颈并进行优化", category: "优化能力", domain: "质量保障", proficiencyDesc: "L1:能使用性能分析工具; L2:能优化渲染性能; L3:能优化网络请求; L4:能优化构建体积; L5:能设计性能监控体系", code: "AB-006", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "熟悉" },
+  { id: "ab-6", name: "性能优化能力", description: "识别性能瓶颈并进行优化", category: "优化能力", domain: "质量保障", proficiencyDesc: "L1:能使用性能分析工具; L2:能优化渲染性能; L3:能优化网络请求; L4:能优化构建体积; L5:能设计性能监控体系", code: "AB-006", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "掌握" },
   { id: "ab-7", name: "团队协作能力", description: "有效沟通、代码审查、文档编写", category: "软技能", domain: "职业素养", proficiencyDesc: "L1:能完成分配任务; L2:能主动沟通问题; L3:能进行代码审查; L4:能指导初级成员; L5:能推动团队协作文化", code: "AB-007", positionIds: ["pos-1", "pos-2", "pos-3", "pos-4", "pos-5", "pos-6", "pos-7", "pos-8", "pos-9", "pos-10", "pos-11", "pos-12"], requiredLevel: "理解" },
   { id: "ab-8", name: "数据分析能力", description: "使用数据驱动决策和分析", category: "分析能力", domain: "职业素养", proficiencyDesc: "L1:能查看基础报表; L2:能使用Excel分析; L3:能使用SQL取数; L4:能建立分析模型; L5:能搭建数据平台", code: "AB-008", positionIds: ["pos-4", "pos-5", "pos-9"], requiredLevel: "熟练" },
-  { id: "ab-9", name: "问题排查能力", description: "定位和解决技术问题的能力", category: "开发能力", domain: "质量保障", proficiencyDesc: "L1:能根据报错搜索; L2:能使用调试工具; L3:能分析复杂链路; L4:能处理线上故障; L5:能设计容灾方案", code: "AB-009", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "熟悉" },
+  { id: "ab-9", name: "问题排查能力", description: "定位和解决技术问题的能力", category: "开发能力", domain: "质量保障", proficiencyDesc: "L1:能根据报错搜索; L2:能使用调试工具; L3:能分析复杂链路; L4:能处理线上故障; L5:能设计容灾方案", code: "AB-009", positionIds: ["pos-1", "pos-2", "pos-3"], requiredLevel: "掌握" },
   { id: "ab-10", name: "项目管理能力", description: "规划、跟踪和交付项目任务", category: "软技能", domain: "职业素养", proficiencyDesc: "L1:能管理个人任务; L2:能协助跟踪进度; L3:能主导小型项目; L4:能管理跨团队项目; L5:能制定项目管理规范", code: "AB-010", positionIds: ["pos-1", "pos-2", "pos-3", "pos-5", "pos-11", "pos-12"], requiredLevel: "理解" },
   { id: "ab-11", name: "CSS 样式开发能力", description: "掌握现代 CSS 技术，实现复杂的页面布局和视觉效果", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:能写基础样式; L2:能使用Flexbox/Grid; L3:能实现响应式布局; L4:能优化样式性能; L5:能设计CSS架构", code: "AB-011", positionIds: ["pos-1", "pos-3"], requiredLevel: "熟练" },
-  { id: "ab-12", name: "前端构建工具配置", description: "配置和优化前端工程化工具链", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:能使用现成脚手架; L2:能配置Webpack/Vite; L3:能优化构建配置; L4:能定制构建流程; L5:能设计工程化体系", code: "AB-012", positionIds: ["pos-1", "pos-3"], requiredLevel: "熟悉" },
+  { id: "ab-12", name: "前端构建工具配置", description: "配置和优化前端工程化工具链", category: "开发能力", domain: "前端工程化", proficiencyDesc: "L1:能使用现成脚手架; L2:能配置Webpack/Vite; L3:能优化构建配置; L4:能定制构建流程; L5:能设计工程化体系", code: "AB-012", positionIds: ["pos-1", "pos-3"], requiredLevel: "掌握" },
   { id: "ab-13", name: "服务端开发能力", description: "使用 Node.js 或其他服务端技术开发后端服务", category: "开发能力", domain: "服务端开发", proficiencyDesc: "L1:能写简单脚本; L2:能开发基础API; L3:能设计服务架构; L4:能优化服务性能; L5:能设计微服务架构", code: "AB-013", positionIds: ["pos-2", "pos-3"], requiredLevel: "熟练" },
   { id: "ab-14", name: "DevOps 运维能力", description: "掌握持续集成、持续部署和容器化技术", category: "工程能力", domain: "运维部署", proficiencyDesc: "L1:了解CI/CD概念; L2:能使用GitHub Actions; L3:能配置Docker; L4:能搭建K8s集群; L5:能设计DevOps体系", code: "AB-014", positionIds: ["pos-2", "pos-3"], requiredLevel: "理解" },
-  { id: "ab-15", name: "数据可视化能力", description: "使用图表库实现数据的可视化展示", category: "分析能力", domain: "数据分析", proficiencyDesc: "L1:能使用基础图表; L2:能配置ECharts/D3; L3:能设计可视化方案; L4:能开发交互式大屏; L5:能设计可视化规范", code: "AB-015", positionIds: ["pos-4", "pos-1"], requiredLevel: "熟悉" },
+  { id: "ab-15", name: "数据可视化能力", description: "使用图表库实现数据的可视化展示", category: "分析能力", domain: "数据分析", proficiencyDesc: "L1:能使用基础图表; L2:能配置ECharts/D3; L3:能设计可视化方案; L4:能开发交互式大屏; L5:能设计可视化规范", code: "AB-015", positionIds: ["pos-4", "pos-1"], requiredLevel: "掌握" },
 ]
 
 // Learning Resources Library
@@ -1362,13 +1552,14 @@ export interface StudentSubmission {
   scenarioName: string
   taskId: string
   taskName: string
-  assessmentType: "objective" | "subjective" | "mixed"
-  assessmentForm: string // 测评形式名称：试卷、题库、评审、现场问答、答辩等
+  assessmentForm: string // 测评形式名称：试卷、题库、评审、现场问答
   status: "pending" | "graded"
   submittedAt: string
   objectiveAnswers?: ObjectiveSubmissionAnswer[]
   subjectiveContent?: SubjectiveSubmissionContent
   rubricScores?: RubricScoreRecord[]
+  drawnQuestions?: DrawnQuestion[] // 现场问答抽出的题目
+  evalPointScores?: EvalPointScoreRecord[] // 评价点评分（用于现场问答、评审等）
   objectiveTotalScore?: number
   subjectiveTotalScore?: number
   totalScore?: number
@@ -1381,7 +1572,8 @@ export interface StudentSubmission {
 /** 客观题学生作答记录 */
 export interface ObjectiveSubmissionAnswer {
   questionId: string
-  questionType: "single" | "multiple" | "judgment"
+  questionName?: string
+  questionType: "single" | "multiple" | "judgment" | "text"
   questionContent: string
   options?: string[]
   correctAnswer: string | string[]
@@ -1417,6 +1609,28 @@ export interface RubricScoreRecord {
   comment?: string
 }
 
+/** 现场问答抽出的题目 */
+export interface DrawnQuestion {
+  questionId: string
+  questionName: string
+  questionContent: string
+  questionType: string
+  options?: string[]
+  correctAnswer: string | string[]
+  studentOralAnswer?: string
+}
+
+/** 评价点评分记录（用于现场问答、评审等基于评价点的评分） */
+export interface EvalPointScoreRecord {
+  evalPointId: string
+  evalPointName: string
+  weight: number
+  maxScore: number
+  levelName?: string
+  score: number
+  comment?: string
+}
+
 // ============================================================================
 // 教师评分 Mock 数据
 // ============================================================================
@@ -1429,44 +1643,35 @@ export const studentSubmissions: StudentSubmission[] = [
     scenarioName: "企业级前端项目开发实战",
     taskId: "task-1-1",
     taskName: "项目初始化与架构搭建",
-    assessmentType: "objective",
     assessmentForm: "试卷",
     status: "pending",
     submittedAt: "2026-04-20 14:30:00",
     maxScore: 100,
     objectiveAnswers: [
-      {
-        questionId: "q-1",
-        questionType: "single",
-        questionContent: "React 18 中引入的并发特性主要解决什么问题？",
-        options: ["性能优化", "代码复用", "状态管理", "路由控制"],
-        correctAnswer: "性能优化",
-        studentAnswer: "性能优化",
-        score: 10,
-        maxScore: 10,
-        isCorrect: true,
-      },
-      {
-        questionId: "q-2",
-        questionType: "judgment",
-        questionContent: "TypeScript 是 JavaScript 的超集",
-        correctAnswer: "true",
-        studentAnswer: "true",
-        score: 10,
-        maxScore: 10,
-        isCorrect: true,
-      },
-      {
-        questionId: "q-3",
-        questionType: "multiple",
-        questionContent: "以下哪些是常用的 React 状态管理方案？",
-        options: ["Redux", "MobX", "Zustand", "jQuery"],
-        correctAnswer: ["Redux", "MobX", "Zustand"],
-        studentAnswer: ["Redux", "MobX", "jQuery"],
-        score: 10,
-        maxScore: 20,
-        isCorrect: false,
-      },
+      { questionId: "q-1", questionName: "React 18 并发特性", questionType: "single", questionContent: "React 18 中引入的并发特性主要解决什么问题？", options: ["性能优化", "代码复用", "状态管理", "路由控制"], correctAnswer: "性能优化", studentAnswer: "性能优化", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-2", questionName: "TypeScript 基础判断", questionType: "judgment", questionContent: "TypeScript 是 JavaScript 的超集", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-3", questionName: "React 状态管理方案", questionType: "multiple", questionContent: "以下哪些是常用的 React 状态管理方案？", options: ["Redux", "MobX", "Zustand", "jQuery"], correctAnswer: ["Redux", "MobX", "Zustand"], studentAnswer: ["Redux", "MobX", "jQuery"], score: 3, maxScore: 5, isCorrect: false },
+      { questionId: "q-4", questionName: "CSS 盒模型", questionType: "single", questionContent: "在 CSS 标准盒模型中，元素的宽度(width)包含哪些部分？", options: ["仅内容宽度", "内容+内边距", "内容+内边距+边框", "内容+内边距+边框+外边距"], correctAnswer: "仅内容宽度", studentAnswer: "内容+内边距+边框", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-5", questionName: "JS 事件循环", questionType: "single", questionContent: "JavaScript 中，setTimeout 的回调函数会在哪个阶段执行？", options: ["同步执行", "宏任务队列", "微任务队列", "渲染阶段"], correctAnswer: "宏任务队列", studentAnswer: "微任务队列", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-s1", questionName: "React 性能优化方法", questionType: "text", questionContent: "请简述 React 中常用的性能优化方法，至少列举 3 种并说明适用场景。", correctAnswer: "1. React.memo / PureComponent：避免不必要的重渲染，适用于组件接收相同 props 时；2. useMemo / useCallback：缓存计算结果和函数引用，适用于复杂计算和子组件传参；3. 代码分割（Code Splitting + lazy / Suspense）：减少首屏加载资源，适用于大型单页应用；4. 虚拟列表：仅渲染可视区域数据，适用于长列表场景。", studentAnswer: "我了解到的性能优化方法有：使用 PureComponent 减少渲染次数，使用虚拟列表处理大数据量，以及使用 Webpack 进行代码分割。这些方法在实际项目中都有应用，能够有效提升页面性能。", score: 0, maxScore: 10, isCorrect: false },
+      { questionId: "q-6", questionName: "Promise 基础", questionType: "judgment", questionContent: "Promise.resolve(1).then(v => console.log(v)) 会立即同步输出 1", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-7", questionName: "HTTP 缓存策略", questionType: "multiple", questionContent: "以下哪些 HTTP 头部与缓存控制有关？", options: ["Cache-Control", "Expires", "Content-Type", "ETag"], correctAnswer: ["Cache-Control", "Expires", "ETag"], studentAnswer: ["Cache-Control", "ETag"], score: 3, maxScore: 5, isCorrect: false },
+      { questionId: "q-8", questionName: "React Hooks 规则", questionType: "single", questionContent: "以下关于 React Hooks 的使用规则，哪项是正确的？", options: ["可以在循环中调用 useState", "可以在条件语句中调用 useEffect", "只能在函数组件顶层调用", "可以在普通函数中调用 useContext"], correctAnswer: "只能在函数组件顶层调用", studentAnswer: "只能在函数组件顶层调用", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-9", questionName: "Git 工作流", questionType: "judgment", questionContent: "git rebase 操作会改写提交历史", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-10", questionName: "前端安全", questionType: "multiple", questionContent: "以下哪些属于常见的前端安全漏洞？", options: ["XSS", "CSRF", "SQL 注入", "点击劫持"], correctAnswer: ["XSS", "CSRF", "点击劫持"], studentAnswer: ["XSS", "CSRF", "SQL 注入", "点击劫持"], score: 2, maxScore: 5, isCorrect: false },
+      { questionId: "q-11", questionName: "Webpack 作用", questionType: "single", questionContent: "Webpack 的主要作用是什么？", options: ["代码运行时解释执行", "模块打包与资源优化", "数据库连接管理", "服务器端渲染"], correctAnswer: "模块打包与资源优化", studentAnswer: "模块打包与资源优化", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-12", questionName: "闭包特性", questionType: "judgment", questionContent: "JavaScript 闭包可以访问外部函数的变量，即使外部函数已经执行完毕", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-13", questionName: "RESTful 设计", questionType: "multiple", questionContent: "以下哪些 HTTP 方法在 RESTful API 中具有幂等性？", options: ["GET", "POST", "PUT", "DELETE"], correctAnswer: ["GET", "PUT", "DELETE"], studentAnswer: ["GET", "PUT"], score: 3, maxScore: 5, isCorrect: false },
+      { questionId: "q-14", questionName: "虚拟 DOM", questionType: "single", questionContent: "React 中虚拟 DOM 的主要优势是什么？", options: ["直接操作真实 DOM 更快", "减少不必要的真实 DOM 操作", "不需要写 CSS", "自动处理服务端请求"], correctAnswer: "减少不必要的真实 DOM 操作", studentAnswer: "减少不必要的真实 DOM 操作", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-15", questionName: "TypeScript 接口", questionType: "judgment", questionContent: "TypeScript 中的 interface 和 type 在功能上完全等价，没有区别", correctAnswer: "false", studentAnswer: "true", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-s2", questionName: "前端工程化实践", questionType: "text", questionContent: "请结合实际项目经验，阐述前端工程化的核心目标和常用工具链。", correctAnswer: "前端工程化的核心目标包括：1. 规范化（代码规范、Git 规范、目录结构）；2. 自动化（构建、测试、部署流水线）；3. 模块化（组件化、微前端）；4. 性能优化（打包优化、资源管理）。常用工具链：Webpack/Vite（构建）、ESLint/Prettier（规范）、Jest/Vitest（测试）、Docker/CI（部署）。", studentAnswer: "前端工程化主要是为了让代码更规范、开发更高效。我们团队使用了 ESLint 来保证代码风格一致，使用 Webpack 来打包项目，还配置了 Jenkins 来实现自动化部署。这些工具大大提升了我们的开发效率。", score: 0, maxScore: 10, isCorrect: false },
+      { questionId: "q-16", questionName: "浏览器存储", questionType: "multiple", questionContent: "以下哪些是浏览器端可用的存储方案？", options: ["localStorage", "sessionStorage", "IndexedDB", "Cookie"], correctAnswer: ["localStorage", "sessionStorage", "IndexedDB", "Cookie"], studentAnswer: ["localStorage", "sessionStorage", "Cookie"], score: 4, maxScore: 5, isCorrect: false },
+      { questionId: "q-17", questionName: "ES6 箭头函数", questionType: "single", questionContent: "箭头函数与普通函数的主要区别不包括以下哪项？", options: ["没有自己的 this", "不能作为构造函数", "不能使用 yield 关键字", "默认拥有 arguments 对象"], correctAnswer: "默认拥有 arguments 对象", studentAnswer: "默认拥有 arguments 对象", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-18", questionName: "跨域请求", questionType: "judgment", questionContent: "CORS 是一种服务器端的安全机制，浏览器会自动允许所有跨域请求", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-19", questionName: "性能优化手段", questionType: "multiple", questionContent: "以下哪些手段可以优化前端首屏加载速度？", options: ["代码分割(Code Splitting)", "懒加载(Lazy Loading)", "增加更多 HTTP 请求", "资源预加载(Preload)"], correctAnswer: ["代码分割(Code Splitting)", "懒加载(Lazy Loading)", "资源预加载(Preload)"], studentAnswer: ["代码分割(Code Splitting)", "懒加载(Lazy Loading)", "资源预加载(Preload)"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-20", questionName: "DOM 事件委托", questionType: "single", questionContent: "事件委托(Event Delegation)的核心原理是什么？", options: ["每个子元素都绑定独立事件", "利用事件冒泡机制在父元素统一处理", "使用定时器轮询检测", "通过 MutationObserver 监听 DOM 变化"], correctAnswer: "利用事件冒泡机制在父元素统一处理", studentAnswer: "利用事件冒泡机制在父元素统一处理", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-21", questionName: "NPM 包管理", questionType: "judgment", questionContent: "package-lock.json 文件应该被提交到版本控制中", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-22", questionName: "CSS 优先级", questionType: "single", questionContent: "以下 CSS 选择器中，优先级最高的是？", options: [".class", "#id", "div", "[attr]"], correctAnswer: "#id", studentAnswer: "#id", score: 5, maxScore: 5, isCorrect: true },
     ],
   },
   {
@@ -1476,7 +1681,6 @@ export const studentSubmissions: StudentSubmission[] = [
     scenarioName: "企业级前端项目开发实战",
     taskId: "task-1-2",
     taskName: "用户认证模块开发",
-    assessmentType: "subjective",
     assessmentForm: "评审",
     status: "pending",
     submittedAt: "2026-04-21 09:15:00",
@@ -1507,24 +1711,10 @@ export const studentSubmissions: StudentSubmission[] = [
     scenarioName: "企业级前端项目开发实战",
     taskId: "task-1-3",
     taskName: "核心业务组件开发",
-    assessmentType: "mixed",
-    assessmentForm: "混合测评",
+    assessmentForm: "评审",
     status: "pending",
     submittedAt: "2026-04-22 16:45:00",
     maxScore: 100,
-    objectiveAnswers: [
-      {
-        questionId: "q-4",
-        questionType: "single",
-        questionContent: "React 中 useMemo 的主要作用是？",
-        options: ["缓存计算结果", "管理副作用", "处理事件", "路由跳转"],
-        correctAnswer: "缓存计算结果",
-        studentAnswer: "缓存计算结果",
-        score: 20,
-        maxScore: 20,
-        isCorrect: true,
-      },
-    ],
     subjectiveContent: {
       textAnswer:
         "我开发了一个可复用的数据表格组件和图表展示组件。数据表格支持排序、筛选、分页功能；图表组件基于 ECharts 封装，支持柱状图、折线图、饼图三种类型。",
@@ -1545,44 +1735,34 @@ export const studentSubmissions: StudentSubmission[] = [
     scenarioName: "RESTful API 设计与开发",
     taskId: "task-2-1",
     taskName: "API 设计规范学习",
-    assessmentType: "objective",
     assessmentForm: "题库",
-    status: "graded",
+    status: "pending",
     submittedAt: "2026-04-18 10:00:00",
     maxScore: 100,
-    objectiveTotalScore: 85,
-    totalScore: 85,
-    teacherComment: "整体掌握较好，但在 RESTful 状态码使用上还需加强。",
-    gradedAt: "2026-04-19 11:30:00",
-    gradedBy: "张老师",
     objectiveAnswers: [
-      {
-        questionId: "q-api-1",
-        questionType: "single",
-        questionContent: "HTTP GET 请求的幂等性是指什么？",
-        options: [
-          "多次请求结果一致",
-          "请求不会被缓存",
-          "请求体不能为空",
-          "响应状态码固定为 200",
-        ],
-        correctAnswer: "多次请求结果一致",
-        studentAnswer: "多次请求结果一致",
-        score: 20,
-        maxScore: 20,
-        isCorrect: true,
-      },
-      {
-        questionId: "q-api-2",
-        questionType: "multiple",
-        questionContent: "以下哪些 HTTP 状态码表示请求成功？",
-        options: ["200", "201", "301", "204"],
-        correctAnswer: ["200", "201", "204"],
-        studentAnswer: ["200", "201"],
-        score: 15,
-        maxScore: 20,
-        isCorrect: false,
-      },
+      { questionId: "qb-1", questionName: "HTTP 方法语义", questionType: "single", questionContent: "RESTful 设计中，PUT 方法的主要语义是什么？", options: ["创建资源", "更新资源", "删除资源", "查询资源"], correctAnswer: "更新资源", studentAnswer: "更新资源", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-2", questionName: "状态码 401 含义", questionType: "judgment", questionContent: "HTTP 状态码 401 表示请求参数格式错误", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-3", questionName: "幂等性方法", questionType: "multiple", questionContent: "以下哪些 HTTP 方法具有幂等性？", options: ["GET", "POST", "PUT", "PATCH"], correctAnswer: ["GET", "PUT"], studentAnswer: ["GET", "PUT"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-4", questionName: "JWT 结构", questionType: "single", questionContent: "JWT (JSON Web Token) 由哪三部分组成？", options: ["Header.Payload.Signature", "Key.Value.Secret", "Auth.Token.Session", "ID.Data.Hash"], correctAnswer: "Header.Payload.Signature", studentAnswer: "Header.Payload.Signature", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-5", questionName: "SQL 注入", questionType: "judgment", questionContent: "使用参数化查询可以有效防止 SQL 注入攻击", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-6", questionName: "数据库事务", questionType: "multiple", questionContent: "数据库事务的 ACID 特性包括哪些？", options: ["原子性", "一致性", "隔离性", "持久性"], correctAnswer: ["原子性", "一致性", "隔离性", "持久性"], studentAnswer: ["原子性", "一致性", "隔离性"], score: 4, maxScore: 5, isCorrect: false },
+      { questionId: "qb-7", questionName: "OAuth2 角色", questionType: "single", questionContent: "在 OAuth2.0 授权框架中，负责颁发访问令牌的是？", options: ["资源所有者", "客户端", "授权服务器", "资源服务器"], correctAnswer: "授权服务器", studentAnswer: "授权服务器", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-8", questionName: "索引优化", questionType: "judgment", questionContent: "数据库表中索引越多越好，不会影响写入性能", correctAnswer: "false", studentAnswer: "true", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "qb-9", questionName: "API 版本控制", questionType: "multiple", questionContent: "常见的 RESTful API 版本控制策略有哪些？", options: ["URL 路径版本号", "请求头 Accept 字段", "查询参数 version", "Cookie 中存放版本"], correctAnswer: ["URL 路径版本号", "请求头 Accept 字段", "查询参数 version"], studentAnswer: ["URL 路径版本号", "查询参数 version"], score: 3, maxScore: 5, isCorrect: false },
+      { questionId: "qb-10", questionName: "ORM 作用", questionType: "single", questionContent: "ORM (对象关系映射) 的主要作用是什么？", options: ["将对象映射到关系数据库", "优化网络传输", "缓存查询结果", "管理服务器负载"], correctAnswer: "将对象映射到关系数据库", studentAnswer: "将对象映射到关系数据库", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-11", questionName: "HTTPS 原理", questionType: "judgment", questionContent: "HTTPS 协议在 HTTP 基础上增加了 SSL/TLS 加密层", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-12", questionName: "NoSQL 特点", questionType: "multiple", questionContent: "以下哪些是 NoSQL 数据库的典型特点？", options: ["灵活的数据模型", "支持水平扩展", "强事务一致性", "适合大规模数据"], correctAnswer: ["灵活的数据模型", "支持水平扩展", "适合大规模数据"], studentAnswer: ["灵活的数据模型", "支持水平扩展", "适合大规模数据"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-13", questionName: "中间件概念", questionType: "single", questionContent: "在 Express/Koa 等框架中，中间件(Middleware)的执行顺序是？", options: ["随机执行", "后进先出", "先进先出（洋葱模型）", "并行执行"], correctAnswer: "先进先出（洋葱模型）", studentAnswer: "先进先出（洋葱模型）", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-14", questionName: "缓存穿透", questionType: "judgment", questionContent: "缓存穿透是指查询一个数据库中不存在的数据，导致每次请求都打到数据库", correctAnswer: "true", studentAnswer: "false", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "qb-15", questionName: "微服务通信", questionType: "multiple", questionContent: "微服务架构中常见的服务间通信方式有哪些？", options: ["HTTP REST", "gRPC", "消息队列", "共享内存"], correctAnswer: ["HTTP REST", "gRPC", "消息队列"], studentAnswer: ["HTTP REST", "gRPC", "消息队列"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-s2", questionName: "数据库索引设计", questionType: "text", questionContent: "请说明数据库索引的作用、适用场景，以及创建索引时需要注意的问题。", correctAnswer: "索引作用：加速数据查询，通过 B+Tree 等数据结构减少磁盘 I/O。适用场景：高频查询字段、WHERE/JOIN/ORDER BY 涉及的列、外键关联字段。注意事项：1. 索引不是越多越好，过多索引会降低写入性能；2. 区分度低的字段不适合建索引；3. 联合索引要注意最左前缀原则；4. 定期分析和优化索引。", studentAnswer: "数据库索引的作用是提高查询速度。适合在经常查询的字段上建索引，比如用户表的用户名字段。但是索引也有缺点，会降低插入和更新的速度，所以不能乱建索引。", score: 0, maxScore: 10, isCorrect: false },
+      { questionId: "qb-16", questionName: "Docker 容器", questionType: "single", questionContent: "Docker 容器与虚拟机(VM)相比，主要优势是什么？", options: ["完全隔离更安全", "启动更快、资源占用更少", "支持更多操作系统", "配置更简单"], correctAnswer: "启动更快、资源占用更少", studentAnswer: "启动更快、资源占用更少", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-17", questionName: "CAP 定理", questionType: "judgment", questionContent: "根据 CAP 定理，分布式系统最多只能同时满足一致性、可用性和分区容错性中的两项", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-18", questionName: "Redis 数据类型", questionType: "multiple", questionContent: "Redis 支持以下哪些数据类型？", options: ["String", "Hash", "List", "Graph"], correctAnswer: ["String", "Hash", "List"], studentAnswer: ["String", "Hash", "List", "Graph"], score: 2, maxScore: 5, isCorrect: false },
+      { questionId: "qb-19", questionName: "负载均衡", questionType: "single", questionContent: "Nginx 作为反向代理和负载均衡器，默认使用的负载均衡算法是？", options: ["轮询(Round Robin)", "最少连接", "IP 哈希", "加权轮询"], correctAnswer: "轮询(Round Robin)", studentAnswer: "轮询(Round Robin)", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-20", questionName: "跨域 CORS", questionType: "judgment", questionContent: "简单请求(Simple Request)触发 CORS 预检请求(Preflight)", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-21", questionName: "数据库范式", questionType: "multiple", questionContent: "以下关于数据库范式的描述，正确的有哪些？", options: ["第一范式要求原子性", "第二范式消除部分函数依赖", "第三范式消除传递函数依赖", "BCNF 比第三范式要求更宽松"], correctAnswer: ["第一范式要求原子性", "第二范式消除部分函数依赖", "第三范式消除传递函数依赖"], studentAnswer: ["第一范式要求原子性", "第二范式消除部分函数依赖", "第三范式消除传递函数依赖"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-22", questionName: "Git 分支策略", questionType: "single", questionContent: "Git Flow 工作流中，用于发布生产版本的长期分支是？", options: ["develop", "feature", "release", "master/main"], correctAnswer: "master/main", studentAnswer: "master/main", score: 5, maxScore: 5, isCorrect: true },
     ],
   },
   {
@@ -1592,44 +1772,35 @@ export const studentSubmissions: StudentSubmission[] = [
     scenarioName: "企业级前端项目开发实战",
     taskId: "task-1-1",
     taskName: "项目初始化与架构搭建",
-    assessmentType: "objective",
     assessmentForm: "试卷",
     status: "pending",
     submittedAt: "2026-04-22 11:20:00",
     maxScore: 100,
     objectiveAnswers: [
-      {
-        questionId: "q-1",
-        questionType: "single",
-        questionContent: "React 18 中引入的并发特性主要解决什么问题？",
-        options: ["性能优化", "代码复用", "状态管理", "路由控制"],
-        correctAnswer: "性能优化",
-        studentAnswer: "状态管理",
-        score: 0,
-        maxScore: 10,
-        isCorrect: false,
-      },
-      {
-        questionId: "q-2",
-        questionType: "judgment",
-        questionContent: "TypeScript 是 JavaScript 的超集",
-        correctAnswer: "true",
-        studentAnswer: "true",
-        score: 10,
-        maxScore: 10,
-        isCorrect: true,
-      },
-      {
-        questionId: "q-3",
-        questionType: "multiple",
-        questionContent: "以下哪些是常用的 React 状态管理方案？",
-        options: ["Redux", "MobX", "Zustand", "jQuery"],
-        correctAnswer: ["Redux", "MobX", "Zustand"],
-        studentAnswer: ["Redux", "MobX", "Zustand"],
-        score: 20,
-        maxScore: 20,
-        isCorrect: true,
-      },
+      { questionId: "q-1", questionName: "React 18 并发特性", questionType: "single", questionContent: "React 18 中引入的并发特性主要解决什么问题？", options: ["性能优化", "代码复用", "状态管理", "路由控制"], correctAnswer: "性能优化", studentAnswer: "状态管理", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-2", questionName: "TypeScript 基础判断", questionType: "judgment", questionContent: "TypeScript 是 JavaScript 的超集", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-3", questionName: "React 状态管理方案", questionType: "multiple", questionContent: "以下哪些是常用的 React 状态管理方案？", options: ["Redux", "MobX", "Zustand", "jQuery"], correctAnswer: ["Redux", "MobX", "Zustand"], studentAnswer: ["Redux", "MobX", "Zustand"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-4", questionName: "CSS 盒模型", questionType: "single", questionContent: "在 CSS 标准盒模型中，元素的宽度(width)包含哪些部分？", options: ["仅内容宽度", "内容+内边距", "内容+内边距+边框", "内容+内边距+边框+外边距"], correctAnswer: "仅内容宽度", studentAnswer: "仅内容宽度", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-5", questionName: "JS 事件循环", questionType: "single", questionContent: "JavaScript 中，setTimeout 的回调函数会在哪个阶段执行？", options: ["同步执行", "宏任务队列", "微任务队列", "渲染阶段"], correctAnswer: "宏任务队列", studentAnswer: "宏任务队列", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-s1", questionName: "React 性能优化方法", questionType: "text", questionContent: "请简述 React 中常用的性能优化方法，至少列举 3 种并说明适用场景。", correctAnswer: "1. React.memo / PureComponent：避免不必要的重渲染；2. useMemo / useCallback：缓存计算结果和函数引用；3. 代码分割：减少首屏加载资源。", studentAnswer: "React 性能优化的方法包括使用 memo、useMemo、懒加载等。memo 可以避免子组件重复渲染，useMemo 可以缓存计算结果，懒加载可以减少首屏加载时间。", score: 0, maxScore: 10, isCorrect: false },
+      { questionId: "q-6", questionName: "Promise 基础", questionType: "judgment", questionContent: "Promise.resolve(1).then(v => console.log(v)) 会立即同步输出 1", correctAnswer: "false", studentAnswer: "true", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-7", questionName: "HTTP 缓存策略", questionType: "multiple", questionContent: "以下哪些 HTTP 头部与缓存控制有关？", options: ["Cache-Control", "Expires", "Content-Type", "ETag"], correctAnswer: ["Cache-Control", "Expires", "ETag"], studentAnswer: ["Cache-Control", "Expires", "ETag"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-8", questionName: "React Hooks 规则", questionType: "single", questionContent: "以下关于 React Hooks 的使用规则，哪项是正确的？", options: ["可以在循环中调用 useState", "可以在条件语句中调用 useEffect", "只能在函数组件顶层调用", "可以在普通函数中调用 useContext"], correctAnswer: "只能在函数组件顶层调用", studentAnswer: "可以在普通函数中调用 useContext", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-9", questionName: "Git 工作流", questionType: "judgment", questionContent: "git rebase 操作会改写提交历史", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-10", questionName: "前端安全", questionType: "multiple", questionContent: "以下哪些属于常见的前端安全漏洞？", options: ["XSS", "CSRF", "SQL 注入", "点击劫持"], correctAnswer: ["XSS", "CSRF", "点击劫持"], studentAnswer: ["XSS", "CSRF", "点击劫持"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-11", questionName: "Webpack 作用", questionType: "single", questionContent: "Webpack 的主要作用是什么？", options: ["代码运行时解释执行", "模块打包与资源优化", "数据库连接管理", "服务器端渲染"], correctAnswer: "模块打包与资源优化", studentAnswer: "模块打包与资源优化", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-12", questionName: "闭包特性", questionType: "judgment", questionContent: "JavaScript 闭包可以访问外部函数的变量，即使外部函数已经执行完毕", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-13", questionName: "RESTful 设计", questionType: "multiple", questionContent: "以下哪些 HTTP 方法在 RESTful API 中具有幂等性？", options: ["GET", "POST", "PUT", "DELETE"], correctAnswer: ["GET", "PUT", "DELETE"], studentAnswer: ["GET", "PUT", "DELETE"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-14", questionName: "虚拟 DOM", questionType: "single", questionContent: "React 中虚拟 DOM 的主要优势是什么？", options: ["直接操作真实 DOM 更快", "减少不必要的真实 DOM 操作", "不需要写 CSS", "自动处理服务端请求"], correctAnswer: "减少不必要的真实 DOM 操作", studentAnswer: "减少不必要的真实 DOM 操作", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-15", questionName: "TypeScript 接口", questionType: "judgment", questionContent: "TypeScript 中的 interface 和 type 在功能上完全等价，没有区别", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-s2", questionName: "前端工程化实践", questionType: "text", questionContent: "请结合实际项目经验，阐述前端工程化的核心目标和常用工具链。", correctAnswer: "前端工程化的核心目标包括规范化、自动化、模块化和性能优化。常用工具链：Webpack/Vite（构建）、ESLint/Prettier（规范）、Jest（测试）、Docker/CI（部署）。", studentAnswer: "前端工程化主要是为了让代码更规范、开发更高效。我们团队使用了 ESLint 来保证代码风格一致，使用 Webpack 来打包项目，还配置了 Jenkins 来实现自动化部署。", score: 0, maxScore: 10, isCorrect: false },
+      { questionId: "q-16", questionName: "浏览器存储", questionType: "multiple", questionContent: "以下哪些是浏览器端可用的存储方案？", options: ["localStorage", "sessionStorage", "IndexedDB", "Cookie"], correctAnswer: ["localStorage", "sessionStorage", "IndexedDB", "Cookie"], studentAnswer: ["localStorage", "sessionStorage", "IndexedDB"], score: 4, maxScore: 5, isCorrect: false },
+      { questionId: "q-17", questionName: "ES6 箭头函数", questionType: "single", questionContent: "箭头函数与普通函数的主要区别不包括以下哪项？", options: ["没有自己的 this", "不能作为构造函数", "不能使用 yield 关键字", "默认拥有 arguments 对象"], correctAnswer: "默认拥有 arguments 对象", studentAnswer: "不能使用 yield 关键字", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-18", questionName: "跨域请求", questionType: "judgment", questionContent: "CORS 是一种服务器端的安全机制，浏览器会自动允许所有跨域请求", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-19", questionName: "性能优化手段", questionType: "multiple", questionContent: "以下哪些手段可以优化前端首屏加载速度？", options: ["代码分割(Code Splitting)", "懒加载(Lazy Loading)", "增加更多 HTTP 请求", "资源预加载(Preload)"], correctAnswer: ["代码分割(Code Splitting)", "懒加载(Lazy Loading)", "资源预加载(Preload)"], studentAnswer: ["代码分割(Code Splitting)", "懒加载(Lazy Loading)", "资源预加载(Preload)"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-20", questionName: "DOM 事件委托", questionType: "single", questionContent: "事件委托(Event Delegation)的核心原理是什么？", options: ["每个子元素都绑定独立事件", "利用事件冒泡机制在父元素统一处理", "使用定时器轮询检测", "通过 MutationObserver 监听 DOM 变化"], correctAnswer: "利用事件冒泡机制在父元素统一处理", studentAnswer: "每个子元素都绑定独立事件", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "q-21", questionName: "NPM 包管理", questionType: "judgment", questionContent: "package-lock.json 文件应该被提交到版本控制中", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "q-22", questionName: "CSS 优先级", questionType: "single", questionContent: "以下 CSS 选择器中，优先级最高的是？", options: [".class", "#id", "div", "[attr]"], correctAnswer: "#id", studentAnswer: ".class", score: 0, maxScore: 5, isCorrect: false },
     ],
   },
   {
@@ -1637,17 +1808,67 @@ export const studentSubmissions: StudentSubmission[] = [
     studentId: "stu-5",
     scenarioId: "scenario-1",
     scenarioName: "企业级前端项目开发实战",
-    taskId: "task-1-2",
-    taskName: "用户认证模块开发",
-    assessmentType: "subjective",
+    taskId: "task-1-1",
+    taskName: "项目初始化与架构搭建",
     assessmentForm: "现场问答",
     status: "pending",
     submittedAt: "2026-04-23 09:00:00",
     maxScore: 100,
-    subjectiveContent: {
-      textAnswer:
-        "现场答辩记录：\n\n1. 请简述 JWT 鉴权流程：答对了基本流程，但缺少 Refresh Token 机制说明。\n2. 如何防止 XSS 攻击：提到了输入过滤和 CSP，但缺少输出编码。\n3. 密码加密方案：正确回答了 bcrypt 加盐哈希。",
-    },
+    drawnQuestions: [
+      {
+        questionId: "qb-7",
+        questionName: "React 生命周期理解",
+        questionContent: "请简述 React 类组件的生命周期方法及其执行顺序，并说明在函数组件中如何替代这些生命周期方法。",
+        questionType: "subjective",
+        correctAnswer: "React 类组件生命周期分为三个阶段：挂载阶段（constructor → render → componentDidMount）、更新阶段（shouldComponentUpdate → render → componentDidUpdate）、卸载阶段（componentWillUnmount）。在函数组件中，使用 useEffect Hook 来替代生命周期方法：useEffect(() => { ... }, []) 替代 componentDidMount；useEffect(() => { ... }, [deps]) 替代 componentDidUpdate；useEffect 返回的清理函数替代 componentWillUnmount。",
+      },
+      {
+        questionId: "qb-10",
+        questionName: "前端性能优化",
+        questionContent: "请列举至少 5 种前端性能优化的方法，并说明适用场景。",
+        questionType: "subjective",
+        correctAnswer: "1. 代码分割（Code Splitting）：使用动态 import 或 React.lazy 按需加载模块，适用于大型单页应用。2. 图片优化：使用 WebP 格式、懒加载、响应式图片，适用于图片密集型页面。3. 缓存策略：合理设置 HTTP 缓存头、使用 Service Worker，适用于频繁访问的静态资源。4. 减少重排重绘：避免频繁操作 DOM、使用 CSS transform 代替位置属性，适用于动画和交互密集型页面。5. 资源预加载：使用 preload、prefetch 预加载关键资源，适用于首屏加载优化。",
+      },
+    ],
+    evalPointScores: [],
+  },
+  {
+    id: "sub-7",
+    studentId: "stu-6",
+    scenarioId: "scenario-2",
+    scenarioName: "RESTful API 设计与开发",
+    taskId: "task-2-1",
+    taskName: "API 设计规范学习",
+    assessmentForm: "题库",
+    status: "pending",
+    submittedAt: "2026-04-24 14:00:00",
+    maxScore: 100,
+    objectiveAnswers: [
+      { questionId: "qb-1", questionName: "HTTP 方法语义", questionType: "single", questionContent: "RESTful 设计中，PUT 方法的主要语义是什么？", options: ["创建资源", "更新资源", "删除资源", "查询资源"], correctAnswer: "更新资源", studentAnswer: "创建资源", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "qb-2", questionName: "状态码 401 含义", questionType: "judgment", questionContent: "HTTP 状态码 401 表示请求参数格式错误", correctAnswer: "false", studentAnswer: "true", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "qb-3", questionName: "幂等性方法", questionType: "multiple", questionContent: "以下哪些 HTTP 方法具有幂等性？", options: ["GET", "POST", "PUT", "PATCH"], correctAnswer: ["GET", "PUT"], studentAnswer: ["GET", "POST", "PUT"], score: 2, maxScore: 5, isCorrect: false },
+      { questionId: "qb-4", questionName: "JWT 结构", questionType: "single", questionContent: "JWT (JSON Web Token) 由哪三部分组成？", options: ["Header.Payload.Signature", "Key.Value.Secret", "Auth.Token.Session", "ID.Data.Hash"], correctAnswer: "Header.Payload.Signature", studentAnswer: "Header.Payload.Signature", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-5", questionName: "SQL 注入", questionType: "judgment", questionContent: "使用参数化查询可以有效防止 SQL 注入攻击", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-s1", questionName: "RESTful API 设计原则", questionType: "text", questionContent: "请阐述 RESTful API 设计的核心原则，并结合实例说明 URI 命名规范。", correctAnswer: "RESTful API 核心原则：1. 资源导向：URI 表示资源而非动作，使用名词复数，如 /users、/orders/{id}；2. HTTP 方法表达操作：GET 查询、POST 创建、PUT 更新、DELETE 删除；3. 无状态：每个请求独立，服务端不保存客户端状态；4. 统一接口：一致的响应格式和状态码。", studentAnswer: "RESTful API 设计应该以资源为中心，URI 使用名词表示资源，比如 /users 表示用户列表。HTTP 方法对应 CRUD 操作，GET 获取资源，POST 创建资源。这样做的好处是接口语义清晰，易于理解和维护。", score: 0, maxScore: 10, isCorrect: false },
+      { questionId: "qb-6", questionName: "数据库事务", questionType: "multiple", questionContent: "数据库事务的 ACID 特性包括哪些？", options: ["原子性", "一致性", "隔离性", "持久性"], correctAnswer: ["原子性", "一致性", "隔离性", "持久性"], studentAnswer: ["原子性", "一致性", "隔离性", "持久性"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-7", questionName: "OAuth2 角色", questionType: "single", questionContent: "在 OAuth2.0 授权框架中，负责颁发访问令牌的是？", options: ["资源所有者", "客户端", "授权服务器", "资源服务器"], correctAnswer: "授权服务器", studentAnswer: "资源服务器", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "qb-8", questionName: "索引优化", questionType: "judgment", questionContent: "数据库表中索引越多越好，不会影响写入性能", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-9", questionName: "API 版本控制", questionType: "multiple", questionContent: "常见的 RESTful API 版本控制策略有哪些？", options: ["URL 路径版本号", "请求头 Accept 字段", "查询参数 version", "Cookie 中存放版本"], correctAnswer: ["URL 路径版本号", "请求头 Accept 字段", "查询参数 version"], studentAnswer: ["URL 路径版本号", "请求头 Accept 字段", "查询参数 version"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-10", questionName: "ORM 作用", questionType: "single", questionContent: "ORM (对象关系映射) 的主要作用是什么？", options: ["将对象映射到关系数据库", "优化网络传输", "缓存查询结果", "管理服务器负载"], correctAnswer: "将对象映射到关系数据库", studentAnswer: "将对象映射到关系数据库", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-11", questionName: "HTTPS 原理", questionType: "judgment", questionContent: "HTTPS 协议在 HTTP 基础上增加了 SSL/TLS 加密层", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-12", questionName: "NoSQL 特点", questionType: "multiple", questionContent: "以下哪些是 NoSQL 数据库的典型特点？", options: ["灵活的数据模型", "支持水平扩展", "强事务一致性", "适合大规模数据"], correctAnswer: ["灵活的数据模型", "支持水平扩展", "适合大规模数据"], studentAnswer: ["灵活的数据模型", "支持水平扩展", "适合大规模数据"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-13", questionName: "中间件概念", questionType: "single", questionContent: "在 Express/Koa 等框架中，中间件(Middleware)的执行顺序是？", options: ["随机执行", "后进先出", "先进先出（洋葱模型）", "并行执行"], correctAnswer: "先进先出（洋葱模型）", studentAnswer: "后进先出", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "qb-14", questionName: "缓存穿透", questionType: "judgment", questionContent: "缓存穿透是指查询一个数据库中不存在的数据，导致每次请求都打到数据库", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-15", questionName: "微服务通信", questionType: "multiple", questionContent: "微服务架构中常见的服务间通信方式有哪些？", options: ["HTTP REST", "gRPC", "消息队列", "共享内存"], correctAnswer: ["HTTP REST", "gRPC", "消息队列"], studentAnswer: ["HTTP REST", "gRPC", "消息队列"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-s2", questionName: "数据库索引设计", questionType: "text", questionContent: "请说明数据库索引的作用、适用场景，以及创建索引时需要注意的问题。", correctAnswer: "索引作用：加速查询。适用场景：高频查询字段、WHERE/JOIN/ORDER BY 涉及的列。注意事项：1. 不是越多越好；2. 区分度低的字段不适合；3. 联合索引注意最左前缀原则。", studentAnswer: "索引能提高查询速度，适合在经常查询的字段上建。但是会降低写入速度，不能乱建。", score: 0, maxScore: 10, isCorrect: false },
+      { questionId: "qb-16", questionName: "Docker 容器", questionType: "single", questionContent: "Docker 容器与虚拟机(VM)相比，主要优势是什么？", options: ["完全隔离更安全", "启动更快、资源占用更少", "支持更多操作系统", "配置更简单"], correctAnswer: "启动更快、资源占用更少", studentAnswer: "启动更快、资源占用更少", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-17", questionName: "CAP 定理", questionType: "judgment", questionContent: "根据 CAP 定理，分布式系统最多只能同时满足一致性、可用性和分区容错性中的两项", correctAnswer: "true", studentAnswer: "true", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-18", questionName: "Redis 数据类型", questionType: "multiple", questionContent: "Redis 支持以下哪些数据类型？", options: ["String", "Hash", "List", "Graph"], correctAnswer: ["String", "Hash", "List"], studentAnswer: ["String", "Hash", "List"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-19", questionName: "负载均衡", questionType: "single", questionContent: "Nginx 作为反向代理和负载均衡器，默认使用的负载均衡算法是？", options: ["轮询(Round Robin)", "最少连接", "IP 哈希", "加权轮询"], correctAnswer: "轮询(Round Robin)", studentAnswer: "最少连接", score: 0, maxScore: 5, isCorrect: false },
+      { questionId: "qb-20", questionName: "跨域 CORS", questionType: "judgment", questionContent: "简单请求(Simple Request)触发 CORS 预检请求(Preflight)", correctAnswer: "false", studentAnswer: "false", score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-21", questionName: "数据库范式", questionType: "multiple", questionContent: "以下关于数据库范式的描述，正确的有哪些？", options: ["第一范式要求原子性", "第二范式消除部分函数依赖", "第三范式消除传递函数依赖", "BCNF 比第三范式要求更宽松"], correctAnswer: ["第一范式要求原子性", "第二范式消除部分函数依赖", "第三范式消除传递函数依赖"], studentAnswer: ["第一范式要求原子性", "第二范式消除部分函数依赖", "第三范式消除传递函数依赖"], score: 5, maxScore: 5, isCorrect: true },
+      { questionId: "qb-22", questionName: "Git 分支策略", questionType: "single", questionContent: "Git Flow 工作流中，用于发布生产版本的长期分支是？", options: ["develop", "feature", "release", "master/main"], correctAnswer: "master/main", studentAnswer: "release", score: 0, maxScore: 5, isCorrect: false },
+    ],
   },
 ]
 

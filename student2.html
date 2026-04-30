@@ -1,0 +1,3300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>场景详情 - 实践场景学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success-color: #52c41a;
+            --success-light: #f6ffed;
+            --warning-color: #faad14;
+            --warning-light: #fff7e6;
+            --error-color: #ff4d4f;
+            --error-light: #fff2f0;
+            --text-primary: #000000e0;
+            --text-secondary: #00000073;
+            --text-tertiary: #00000040;
+            --border-color: #d9d9d9;
+            --bg-color: #f5f5f5;
+            --bg-white: #ffffff;
+            --shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+            --shadow-hover: 0 6px 16px -8px rgba(0, 0, 0, 0.08), 0 9px 28px 0 rgba(0, 0, 0, 0.05), 0 12px 48px 16px rgba(0, 0, 0, 0.03);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5714285714;
+            font-size: 14px;
+        }
+
+        /* 页眉样式 */
+        .header {
+            background: var(--bg-white);
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary-color), #69b1ff);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+            padding-left: 8px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-white);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .datetime {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .datetime i {
+            margin-right: 6px;
+            color: var(--text-tertiary);
+        }
+
+        .nav-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-btn.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-btn.primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* 主内容区 */
+        .main-container {
+            margin-top: 64px;
+            padding: 24px;
+            min-height: calc(100vh - 64px);
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 面包屑 */
+        .breadcrumb {
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-color);
+        }
+
+        .breadcrumb span {
+            color: var(--text-tertiary);
+            margin: 0 8px;
+        }
+
+        .breadcrumb .current {
+            color: var(--text-primary);
+        }
+
+        /* 内容布局 */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 16px;
+            }
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--primary-color);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* 场景详情卡片 */
+        .scene-card {
+            margin-bottom: 24px;
+        }
+
+        .scene-header {
+            display: flex;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        .scene-cover {
+            width: 280px;
+            height: 180px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scene-cover i {
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .scene-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scene-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .scene-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .scene-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-white);
+            color: var(--text-primary);
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.primary:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .action-btn.success {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .action-btn.success:hover {
+            background: #73d13d;
+            border-color: #73d13d;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .scene-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .scene-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scene-meta-item i {
+            color: var(--text-tertiary);
+        }
+
+        .scene-desc {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+
+        .scene-tags {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tag-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            min-width: 70px;
+            flex-shrink: 0;
+        }
+
+        .tag-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tag.blue { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+        .tag.green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+        .tag.orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+        .tag.purple { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
+        .tag.cyan { background: #e6fffb; color: #13c2c2; border: 1px solid #87e8de; }
+        .tag.red { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
+        .tag.gray { background: #f5f5f5; color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+        /* 标签页 */
+        .tabs-card {
+            margin-bottom: 24px;
+        }
+
+        .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 0 24px;
+            background: var(--bg-white);
+        }
+
+        .tab-item {
+            padding: 16px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            position: relative;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-item:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-item.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .tab-badge {
+            background: #f0f0f0;
+            color: var(--text-secondary);
+            padding: 0 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .tab-item.active .tab-badge {
+            background: #e6f4ff;
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ====== 任务列表升级样式 ====== */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: var(--bg-white);
+        }
+
+        .task-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(22, 119, 255, 0.1);
+        }
+
+        .task-item.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #fafafa;
+        }
+
+        .task-item.locked:hover {
+            border-color: #f0f0f0;
+            box-shadow: none;
+        }
+
+        .task-index {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e6f4ff;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .task-index.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .task-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .task-type-tag {
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .task-type-tag.assessment {
+            background: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+
+        .task-type-tag.training {
+            background: #e6f4ff;
+            color: #1677ff;
+            border: 1px solid #91caff;
+        }
+
+        .task-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .task-step-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #f5f5f5;
+            color: var(--text-secondary);
+            border: 1px solid #f0f0f0;
+        }
+
+        .step-badge i {
+            font-size: 10px;
+        }
+
+        .task-progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .task-progress-track {
+            flex: 1;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .task-progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .task-progress-fill.completed {
+            background: var(--success-color);
+        }
+
+        .task-progress-text {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            white-space: nowrap;
+        }
+
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .task-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .task-action-col {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            margin-left: 16px;
+            flex-shrink: 0;
+        }
+
+        .task-status-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .task-status-btn.start {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .task-status-btn.start:hover {
+            background: var(--primary-hover);
+        }
+
+        .task-status-btn.continue {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            border-color: #91caff;
+        }
+
+        .task-status-btn.continue:hover {
+            background: #bae0ff;
+        }
+
+        .task-status-btn.completed {
+            background: var(--success-light);
+            color: var(--success-color);
+            border-color: #b7eb8f;
+            cursor: default;
+        }
+
+        .task-status-btn.locked {
+            background: #f5f5f5;
+            color: var(--text-tertiary);
+            border-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        .task-arrow {
+            color: var(--text-tertiary);
+            font-size: 16px;
+            margin-left: 16px;
+            align-self: center;
+        }
+
+        /* 资源列表 */
+        .resource-section { margin-bottom: 24px; }
+        .resource-section:last-child { margin-bottom: 0; }
+        .resource-section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .resource-section-title i { color: var(--primary-color); }
+        .resource-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .resource-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .resource-item:hover {
+            border-color: var(--primary-color);
+            background: #fafafa;
+        }
+        .resource-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        .resource-icon.pdf { background: #fff2f0; color: #ff4d4f; }
+        .resource-icon.video { background: #e6f4ff; color: #1677ff; }
+        .resource-icon.ppt { background: #fff7e6; color: #fa8c16; }
+        .resource-icon.doc { background: #e6f4ff; color: #1677ff; }
+        .resource-icon.link { background: #f6ffed; color: #52c41a; }
+        .resource-icon.image { background: #f9f0ff; color: #722ed1; }
+        .resource-icon.software { background: #e6fffb; color: #13c2c2; }
+        .resource-icon.venue { background: #fff7e6; color: #fa8c16; }
+        .resource-icon.other { background: #f5f5f5; color: var(--text-secondary); }
+        .resource-info { flex: 1; min-width: 0; }
+        .resource-name {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .resource-meta { font-size: 12px; color: var(--text-tertiary); }
+        .resource-action {
+            color: var(--primary-color);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .resource-item:hover .resource-action { opacity: 1; }
+
+        /* 能力列表 */
+        .ability-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .ability-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .ability-item:hover { border-color: var(--primary-color); }
+        .ability-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 12px;
+        }
+        .ability-info { flex: 1; }
+        .ability-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
+        .ability-desc { font-size: 12px; color: var(--text-secondary); }
+        .ability-level { display: flex; align-items: center; gap: 4px; }
+        .level-star { color: #fadb14; font-size: 12px; }
+        .level-star.empty { color: #d9d9d9; }
+
+        /* 知识体系 */
+        .knowledge-tree { padding-left: 0; }
+        .tree-node { list-style: none; }
+        .tree-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+        }
+        .tree-item:hover { background: #fafafa; }
+        .tree-toggle {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            color: var(--text-tertiary);
+            transition: transform 0.2s;
+        }
+        .tree-toggle.expanded { transform: rotate(90deg); }
+        .tree-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+        .tree-icon.folder { background: #fff7e6; color: #fa8c16; }
+        .tree-icon.file { background: #e6f4ff; color: #1677ff; }
+        .tree-label { flex: 1; font-size: 14px; color: var(--text-primary); }
+        .tree-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            background: #f5f5f5;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .tree-children { padding-left: 28px; display: none; }
+        .tree-children.expanded { display: block; }
+
+        /* 评价量规 */
+        .rubric-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .rubric-table th, .rubric-table td {
+            border: 1px solid #f0f0f0;
+            padding: 12px 16px;
+            text-align: left;
+        }
+        .rubric-table th { background: #fafafa; font-weight: 500; color: var(--text-primary); }
+        .rubric-table td { color: var(--text-secondary); }
+        .rubric-table tr:hover td { background: #fafafa; }
+        .rubric-level {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .rubric-level.excellent { background: #f6ffed; color: #52c41a; }
+        .rubric-level.good { background: #e6f4ff; color: #1677ff; }
+        .rubric-level.pass { background: #fff7e6; color: #fa8c16; }
+        .rubric-level.fail { background: #fff2f0; color: #ff4d4f; }
+        .rubric-dimension { font-weight: 500; color: var(--text-primary); }
+        .rubric-weight {
+            font-size: 12px;
+            color: var(--primary-color);
+            background: #e6f4ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 课时统计 */
+        .stat-chart {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+        .chart-ring {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--primary-color) 0deg 216deg,
+                var(--success-color) 216deg 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .chart-ring::before {
+            content: '';
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+        }
+        .chart-center { position: relative; text-align: center; }
+        .chart-value { font-size: 28px; font-weight: 600; color: var(--text-primary); }
+        .chart-label { font-size: 12px; color: var(--text-secondary); }
+        .stat-legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .legend-dot.theory { background: var(--primary-color); }
+        .legend-dot.practice { background: var(--success-color); }
+
+        /* 岗位能力要求 */
+        .job-ability-list { display: flex; flex-direction: column; gap: 16px; }
+        .job-group { border: 1px solid #f0f0f0; border-radius: 8px; overflow: hidden; }
+        .job-header {
+            padding: 12px 16px;
+            background: #fafafa;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .job-header i { color: var(--primary-color); }
+        .job-abilities { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+        .job-ability-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+        .job-ability-name {
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .job-ability-name i { color: var(--text-tertiary); font-size: 12px; }
+
+        /* 测评资源 */
+        .assess-list { display: flex; flex-direction: column; gap: 12px; }
+        .assess-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .assess-item:hover { border-color: var(--primary-color); background: #fafafa; }
+        .assess-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        .assess-icon.quiz { background: #e6f4ff; color: #1677ff; }
+        .assess-icon.exam { background: #fff7e6; color: #fa8c16; }
+        .assess-icon.bank { background: #f6ffed; color: #52c41a; }
+        .assess-info { flex: 1; }
+        .assess-name { font-size: 14px; color: var(--text-primary); margin-bottom: 2px; }
+        .assess-meta { font-size: 12px; color: var(--text-tertiary); }
+
+        /* 其他资源 */
+        .other-resource-list { display: flex; flex-direction: column; gap: 10px; }
+        .other-resource-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .other-resource-item:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .other-resource-item i { margin-right: 10px; width: 20px; text-align: center; color: var(--text-tertiary); }
+        .other-resource-item:hover i { color: var(--primary-color); }
+
+        /* ====== 学习视图新样式 ====== */
+        .task-learning-view {
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .task-learning-view.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .learning-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            min-height: calc(100vh - 140px);
+        }
+
+        @media (max-width: 1200px) {
+            .learning-layout {
+                grid-template-columns: 1fr;
+            }
+            .step-sidebar {
+                position: relative;
+                top: 0;
+                max-height: none;
+            }
+        }
+
+        /* 步骤侧边栏 */
+        .step-sidebar {
+            position: sticky;
+            top: 88px;
+            height: fit-content;
+            max-height: calc(100vh - 104px);
+            overflow-y: auto;
+        }
+
+        .step-sidebar-inner {
+            background: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .step-sidebar-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .step-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-white);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .step-back-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .step-task-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .step-task-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        .step-list {
+            padding: 8px 0;
+        }
+
+        .step-nav-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .step-nav-item:hover {
+            background: #fafafa;
+        }
+
+        .step-nav-item.active {
+            background: var(--primary-light);
+        }
+
+        .step-nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            background: var(--primary-color);
+            border-radius: 0 2px 2px 0;
+        }
+
+        .step-nav-item.completed .step-number {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .step-nav-item.completed .step-name {
+            color: var(--success-color);
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .step-nav-item.active .step-number {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: var(--primary-light);
+        }
+
+        .step-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .step-nav-item.active .step-name {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .step-status-text {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .step-nav-item.completed .step-status-text {
+            color: var(--success-color);
+        }
+
+        /* 步骤内容区 */
+        .step-content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .step-progress-header {
+            background: var(--bg-white);
+            padding: 20px 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .step-progress-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .step-progress-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .step-progress-percent {
+            font-size: 14px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .step-progress-track {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .step-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), #69b1ff);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .step-card {
+            background: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .step-card-header {
+            padding: 16px 24px;
+            background: #fafafa;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .step-card-header i {
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+
+        .step-card-body {
+            padding: 24px;
+        }
+
+        /* 知识点卡片 */
+        .knowledge-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .knowledge-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .knowledge-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(22, 119, 255, 0.08);
+        }
+
+        .knowledge-card-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .knowledge-card-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .knowledge-card-category {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        /* 资源分组 */
+        .resource-group {
+            margin-bottom: 20px;
+        }
+        .resource-group:last-child { margin-bottom: 0; }
+        .resource-group-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .resource-group-title i { color: var(--primary-color); }
+
+        /* 视频播放器 */
+        .video-player-box {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #1a1a1a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .video-player-box:hover .video-play-btn {
+            transform: scale(1.1);
+            background: var(--primary-color);
+        }
+        .video-play-btn {
+            width: 64px;
+            height: 64px;
+            background: rgba(22, 119, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+        .video-player-info {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+        }
+
+        /* 测评样式 */
+        .quiz-question {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .quiz-question-number {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+
+        .quiz-option.selected {
+            border-color: var(--primary-color);
+            background: #e6f4ff;
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success-color);
+            background: var(--success-light);
+        }
+
+        .quiz-option.wrong {
+            border-color: var(--error-color);
+            background: var(--error-light);
+        }
+
+        .quiz-option-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 10px;
+            color: white;
+        }
+
+        .quiz-option.selected .quiz-option-check {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+        }
+
+        .quiz-option.correct .quiz-option-check {
+            border-color: var(--success-color);
+            background: var(--success-color);
+        }
+
+        .quiz-option.wrong .quiz-option-check {
+            border-color: var(--error-color);
+            background: var(--error-color);
+        }
+
+        .quiz-feedback {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .quiz-feedback.correct {
+            background: var(--success-light);
+            border: 1px solid #b7eb8f;
+            color: var(--success-color);
+        }
+
+        .quiz-feedback.wrong {
+            background: var(--error-light);
+            border: 1px solid #ffccc7;
+            color: var(--error-color);
+        }
+
+        .quiz-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 主观题评分 */
+        .rubric-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .rubric-card:last-child { margin-bottom: 0; }
+        .rubric-card-name {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .rubric-card-weight {
+            font-size: 12px;
+            color: var(--primary-color);
+            background: var(--primary-light);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+        .rubric-levels {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .rubric-level-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .rubric-level-item:hover { background: #fafafa; }
+        .rubric-level-item.selected {
+            background: var(--primary-light);
+            border: 1px solid #91caff;
+        }
+        .rubric-level-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .rubric-level-badge.excellent { background: #f6ffed; color: #52c41a; }
+        .rubric-level-badge.good { background: #e6f4ff; color: #1677ff; }
+        .rubric-level-badge.pass { background: #fff7e6; color: #fa8c16; }
+        .rubric-level-badge.fail { background: #fff2f0; color: #ff4d4f; }
+        .rubric-level-desc { color: var(--text-secondary); flex: 1; }
+
+        /* 交付物上传 */
+        .deliverable-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .deliverable-item {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .deliverable-name {
+            font-weight: 500;
+            font-size: 15px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .deliverable-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        .deliverable-upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .deliverable-upload-zone:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+        }
+        .deliverable-upload-zone i {
+            font-size: 28px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+        .deliverable-upload-zone:hover i { color: var(--primary-color); }
+        .deliverable-upload-text { color: var(--text-secondary); font-size: 14px; }
+        .deliverable-upload-hint { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
+
+        /* 现场评审 */
+        .onsite-notice {
+            background: var(--warning-light);
+            border: 1px solid #ffd591;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .onsite-notice i { color: var(--warning-color); font-size: 20px; margin-top: 2px; }
+        .onsite-notice-title { font-weight: 500; margin-bottom: 4px; }
+        .onsite-notice-desc { font-size: 13px; color: var(--text-secondary); }
+
+        /* 步骤导航按钮 */
+        .step-nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-tertiary);
+        }
+        .empty-state i { font-size: 32px; margin-bottom: 12px; display: block; }
+        .empty-state p { font-size: 14px; }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header { padding: 0 16px; }
+            .logo-subtitle { display: none; }
+            .datetime { display: none; }
+            .main-container { padding: 16px; }
+            .scene-header { flex-direction: column; }
+            .scene-cover { width: 100%; height: 160px; }
+            .scene-title-row { flex-direction: column; gap: 12px; }
+            .scene-actions { width: 100%; }
+            .scene-actions .action-btn { flex: 1; justify-content: center; }
+            .tabs-nav { overflow-x: auto; padding: 0 16px; }
+            .tab-item { white-space: nowrap; padding: 12px 16px; }
+            .resource-list { grid-template-columns: 1fr; }
+            .rubric-table { display: block; overflow-x: auto; }
+            .learning-layout { grid-template-columns: 1fr; }
+            .step-sidebar { position: relative; top: 0; max-height: none; }
+            .knowledge-cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页眉 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-icon">知</div>
+                <span class="logo-text">知与</span>
+                <span class="logo-subtitle">实践场景学习平台</span>
+            </div>
+            <button class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                返回首页
+            </button>
+        </div>
+        <div class="header-right">
+            <div class="datetime">
+                <span><i class="far fa-calendar"></i><span id="currentDate">2024年1月15日</span></span>
+                <span><i class="far fa-clock"></i><span id="currentTime">14:30:25</span></span>
+            </div>
+            <div class="nav-btns">
+                <button class="nav-btn primary">
+                    <i class="fas fa-plus"></i>
+                    新建场景
+                </button>
+                <button class="nav-btn">
+                    <i class="fas fa-folder"></i>
+                    我的场景
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-container">
+        <!-- 面包屑 -->
+        <div class="breadcrumb">
+            <a href="#">首页</a>
+            <span>/</span>
+            <a href="#">场景库</a>
+            <span>/</span>
+            <span class="current" id="breadcrumbScenarioName">企业级前端项目开发实战</span>
+        </div>
+
+        <!-- 场景详情视图 -->
+        <div class="content-wrapper" id="scenarioDetailView">
+            <!-- 左侧主内容 -->
+            <div class="main-content">
+                <!-- 场景详情卡片 -->
+                <div class="card scene-card">
+                    <div class="scene-header">
+                        <div class="scene-cover">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <div class="scene-info">
+                            <div class="scene-title-row">
+                                <h1 class="scene-title" id="sceneTitle">企业级前端项目开发实战</h1>
+                                <div class="scene-actions">
+                                    <button class="action-btn">
+                                        <i class="fas fa-share-alt"></i>
+                                        分享
+                                    </button>
+                                    <button class="action-btn" id="favBtn">
+                                        <i class="far fa-star"></i>
+                                        收藏
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="scene-meta">
+                                <span class="scene-meta-item"><i class="far fa-user"></i>创建者：<span id="sceneCreator">张老师</span></span>
+                                <span class="scene-meta-item"><i class="far fa-clock"></i>更新于 <span id="sceneUpdated">2024-01-15</span></span>
+                                <span class="scene-meta-item"><i class="far fa-eye"></i>浏览 1,234 次</span>
+                                <span class="scene-meta-item"><i class="far fa-heart"></i>收藏 89 次</span>
+                            </div>
+                            <p class="scene-desc" id="sceneDesc">
+                                在现代企业级应用开发中，前端工程师需要具备完整的项目开发能力，包括技术选型、架构设计、组件开发、性能优化等多个方面。本场景模拟真实企业项目环境，让学员体验完整的前端开发流程。
+                            </p>
+                            <div class="scene-tags">
+                                <div class="tag-row">
+                                    <span class="tag-label">面向专业：</span>
+                                    <div class="tag-values" id="sceneProfessions">
+                                        <span class="tag blue">信息技术</span>
+                                    </div>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag-label">关联岗位：</span>
+                                    <div class="tag-values" id="scenePositions">
+                                        <span class="tag purple">前端开发工程师</span>
+                                    </div>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag-label">行业领域：</span>
+                                    <div class="tag-values" id="sceneIndustries">
+                                        <span class="tag orange">互联网/IT</span>
+                                    </div>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag-label">所属批次：</span>
+                                    <div class="tag-values" id="sceneBatch">
+                                        <span class="tag green">2026春季前端开发场景建设</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 标签页内容 -->
+                <div class="card tabs-card">
+                    <div class="tabs-nav">
+                        <div class="tab-item active" data-tab="tasks">
+                            <i class="fas fa-tasks"></i>
+                            任务概览
+                            <span class="tab-badge" id="taskCountBadge">4</span>
+                        </div>
+                        <div class="tab-item" data-tab="resources">
+                            <i class="fas fa-book"></i>
+                            资源中心
+                            <span class="tab-badge" id="resourceCountBadge">0</span>
+                        </div>
+                        <div class="tab-item" data-tab="abilities">
+                            <i class="fas fa-star"></i>
+                            能力地图
+                            <span class="tab-badge" id="abilityCountBadge">0</span>
+                        </div>
+                        <div class="tab-item" data-tab="rubric">
+                            <i class="fas fa-clipboard-check"></i>
+                            评价量规
+                            <span class="tab-badge">4</span>
+                        </div>
+                        <div class="tab-item" data-tab="knowledge">
+                            <i class="fas fa-sitemap"></i>
+                            知识体系
+                        </div>
+                    </div>
+
+                    <!-- 任务概览 -->
+                    <div class="tab-content active" id="tasks">
+                        <div class="task-list" id="taskList">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 资源中心 -->
+                    <div class="tab-content" id="resources">
+                        <div id="resourcesContainer">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 能力地图 -->
+                    <div class="tab-content" id="abilities">
+                        <div class="ability-list" id="abilityList">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 评价量规 -->
+                    <div class="tab-content" id="rubric">
+                        <table class="rubric-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 180px;">评价维度</th>
+                                    <th><span class="rubric-level excellent">优秀 (90-100)</span></th>
+                                    <th><span class="rubric-level good">良好 (75-89)</span></th>
+                                    <th><span class="rubric-level pass">及格 (60-74)</span></th>
+                                    <th><span class="rubric-level fail">不合格 (&lt;60)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="rubric-dimension">代码质量</span><span class="rubric-weight">40%</span></td>
+                                    <td>代码规范优雅，架构清晰，类型安全，可维护性高</td>
+                                    <td>代码较为规范，架构基本清晰，有类型定义</td>
+                                    <td>代码基本可读，功能基本实现，类型使用不足</td>
+                                    <td>代码混乱，类型错误多，难以维护</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="rubric-dimension">功能完整性</span><span class="rubric-weight">35%</span></td>
+                                    <td>所有功能完整实现，边界情况处理完善</td>
+                                    <td>主要功能实现，部分边界情况已处理</td>
+                                    <td>核心功能可用，存在部分缺陷</td>
+                                    <td>功能不完整，存在严重缺陷</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="rubric-dimension">安全性考虑</span><span class="rubric-weight">25%</span></td>
+                                    <td>XSS、CSRF防护完善，输入验证严格</td>
+                                    <td>基本安全措施到位，常见漏洞已防范</td>
+                                    <td>有基本安全意识，部分措施缺失</td>
+                                    <td>无安全考虑，存在明显漏洞</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 知识体系 -->
+                    <div class="tab-content" id="knowledge">
+                        <div id="knowledgeTreeContainer">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧边栏 -->
+            <aside class="sidebar">
+                <!-- 课时统计 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            课时统计
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-chart">
+                            <div class="chart-ring">
+                                <div class="chart-center">
+                                    <div class="chart-value" id="totalHours">44</div>
+                                    <div class="chart-label">总课时</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot theory"></span>
+                                <span>考核 <span id="assessmentHours">32</span>课时</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot practice"></span>
+                                <span>训练 <span id="trainingHours">12</span>课时</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 岗位能力要求 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-briefcase"></i>
+                            岗位能力要求
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="job-ability-list" id="sidebarAbilityList">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 测评资源 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-clipboard-list"></i>
+                            场景测评
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="assess-list">
+                            <div class="assess-item">
+                                <div class="assess-icon quiz">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div class="assess-info">
+                                    <div class="assess-name">客观题测评</div>
+                                    <div class="assess-meta">单选/多选/判断 · 自动评分</div>
+                                </div>
+                            </div>
+                            <div class="assess-item">
+                                <div class="assess-icon exam">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="assess-info">
+                                    <div class="assess-name">主观题评审</div>
+                                    <div class="assess-meta">评分维度 · 教师评审</div>
+                                </div>
+                            </div>
+                            <div class="assess-item">
+                                <div class="assess-icon bank">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="assess-info">
+                                    <div class="assess-name">混合测评</div>
+                                    <div class="assess-meta">客观+主观 · 综合评定</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他资源 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-toolbox"></i>
+                            其他资源
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="other-resource-list">
+                            <div class="other-resource-item">
+                                <i class="fas fa-tools"></i>
+                                开发工具包 (Node.js, VS Code, Git)
+                            </div>
+                            <div class="other-resource-item">
+                                <i class="fas fa-laptop"></i>
+                                实训室 A-301
+                            </div>
+                            <div class="other-resource-item">
+                                <i class="fas fa-server"></i>
+                                GitLab 代码托管平台
+                            </div>
+                            <div class="other-resource-item">
+                                <i class="fas fa-comments"></i>
+                                技术交流群 (QQ/钉钉)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- 任务学习视图 -->
+        <div class="task-learning-view" id="taskLearningView">
+            <div class="learning-layout">
+                <!-- 左侧步骤导航 -->
+                <div class="step-sidebar">
+                    <div class="step-sidebar-inner">
+                        <div class="step-sidebar-header">
+                            <button class="step-back-btn" onclick="exitTaskLearning()">
+                                <i class="fas fa-arrow-left"></i>
+                                返回场景
+                            </button>
+                            <div class="step-task-name" id="learningTaskName">任务名称</div>
+                            <div class="step-task-meta" id="learningTaskMeta">课时 · 难度</div>
+                        </div>
+                        <div class="step-list" id="stepList">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧内容区 -->
+                <div class="step-content-area">
+                    <!-- 进度条 -->
+                    <div class="step-progress-header">
+                        <div class="step-progress-top">
+                            <span class="step-progress-title" id="stepProgressTitle">学习进度</span>
+                            <span class="step-progress-percent" id="stepProgressPercent">0%</span>
+                        </div>
+                        <div class="step-progress-track">
+                            <div class="step-progress-fill" id="stepProgressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤内容卡片 -->
+                    <div class="step-card" id="stepContentCard">
+                        <div class="step-card-header" id="stepContentHeader">
+                            <i class="fas fa-book-open"></i>
+                            <span id="stepContentTitle">步骤标题</span>
+                        </div>
+                        <div class="step-card-body" id="stepContentBody">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 导航按钮 -->
+                    <div class="step-nav-buttons">
+                        <button class="action-btn" id="prevStepBtn" onclick="goToPrevStep()">
+                            <i class="fas fa-chevron-left"></i>
+                            上一步
+                        </button>
+                        <button class="action-btn primary" id="nextStepBtn" onclick="goToNextStep()">
+                            标记完成，下一步
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ==================== Mock 数据 ====================
+        const SCENARIO = {
+            id: "scenario-1",
+            name: "企业级前端项目开发实战",
+            code: "SC-2026-0001",
+            coverImage: "/placeholder.svg?height=200&width=320",
+            positionName: "前端开发工程师",
+            professionName: "信息技术",
+            industryName: "互联网/IT",
+            batchName: "2026春季前端开发场景建设",
+            difficulty: 5,
+            background: "在现代企业级应用开发中，前端工程师需要具备完整的项目开发能力，包括技术选型、架构设计、组件开发、性能优化等多个方面。本场景模拟真实企业项目环境，让学员体验完整的前端开发流程。",
+            deliveryGoal: "完成一个功能完整的企业级管理后台前端项目，包含用户认证、数据展示、表单处理、权限控制等核心功能模块。",
+            creatorName: "张老师",
+            updatedAt: "2024-01-15",
+            tasks: [
+                {
+                    id: "task-1-1",
+                    name: "项目初始化与架构搭建",
+                    code: "T-001-001",
+                    order: 1,
+                    description: "使用 React + TypeScript 技术栈搭建项目基础架构，配置开发环境和工具链。",
+                    detailedDescription: "<p>本任务要求学员从零开始搭建一个企业级前端项目，需要完成以下内容：</p><ul><li>使用 Vite 初始化项目</li><li>配置 TypeScript 环境</li><li>设置 ESLint 和 Prettier 代码规范</li><li>配置 React Router 路由</li><li>配置 Zustand 状态管理</li></ul><p>完成后需要提交项目代码仓库地址。</p>",
+                    estimatedHours: 8,
+                    taskType: "assessment",
+                    difficulty: 3,
+                    dependencies: [],
+                    resources: ["lr-1", "lr-2"],
+                    deliverables: [
+                        { id: "del-1", type: "exercise", name: "架构知识测验", description: "完成项目架构相关的测试题目" },
+                        { id: "del-2", type: "result_file", name: "项目代码仓库", description: "包含完整项目初始化代码的 Git 仓库" }
+                    ],
+                    knowledgePoints: ["kp-1", "kp-2", "kp-7"],
+                    abilityPoints: ["ab-1", "ab-2", "ab-7"],
+                    assessment: {
+                        type: "objective",
+                        objectiveConfig: {
+                            totalScore: 100,
+                            questions: [
+                                { id: "q-1", type: "single", content: "React 18 中引入的并发特性主要解决什么问题？", options: ["性能优化", "代码复用", "状态管理", "路由控制"], answer: "性能优化", score: 10 },
+                                { id: "q-2", type: "judgment", content: "TypeScript 是 JavaScript 的超集", answer: "true", score: 10 },
+                                { id: "q-3", type: "multiple", content: "以下哪些是常用的 React 状态管理方案？", options: ["Redux", "MobX", "Zustand", "jQuery"], answer: ["Redux", "MobX", "Zustand"], score: 20 }
+                            ]
+                        }
+                    }
+                },
+                {
+                    id: "task-1-2",
+                    name: "用户认证模块开发",
+                    code: "T-001-002",
+                    order: 2,
+                    description: "实现用户登录、注册、权限验证等认证相关功能。",
+                    detailedDescription: "<p>认证模块是企业应用的核心功能，本任务要求实现完整的用户认证流程：</p><ul><li>登录页面 UI 开发</li><li>JWT Token 获取与存储</li><li>路由守卫实现</li><li>权限控制组件封装</li></ul>",
+                    estimatedHours: 12,
+                    taskType: "assessment",
+                    difficulty: 4,
+                    dependencies: ["task-1-1"],
+                    resources: ["lr-6"],
+                    deliverables: [
+                        { id: "del-3", type: "result_file", name: "认证模块代码", description: "包含登录注册功能的完整代码" }
+                    ],
+                    knowledgePoints: ["kp-1", "kp-6"],
+                    abilityPoints: ["ab-1", "ab-5", "ab-9"],
+                    assessment: {
+                        type: "subjective",
+                        subjectiveConfig: {
+                            totalScore: 100,
+                            rubricPoints: [
+                                { id: "rp-1", name: "代码质量", weight: 40, maxScore: 40, levels: [
+                                    { name: "优秀", minScore: 90, maxScore: 100, description: "代码规范优雅，类型安全，组件设计合理" },
+                                    { name: "良好", minScore: 75, maxScore: 89, description: "代码较为规范，有类型定义，组件基本合理" },
+                                    { name: "及格", minScore: 60, maxScore: 74, description: "代码基本可读，功能实现，类型使用不足" },
+                                    { name: "不合格", minScore: 0, maxScore: 59, description: "代码混乱，类型错误多，难以维护" }
+                                ]},
+                                { id: "rp-2", name: "功能完整性", weight: 35, maxScore: 35, levels: [
+                                    { name: "优秀", minScore: 90, maxScore: 100, description: "所有功能完整实现，边界情况处理完善" },
+                                    { name: "良好", minScore: 75, maxScore: 89, description: "主要功能实现，部分边界情况已处理" },
+                                    { name: "及格", minScore: 60, maxScore: 74, description: "核心功能可用，存在部分缺陷" },
+                                    { name: "不合格", minScore: 0, maxScore: 59, description: "功能不完整，存在严重缺陷" }
+                                ]},
+                                { id: "rp-3", name: "安全性考虑", weight: 25, maxScore: 25, levels: [
+                                    { name: "优秀", minScore: 90, maxScore: 100, description: "XSS、CSRF防护完善，输入验证严格" },
+                                    { name: "良好", minScore: 75, maxScore: 89, description: "基本安全措施到位，常见漏洞已防范" },
+                                    { name: "及格", minScore: 60, maxScore: 74, description: "有基本安全意识，部分措施缺失" },
+                                    { name: "不合格", minScore: 0, maxScore: 59, description: "无安全考虑，存在明显漏洞" }
+                                ]}
+                            ]
+                        }
+                    }
+                },
+                {
+                    id: "task-1-3",
+                    name: "核心业务组件开发",
+                    code: "T-001-003",
+                    order: 3,
+                    description: "开发数据表格、图表展示、表单处理等核心业务组件。",
+                    detailedDescription: "<p>可复用的业务组件是提升开发效率的关键。本任务要求开发以下核心组件：</p><ul><li>通用数据表格组件（支持排序、筛选、分页）</li><li>ECharts 图表封装组件</li><li>通用表单组件（支持校验、动态字段）</li><li>文件上传组件</li></ul>",
+                    estimatedHours: 16,
+                    taskType: "training",
+                    difficulty: 4,
+                    dependencies: ["task-1-1"],
+                    resources: ["lr-3"],
+                    deliverables: [
+                        { id: "del-4", type: "onsite_evaluation", name: "组件演示评审", description: "现场演示组件功能并接受评审" }
+                    ],
+                    knowledgePoints: ["kp-1", "kp-3"],
+                    abilityPoints: ["ab-1", "ab-6"],
+                    assessment: {
+                        type: "mixed",
+                        objectiveConfig: {
+                            totalScore: 40,
+                            questions: [
+                                { id: "q-4", type: "single", content: "React 中 useMemo 的主要作用是？", options: ["缓存计算结果", "管理副作用", "处理事件", "路由跳转"], answer: "缓存计算结果", score: 20 }
+                            ]
+                        },
+                        subjectiveConfig: {
+                            totalScore: 60,
+                            rubricPoints: [
+                                { id: "rp-4", name: "组件设计", weight: 50, maxScore: 30, levels: [
+                                    { name: "优秀", minScore: 90, maxScore: 100, description: "组件接口设计合理，Props定义完善" },
+                                    { name: "良好", minScore: 75, maxScore: 89, description: "组件接口基本合理，有Props定义" },
+                                    { name: "及格", minScore: 60, maxScore: 74, description: "组件可用，接口设计有改进空间" },
+                                    { name: "不合格", minScore: 0, maxScore: 59, description: "组件难以复用，接口设计混乱" }
+                                ]},
+                                { id: "rp-5", name: "代码复用性", weight: 50, maxScore: 30, levels: [
+                                    { name: "优秀", minScore: 90, maxScore: 100, description: "组件可复用性强，通用性好" },
+                                    { name: "良好", minScore: 75, maxScore: 89, description: "组件有一定复用性" },
+                                    { name: "及格", minScore: 60, maxScore: 74, description: "组件基本可用，复用性一般" },
+                                    { name: "不合格", minScore: 0, maxScore: 59, description: "组件无法复用" }
+                                ]}
+                            ]
+                        },
+                        mixedWeights: { objective: 40, subjective: 60 }
+                    }
+                },
+                {
+                    id: "task-1-4",
+                    name: "项目优化与部署",
+                    code: "T-001-004",
+                    order: 4,
+                    description: "进行性能优化、打包配置，完成项目部署上线。",
+                    detailedDescription: "<p>项目上线前的优化和部署是开发流程的最后关键环节：</p><ul><li>性能分析（Lighthouse、React DevTools Profiler）</li><li>代码分割与懒加载配置</li><li>Vite 构建优化</li><li>Docker 容器化部署</li><li>Nginx 反向代理配置</li></ul>",
+                    estimatedHours: 8,
+                    taskType: "assessment",
+                    difficulty: 3,
+                    dependencies: ["task-1-2", "task-1-3"],
+                    resources: [],
+                    deliverables: [
+                        { id: "del-5", type: "result_file", name: "部署报告", description: "项目部署过程和优化措施报告" }
+                    ],
+                    knowledgePoints: ["kp-7"],
+                    abilityPoints: ["ab-6", "ab-7"],
+                    assessment: null
+                }
+            ]
+        };
+
+        const KNOWLEDGE_POINTS = [
+            { id: "kp-1", name: "React Hooks", description: "React 函数组件中的状态和副作用管理", category: "前端开发" },
+            { id: "kp-2", name: "TypeScript 基础", description: "TypeScript 类型系统和基本语法", category: "前端开发" },
+            { id: "kp-3", name: "CSS Flexbox", description: "CSS 弹性盒子布局", category: "前端开发" },
+            { id: "kp-4", name: "RESTful API", description: "REST 风格的 API 设计原则", category: "后端开发" },
+            { id: "kp-5", name: "数据库设计", description: "关系型数据库表结构设计", category: "后端开发" },
+            { id: "kp-6", name: "JWT 认证", description: "JSON Web Token 身份验证机制", category: "安全" },
+            { id: "kp-7", name: "Git 版本控制", description: "Git 分支管理和协作开发", category: "工具" },
+            { id: "kp-8", name: "电商运营基础", description: "电商平台运营的基本概念和流程", category: "电子商务" },
+            { id: "kp-9", name: "数据可视化", description: "使用图表展示数据的方法和技巧", category: "数据分析" },
+            { id: "kp-10", name: "财务报表分析", description: "企业财务报表的编制和分析方法", category: "财务管理" }
+        ];
+
+        const LEARNING_RESOURCES = [
+            { id: "lr-1", name: "React 官方文档", type: "link", url: "https://react.dev", description: "React 框架官方中文文档", knowledgePoints: ["kp-1"] },
+            { id: "lr-2", name: "TypeScript 入门教程.pdf", type: "document", url: "#", size: "2.3MB", description: "TypeScript 从入门到精通", knowledgePoints: ["kp-2"] },
+            { id: "lr-3", name: "CSS 布局实战视频", type: "video", url: "#", size: "156MB", description: "CSS Flexbox 和 Grid 布局详解", knowledgePoints: ["kp-3"] },
+            { id: "lr-4", name: "API 设计规范文档.docx", type: "document", url: "#", size: "1.2MB", description: "RESTful API 设计最佳实践", knowledgePoints: ["kp-4"] },
+            { id: "lr-5", name: "数据库建模工具", type: "software", url: "https://dbdiagram.io", description: "在线数据库设计工具", knowledgePoints: ["kp-5"] },
+            { id: "lr-6", name: "JWT 认证流程图.png", type: "image", url: "#", size: "0.5MB", description: "JWT 认证工作流程图解", knowledgePoints: ["kp-6"] },
+            { id: "lr-7", name: "Git 协作开发指南", type: "document", url: "#", size: "3.1MB", description: "团队 Git 工作流最佳实践", knowledgePoints: ["kp-7"] },
+            { id: "lr-8", name: "实训室 A-301", type: "venue", url: "", description: "计算机实训室，配备50台电脑", knowledgePoints: [] },
+            { id: "lr-9", name: "电商平台演示系统", type: "software", url: "https://demo.shop.edu", description: "电商运营模拟平台", knowledgePoints: ["kp-8"] },
+            { id: "lr-10", name: "数据分析案例集", type: "document", url: "#", size: "5.6MB", description: "真实业务数据分析案例", knowledgePoints: ["kp-9"] }
+        ];
+
+        const ABILITY_POINTS = [
+            { id: "ab-1", name: "组件封装能力", description: "能够将业务逻辑封装为可复用的组件", category: "开发能力" },
+            { id: "ab-2", name: "状态管理能力", description: "合理使用状态管理方案管理应用数据", category: "开发能力" },
+            { id: "ab-3", name: "接口设计能力", description: "设计清晰、规范的 API 接口", category: "设计能力" },
+            { id: "ab-4", name: "数据库建模能力", description: "设计高效、规范的数据库表结构", category: "设计能力" },
+            { id: "ab-5", name: "安全编码能力", description: "编写安全的代码，防范常见安全漏洞", category: "开发能力" },
+            { id: "ab-6", name: "性能优化能力", description: "识别性能瓶颈并进行优化", category: "优化能力" },
+            { id: "ab-7", name: "团队协作能力", description: "有效沟通、代码审查、文档编写", category: "软技能" },
+            { id: "ab-8", name: "数据分析能力", description: "使用数据驱动决策和分析", category: "分析能力" },
+            { id: "ab-9", name: "问题排查能力", description: "定位和解决技术问题的能力", category: "开发能力" },
+            { id: "ab-10", name: "项目管理能力", description: "规划、跟踪和交付项目任务", category: "软技能" }
+        ];
+
+        // ==================== 全局状态 ====================
+        let currentTaskId = null;
+        let currentStepIndex = 0;
+        let taskStepsMap = {}; // taskId -> steps[]
+        let quizAnswers = {};  // taskId -> { questionId -> answer }
+        let quizSubmitted = {}; // taskId -> boolean
+        let stepCompleted = {}; // taskId -> { stepIndex -> boolean }
+
+        // ==================== 工具函数 ====================
+        function getResourceById(id) {
+            return LEARNING_RESOURCES.find(r => r.id === id);
+        }
+
+        function getKnowledgePointById(id) {
+            return KNOWLEDGE_POINTS.find(k => k.id === id);
+        }
+
+        function getAbilityPointById(id) {
+            return ABILITY_POINTS.find(a => a.id === id);
+        }
+
+        function getTaskById(id) {
+            return SCENARIO.tasks.find(t => t.id === id);
+        }
+
+        function getResourceIconClass(type) {
+            const map = {
+                document: 'pdf', video: 'video', link: 'link',
+                software: 'software', image: 'image', venue: 'venue', other: 'other'
+            };
+            return map[type] || 'other';
+        }
+
+        function getResourceIcon(type) {
+            const map = {
+                document: 'fa-file-pdf', video: 'fa-play-circle', link: 'fa-link',
+                software: 'fa-cogs', image: 'fa-image', venue: 'fa-map-marker-alt', other: 'fa-file'
+            };
+            return map[type] || 'fa-file';
+        }
+
+        function getResourceActionIcon(type) {
+            return type === 'link' || type === 'software' ? 'fa-external-link-alt' : 'fa-download';
+        }
+
+        // 生成自适应学习步骤
+        function generateTaskSteps(task) {
+            const steps = [];
+            let stepNum = 1;
+
+            // Step 1: 任务概览（必有）
+            steps.push({
+                id: 'overview',
+                type: 'overview',
+                number: stepNum++,
+                title: '任务概览',
+                icon: 'fa-info-circle',
+                required: true
+            });
+
+            // Step 2: 知识点预习（条件触发）
+            if (task.knowledgePoints && task.knowledgePoints.length > 0) {
+                steps.push({
+                    id: 'knowledge',
+                    type: 'knowledge',
+                    number: stepNum++,
+                    title: '知识点预习',
+                    icon: 'fa-lightbulb',
+                    required: true
+                });
+            }
+
+            // Step 3: 任务指导（条件触发）
+            if (task.detailedDescription && task.detailedDescription.trim().length > 0) {
+                steps.push({
+                    id: 'guide',
+                    type: 'guide',
+                    number: stepNum++,
+                    title: '任务指导',
+                    icon: 'fa-book-open',
+                    required: true
+                });
+            }
+
+            // Step 4: 学习资源（条件触发）
+            const taskResources = getTaskResources(task);
+            if (taskResources.length > 0) {
+                steps.push({
+                    id: 'resources',
+                    type: 'resources',
+                    number: stepNum++,
+                    title: '学习资源',
+                    icon: 'fa-folder-open',
+                    required: true
+                });
+            }
+
+            // Step 5: 任务测评（条件触发）
+            if (task.assessment) {
+                const typeMap = { objective: '客观测评', subjective: '主观评审', mixed: '混合测评' };
+                steps.push({
+                    id: 'assessment',
+                    type: 'assessment',
+                    number: stepNum++,
+                    title: typeMap[task.assessment.type] || '任务测评',
+                    icon: 'fa-edit',
+                    required: true
+                });
+            }
+
+            // Step 6: 成果交付（条件触发）
+            if (task.deliverables && task.deliverables.length > 0) {
+                steps.push({
+                    id: 'deliverable',
+                    type: 'deliverable',
+                    number: stepNum++,
+                    title: '成果交付',
+                    icon: 'fa-cloud-upload-alt',
+                    required: true
+                });
+            }
+
+            return steps;
+        }
+
+        function getTaskResources(task) {
+            if (!task.resources || task.resources.length === 0) return [];
+            return task.resources.map(id => getResourceById(id)).filter(Boolean);
+        }
+
+        function getTaskKnowledgePoints(task) {
+            if (!task.knowledgePoints || task.knowledgePoints.length === 0) return [];
+            return task.knowledgePoints.map(id => getKnowledgePointById(id)).filter(Boolean);
+        }
+
+        // 计算任务完成进度
+        function getTaskProgress(taskId) {
+            const steps = taskStepsMap[taskId] || [];
+            if (steps.length === 0) return 0;
+            const completed = stepCompleted[taskId] || {};
+            const completedCount = Object.values(completed).filter(Boolean).length;
+            return Math.round((completedCount / steps.length) * 100);
+        }
+
+        // 检查任务依赖是否满足
+        function isTaskUnlocked(task) {
+            if (!task.dependencies || task.dependencies.length === 0) return true;
+            return task.dependencies.every(depId => {
+                const depTask = getTaskById(depId);
+                if (!depTask) return true;
+                return getTaskProgress(depId) >= 100;
+            });
+        }
+
+        // ==================== 渲染函数 ====================
+
+        // 渲染任务列表
+        function renderTaskList() {
+            const container = document.getElementById('taskList');
+            const taskCountBadge = document.getElementById('taskCountBadge');
+            taskCountBadge.textContent = SCENARIO.tasks.length;
+
+            // 计算课时统计
+            let assessmentHours = 0;
+            let trainingHours = 0;
+            SCENARIO.tasks.forEach(t => {
+                if (t.taskType === 'assessment') assessmentHours += t.estimatedHours;
+                else trainingHours += t.estimatedHours;
+            });
+            document.getElementById('totalHours').textContent = assessmentHours + trainingHours;
+            document.getElementById('assessmentHours').textContent = assessmentHours;
+            document.getElementById('trainingHours').textContent = trainingHours;
+
+            container.innerHTML = SCENARIO.tasks.map((task, index) => {
+                const steps = generateTaskSteps(task);
+                taskStepsMap[task.id] = steps;
+                const progress = getTaskProgress(task.id);
+                const unlocked = isTaskUnlocked(task);
+                const completed = progress >= 100;
+
+                // 生成步骤徽章
+                const badges = steps.map(s => {
+                    const iconMap = {
+                        overview: 'fa-info-circle', knowledge: 'fa-lightbulb', guide: 'fa-book-open',
+                        resources: 'fa-folder-open', assessment: 'fa-edit', deliverable: 'fa-cloud-upload-alt'
+                    };
+                    return `<span class="step-badge"><i class="fas ${iconMap[s.type]}"></i>${s.title}</span>`;
+                }).join('');
+
+                // 按钮状态
+                let btnClass = 'start';
+                let btnText = '开始学习';
+                if (!unlocked) {
+                    btnClass = 'locked';
+                    btnText = '<i class="fas fa-lock"></i> 锁定';
+                } else if (completed) {
+                    btnClass = 'completed';
+                    btnText = '<i class="fas fa-check"></i> 已完成';
+                } else if (progress > 0) {
+                    btnClass = 'continue';
+                    btnText = `继续学习 (${progress}%)`;
+                }
+
+                const typeLabel = task.taskType === 'assessment' ? '考核任务' : '训练任务';
+                const typeClass = task.taskType;
+
+                return `
+                    <div class="task-item ${!unlocked ? 'locked' : ''}" data-task-id="${task.id}" ${unlocked ? `onclick="enterTaskLearning('${task.id}')"` : ''}>
+                        <div class="task-index ${completed ? 'completed' : ''}">${task.order}</div>
+                        <div class="task-content">
+                            <div class="task-title-row">
+                                <div class="task-title">${task.name}</div>
+                                <span class="task-type-tag ${typeClass}">${typeLabel}</span>
+                            </div>
+                            <div class="task-desc">${task.description}</div>
+                            <div class="task-step-badges">${badges}</div>
+                            ${progress > 0 ? `
+                            <div class="task-progress-bar">
+                                <div class="task-progress-track">
+                                    <div class="task-progress-fill ${completed ? 'completed' : ''}" style="width: ${progress}%"></div>
+                                </div>
+                                <span class="task-progress-text">${progress}%</span>
+                            </div>
+                            ` : ''}
+                            <div class="task-meta">
+                                <span class="task-meta-item"><i class="far fa-clock"></i>${task.estimatedHours}课时</span>
+                                <span class="task-meta-item"><i class="fas fa-star"></i>${'★'.repeat(task.difficulty)}${'☆'.repeat(5 - task.difficulty)}</span>
+                                <span class="task-meta-item"><i class="fas fa-folder-open"></i>${getTaskResources(task).length}个资源</span>
+                                ${task.knowledgePoints.length > 0 ? `<span class="task-meta-item"><i class="fas fa-lightbulb"></i>${task.knowledgePoints.length}个知识点</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="task-action-col">
+                            <button class="task-status-btn ${btnClass}" ${!unlocked || completed ? 'disabled' : ''} onclick="event.stopPropagation(); ${unlocked && !completed ? `enterTaskLearning('${task.id}')` : ''}">
+                                ${btnText}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 渲染资源中心
+        function renderResources() {
+            const container = document.getElementById('resourcesContainer');
+            // 收集所有任务的资源
+            const allResourceIds = new Set();
+            SCENARIO.tasks.forEach(t => {
+                (t.resources || []).forEach(id => allResourceIds.add(id));
+            });
+
+            const resources = Array.from(allResourceIds).map(id => getResourceById(id)).filter(Boolean);
+            document.getElementById('resourceCountBadge').textContent = resources.length;
+
+            // 按类型分组
+            const groups = {};
+            resources.forEach(r => {
+                const typeLabel = {
+                    document: '文档资料', video: '视频教程', link: '参考链接',
+                    software: '软件工具', image: '图片资源', venue: '场地资源', other: '其他资源'
+                }[r.type] || '其他资源';
+                if (!groups[typeLabel]) groups[typeLabel] = [];
+                groups[typeLabel].push(r);
+            });
+
+            if (resources.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无学习资源</p></div>';
+                return;
+            }
+
+            container.innerHTML = Object.entries(groups).map(([typeLabel, items]) => `
+                <div class="resource-section">
+                    <div class="resource-section-title">
+                        <i class="fas ${getResourceIcon(items[0].type)}"></i>
+                        ${typeLabel}
+                    </div>
+                    <div class="resource-list">
+                        ${items.map(r => `
+                            <div class="resource-item">
+                                <div class="resource-icon ${getResourceIconClass(r.type)}">
+                                    <i class="fas ${getResourceIcon(r.type)}"></i>
+                                </div>
+                                <div class="resource-info">
+                                    <div class="resource-name">${r.name}</div>
+                                    <div class="resource-meta">${r.type === 'link' || r.type === 'software' ? '外部链接' : (r.size || '未知大小')}</div>
+                                </div>
+                                <i class="fas ${getResourceActionIcon(r.type)} resource-action"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染能力地图
+        function renderAbilities() {
+            const container = document.getElementById('abilityList');
+            const sidebarContainer = document.getElementById('sidebarAbilityList');
+            
+            // 收集所有任务关联的能力点
+            const abilityIds = new Set();
+            SCENARIO.tasks.forEach(t => {
+                (t.abilityPoints || []).forEach(id => abilityIds.add(id));
+            });
+            const abilities = Array.from(abilityIds).map(id => getAbilityPointById(id)).filter(Boolean);
+            document.getElementById('abilityCountBadge').textContent = abilities.length;
+
+            // 能力地图 Tab
+            container.innerHTML = abilities.map(a => `
+                <div class="ability-item">
+                    <div class="ability-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="ability-info">
+                        <div class="ability-name">${a.name}</div>
+                        <div class="ability-desc">${a.description}</div>
+                    </div>
+                    <div class="ability-level">
+                        ${[1,2,3,4,5].map(i => `<i class="fas fa-star level-star ${i > 3 ? 'empty' : ''}"></i>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // 侧边栏能力列表
+            sidebarContainer.innerHTML = `
+                <div class="job-group">
+                    <div class="job-header">
+                        <i class="fas fa-code"></i>
+                        ${SCENARIO.positionName}
+                    </div>
+                    <div class="job-abilities">
+                        ${abilities.map(a => `
+                            <div class="job-ability-item">
+                                <span class="job-ability-name"><i class="fas fa-check-circle"></i> ${a.name}</span>
+                                <div class="ability-level">
+                                    ${[1,2,3,4,5].map(i => `<i class="fas fa-star level-star ${i > 3 ? 'empty' : ''}"></i>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 渲染知识体系
+        function renderKnowledgeTree() {
+            const container = document.getElementById('knowledgeTreeContainer');
+            // 按 category 分组
+            const groups = {};
+            KNOWLEDGE_POINTS.forEach(kp => {
+                const cat = kp.category || '未分类';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(kp);
+            });
+
+            container.innerHTML = `
+                <ul class="knowledge-tree">
+                    ${Object.entries(groups).map(([cat, items]) => `
+                        <li class="tree-node">
+                            <div class="tree-item" onclick="toggleTree(this)">
+                                <span class="tree-toggle"><i class="fas fa-chevron-right"></i></span>
+                                <span class="tree-icon folder"><i class="fas fa-folder"></i></span>
+                                <span class="tree-label">${cat}</span>
+                                <span class="tree-count">${items.length}个知识点</span>
+                            </div>
+                            <ul class="tree-children">
+                                ${items.map(kp => `
+                                    <li class="tree-node">
+                                        <div class="tree-item">
+                                            <span class="tree-toggle" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></span>
+                                            <span class="tree-icon file"><i class="fas fa-file-alt"></i></span>
+                                            <span class="tree-label">${kp.name}</span>
+                                        </div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        // ==================== 学习视图 ====================
+
+        function enterTaskLearning(taskId) {
+            const task = getTaskById(taskId);
+            if (!task) return;
+
+            // 检查是否锁定
+            if (!isTaskUnlocked(task)) {
+                const deps = task.dependencies.map(d => {
+                    const t = getTaskById(d);
+                    return t ? t.name : d;
+                }).join('、');
+                alert('需先完成以下任务：' + deps);
+                return;
+            }
+
+            currentTaskId = taskId;
+            currentStepIndex = 0;
+
+            // 确保步骤已生成
+            if (!taskStepsMap[taskId]) {
+                taskStepsMap[taskId] = generateTaskSteps(task);
+            }
+
+            // 初始化步骤完成状态
+            if (!stepCompleted[taskId]) {
+                stepCompleted[taskId] = {};
+            }
+
+            // 更新学习视图标题
+            document.getElementById('learningTaskName').textContent = task.name;
+            document.getElementById('learningTaskMeta').textContent = 
+                `${task.estimatedHours}课时 · ${'★'.repeat(task.difficulty)}${'☆'.repeat(5-task.difficulty)} · ${task.taskType === 'assessment' ? '考核任务' : '训练任务'}`;
+
+            // 渲染步骤导航
+            renderStepSidebar(task);
+
+            // 渲染当前步骤
+            renderCurrentStep();
+
+            // 切换视图
+            document.getElementById('scenarioDetailView').style.display = 'none';
+            document.getElementById('taskLearningView').classList.add('active');
+            document.getElementById('breadcrumbScenarioName').textContent = task.name;
+            window.scrollTo(0, 0);
+        }
+
+        function exitTaskLearning() {
+            document.getElementById('scenarioDetailView').style.display = 'grid';
+            document.getElementById('taskLearningView').classList.remove('active');
+            document.getElementById('breadcrumbScenarioName').textContent = SCENARIO.name;
+            currentTaskId = null;
+            currentStepIndex = 0;
+            window.scrollTo(0, 0);
+            renderTaskList(); // 刷新进度
+        }
+
+        function renderStepSidebar(task) {
+            const steps = taskStepsMap[task.id] || [];
+            const completed = stepCompleted[task.id] || {};
+
+            document.getElementById('stepList').innerHTML = steps.map((step, idx) => {
+                const isActive = idx === currentStepIndex;
+                const isCompleted = !!completed[idx];
+                const statusText = isCompleted ? '已完成' : (isActive ? '进行中' : '待开始');
+
+                return `
+                    <div class="step-nav-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" 
+                         onclick="goToStep(${idx})">
+                        <div class="step-number">${isCompleted ? '<i class="fas fa-check" style="font-size:10px;"></i>' : step.number}</div>
+                        <div class="step-info">
+                            <div class="step-name">${step.title}</div>
+                            <div class="step-status-text">${statusText}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCurrentStep() {
+            const task = getTaskById(currentTaskId);
+            if (!task) return;
+
+            const steps = taskStepsMap[task.id] || [];
+            if (currentStepIndex >= steps.length) return;
+
+            const step = steps[currentStepIndex];
+            const completed = stepCompleted[task.id] || {};
+            const totalSteps = steps.length;
+            const completedCount = Object.values(completed).filter(Boolean).length;
+            const progress = Math.round((completedCount / totalSteps) * 100);
+
+            // 更新进度条
+            document.getElementById('stepProgressTitle').textContent = `Step ${step.number}: ${step.title}`;
+            document.getElementById('stepProgressPercent').textContent = `${progress}%`;
+            document.getElementById('stepProgressFill').style.width = `${progress}%`;
+
+            // 更新步骤导航高亮
+            renderStepSidebar(task);
+
+            // 渲染步骤内容
+            document.getElementById('stepContentHeader').innerHTML = `
+                <i class="fas ${step.icon}"></i>
+                <span>${step.title}</span>
+            `;
+
+            const body = document.getElementById('stepContentBody');
+            body.innerHTML = renderStepContent(task, step);
+
+            // 更新按钮
+            const prevBtn = document.getElementById('prevStepBtn');
+            const nextBtn = document.getElementById('nextStepBtn');
+
+            prevBtn.disabled = currentStepIndex === 0;
+            prevBtn.style.opacity = currentStepIndex === 0 ? '0.5' : '1';
+
+            if (currentStepIndex === totalSteps - 1) {
+                nextBtn.innerHTML = '完成任务 <i class="fas fa-check"></i>';
+            } else {
+                nextBtn.innerHTML = '标记完成，下一步 <i class="fas fa-chevron-right"></i>';
+            }
+
+            // 滚动到内容顶部
+            document.getElementById('stepContentCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function renderStepContent(task, step) {
+            switch (step.type) {
+                case 'overview':
+                    return renderOverviewStep(task);
+                case 'knowledge':
+                    return renderKnowledgeStep(task);
+                case 'guide':
+                    return renderGuideStep(task);
+                case 'resources':
+                    return renderResourcesStep(task);
+                case 'assessment':
+                    return renderAssessmentStep(task);
+                case 'deliverable':
+                    return renderDeliverableStep(task);
+                default:
+                    return '<p>未知步骤类型</p>';
+            }
+        }
+
+        function renderOverviewStep(task) {
+            return `
+                <div style="max-width: 700px;">
+                    <h3 style="font-size: 18px; margin-bottom: 16px; color: var(--text-primary);">${task.name}</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px;">${task.description}</p>
+                    
+                    <div style="background: #fafafa; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                        <div style="font-weight: 500; margin-bottom: 12px; font-size: 14px;">任务信息</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: var(--text-secondary);">
+                            <div><i class="far fa-clock" style="width: 16px; color: var(--text-tertiary);"></i> 预计课时：${task.estimatedHours}课时</div>
+                            <div><i class="fas fa-star" style="width: 16px; color: var(--text-tertiary);"></i> 难度等级：${'★'.repeat(task.difficulty)}${'☆'.repeat(5-task.difficulty)}</div>
+                            <div><i class="fas fa-tag" style="width: 16px; color: var(--text-tertiary);"></i> 任务类型：${task.taskType === 'assessment' ? '考核任务' : '训练任务'}</div>
+                            <div><i class="fas fa-code" style="width: 16px; color: var(--text-tertiary);"></i> 任务编码：${task.code}</div>
+                        </div>
+                    </div>
+
+                    ${task.background ? `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-weight: 500; margin-bottom: 8px; font-size: 14px;">任务背景</div>
+                        <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">${task.background}</p>
+                    </div>
+                    ` : ''}
+
+                    ${task.dependencies && task.dependencies.length > 0 ? `
+                    <div style="background: var(--primary-light); border: 1px solid #91caff; border-radius: 8px; padding: 12px 16px;">
+                        <div style="font-size: 13px; color: var(--primary-color);">
+                            <i class="fas fa-link"></i> 前置任务：${task.dependencies.map(d => {
+                                const t = getTaskById(d);
+                                return t ? `<span style="font-weight: 500;">${t.name}</span>` : d;
+                            }).join('、')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderKnowledgeStep(task) {
+            const kps = getTaskKnowledgePoints(task);
+            if (kps.length === 0) return '<p>暂无知识点</p>';
+
+            return `
+                <div>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+                        <i class="fas fa-info-circle" style="color: var(--primary-color);"></i>
+                        学习以下知识点，为任务执行做好准备。点击卡片可查看详细内容。
+                    </p>
+                    <div class="knowledge-cards">
+                        ${kps.map(kp => `
+                            <div class="knowledge-card" onclick="alert('知识点详情：\\n\\n${kp.name}\\n${kp.description}')">
+                                <div class="knowledge-card-name">${kp.name}</div>
+                                <div class="knowledge-card-desc">${kp.description}</div>
+                                <span class="knowledge-card-category">${kp.category}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top: 20px; padding: 16px; background: var(--success-light); border: 1px solid #b7eb8f; border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--success-color);">
+                            <i class="fas fa-check-circle"></i> 完成知识点预习后，点击"标记完成"进入下一步
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGuideStep(task) {
+            if (!task.detailedDescription) return '<p>暂无任务指导</p>';
+
+            // 获取关联的文档资源作为附件
+            const resources = getTaskResources(task);
+            const docResources = resources.filter(r => r.type === 'document');
+
+            return `
+                <div>
+                    <div style="line-height: 1.8; color: var(--text-primary); font-size: 15px;">
+                        ${task.detailedDescription}
+                    </div>
+                    ${docResources.length > 0 ? `
+                    <div style="margin-top: 24px;">
+                        <div style="font-weight: 500; margin-bottom: 12px; font-size: 14px;">
+                            <i class="fas fa-paperclip"></i> 关联附件
+                        </div>
+                        <div class="resource-list" style="grid-template-columns: 1fr;">
+                            ${docResources.map(r => `
+                                <div class="resource-item">
+                                    <div class="resource-icon ${getResourceIconClass(r.type)}">
+                                        <i class="fas ${getResourceIcon(r.type)}"></i>
+                                    </div>
+                                    <div class="resource-info">
+                                        <div class="resource-name">${r.name}</div>
+                                        <div class="resource-meta">${r.size || ''}</div>
+                                    </div>
+                                    <i class="fas fa-download resource-action"></i>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderResourcesStep(task) {
+            const resources = getTaskResources(task);
+            if (resources.length === 0) return '<p>暂无学习资源</p>';
+
+            // 按类型分组
+            const typeOrder = ['video', 'image', 'document', 'software', 'link', 'venue', 'other'];
+            const typeLabels = {
+                video: '视频教程', image: '图片资源', document: '文档资料',
+                software: '软件工具', link: '参考链接', venue: '场地资源', other: '其他资源'
+            };
+            const typeIcons = {
+                video: 'fa-play-circle', image: 'fa-image', document: 'fa-file-pdf',
+                software: 'fa-cogs', link: 'fa-link', venue: 'fa-map-marker-alt', other: 'fa-file'
+            };
+
+            const groups = {};
+            resources.forEach(r => {
+                if (!groups[r.type]) groups[r.type] = [];
+                groups[r.type].push(r);
+            });
+
+            return `
+                <div>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+                        <i class="fas fa-info-circle" style="color: var(--primary-color);"></i>
+                        以下是与本任务相关的学习资源，请按需查看。
+                    </p>
+                    ${typeOrder.filter(t => groups[t]).map(type => `
+                        <div class="resource-group">
+                            <div class="resource-group-title">
+                                <i class="fas ${typeIcons[type]}"></i>
+                                ${typeLabels[type]}
+                            </div>
+                            <div class="resource-list" style="grid-template-columns: 1fr;">
+                                ${groups[type].map(r => `
+                                    <div class="resource-item">
+                                        <div class="resource-icon ${getResourceIconClass(r.type)}">
+                                            <i class="fas ${getResourceIcon(r.type)}"></i>
+                                        </div>
+                                        <div class="resource-info">
+                                            <div class="resource-name">${r.name}</div>
+                                            <div class="resource-meta">${r.description || ''} ${r.size ? '· ' + r.size : ''}</div>
+                                        </div>
+                                        <i class="fas ${getResourceActionIcon(r.type)} resource-action"></i>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ${type === 'video' && groups[type].length > 0 ? `
+                            <div style="margin-top: 12px;">
+                                <div class="video-player-box" onclick="this.querySelector('.video-play-btn').innerHTML='<i class=\\'fas fa-pause\\'></i>'">
+                                    <div class="video-play-btn"><i class="fas fa-play"></i></div>
+                                    <div class="video-player-info">
+                                        <i class="fas fa-video"></i> ${groups[type][0].name}
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderAssessmentStep(task) {
+            const assessment = task.assessment;
+            if (!assessment) return '<p>暂无测评</p>';
+
+            if (assessment.type === 'objective') {
+                return renderObjectiveAssessment(task, assessment.objectiveConfig);
+            } else if (assessment.type === 'subjective') {
+                return renderSubjectiveAssessment(task, assessment.subjectiveConfig);
+            } else if (assessment.type === 'mixed') {
+                return renderMixedAssessment(task, assessment);
+            }
+            return '<p>未知测评类型</p>';
+        }
+
+        function renderObjectiveAssessment(task, config) {
+            const questions = config.questions || [];
+            const isSubmitted = quizSubmitted[task.id];
+            const answers = quizAnswers[task.id] || {};
+
+            return `
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div style="font-size: 14px; color: var(--text-secondary);">
+                            <i class="fas fa-info-circle" style="color: var(--primary-color);"></i>
+                            共 ${questions.length} 道题目，总分 ${config.totalScore} 分
+                        </div>
+                        ${isSubmitted ? `<span style="color: var(--success-color); font-weight: 500;"><i class="fas fa-check-circle"></i> 已提交</span>` : ''}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        ${questions.map((q, idx) => {
+                            const userAnswer = answers[q.id];
+                            const showResult = isSubmitted;
+                            const isCorrect = showResult && (
+                                Array.isArray(q.answer) 
+                                    ? Array.isArray(userAnswer) && q.answer.every(a => userAnswer.includes(a)) && userAnswer.length === q.answer.length
+                                    : userAnswer === q.answer
+                            );
+
+                            return `
+                                <div style="border: 1px solid #f0f0f0; border-radius: 8px; padding: 20px; ${showResult ? (isCorrect ? 'border-color: #b7eb8f; background: #f6ffed;' : 'border-color: #ffccc7; background: #fff2f0;') : ''}">
+                                    <div class="quiz-question">
+                                        <span class="quiz-question-number">Q${idx + 1}</span>
+                                        ${q.content}
+                                        <span style="color: var(--text-tertiary); font-size: 12px; font-weight: normal;">(${q.score}分)</span>
+                                    </div>
+                                    <div class="quiz-options">
+                                        ${q.options ? q.options.map(opt => {
+                                            const selected = Array.isArray(userAnswer) ? userAnswer.includes(opt) : userAnswer === opt;
+                                            let optClass = '';
+                                            if (showResult) {
+                                                const isCorrectOpt = Array.isArray(q.answer) ? q.answer.includes(opt) : q.answer === opt;
+                                                if (isCorrectOpt) optClass = 'correct';
+                                                else if (selected && !isCorrectOpt) optClass = 'wrong';
+                                            } else if (selected) {
+                                                optClass = 'selected';
+                                            }
+
+                                            return `
+                                                <div class="quiz-option ${optClass}" 
+                                                     onclick="${isSubmitted ? '' : `selectQuizOption('${task.id}', '${q.id}', '${opt.replace(/'/g, "\\'")}')`}">
+                                                    <div class="quiz-option-check">
+                                                        ${selected ? '<i class="fas fa-check"></i>' : ''}
+                                                    </div>
+                                                    <span>${opt}</span>
+                                                </div>
+                                            `;
+                                        }).join('') : `
+                                            <div class="quiz-option ${userAnswer === 'true' ? 'selected' : ''} ${showResult && q.answer === 'true' ? 'correct' : ''} ${showResult && userAnswer === 'true' && q.answer !== 'true' ? 'wrong' : ''}"
+                                                 onclick="${isSubmitted ? '' : `selectQuizOption('${task.id}', '${q.id}', 'true')`}">
+                                                <div class="quiz-option-check">${userAnswer === 'true' ? '<i class="fas fa-check"></i>' : ''}</div>
+                                                <span>正确</span>
+                                            </div>
+                                            <div class="quiz-option ${userAnswer === 'false' ? 'selected' : ''} ${showResult && q.answer === 'false' ? 'correct' : ''} ${showResult && userAnswer === 'false' && q.answer !== 'false' ? 'wrong' : ''}"
+                                                 onclick="${isSubmitted ? '' : `selectQuizOption('${task.id}', '${q.id}', 'false')`}">
+                                                <div class="quiz-option-check">${userAnswer === 'false' ? '<i class="fas fa-check"></i>' : ''}</div>
+                                                <span>错误</span>
+                                            </div>
+                                        `}
+                                    </div>
+                                    ${showResult ? `
+                                        <div class="quiz-feedback ${isCorrect ? 'correct' : 'wrong'}" style="margin-top: 12px;">
+                                            <i class="fas ${isCorrect ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                            ${isCorrect ? '回答正确！' : '回答错误'}
+                                            ${!isCorrect ? `<br><span style="opacity: 0.8;">正确答案：${Array.isArray(q.answer) ? q.answer.join('、') : q.answer}</span>` : ''}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${!isSubmitted ? `
+                        <div style="margin-top: 24px; text-align: center;">
+                            <button class="action-btn primary" style="padding: 10px 32px;" onclick="submitQuiz('${task.id}')">
+                                <i class="fas fa-paper-plane"></i> 提交答案
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderSubjectiveAssessment(task, config) {
+            const rubricPoints = config.rubricPoints || [];
+
+            return `
+                <div>
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">
+                        <i class="fas fa-info-circle" style="color: var(--primary-color);"></i>
+                        本任务采用主观评审方式，教师将根据以下评分维度对你的提交进行评价。
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        ${rubricPoints.map(rp => `
+                            <div class="rubric-card">
+                                <div class="rubric-card-name">
+                                    <span>${rp.name}</span>
+                                    <span class="rubric-card-weight">权重 ${rp.weight}% · 满分 ${rp.maxScore}分</span>
+                                </div>
+                                <div class="rubric-levels">
+                                    ${rp.levels.map(level => `
+                                        <div class="rubric-level-item">
+                                            <span class="rubric-level-badge ${level.minScore >= 90 ? 'excellent' : level.minScore >= 75 ? 'good' : level.minScore >= 60 ? 'pass' : 'fail'}">
+                                                ${level.name}
+                                            </span>
+                                            <span class="rubric-level-desc">${level.description}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top: 20px; padding: 16px; background: var(--warning-light); border: 1px solid #ffd591; border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            <i class="fas fa-info-circle" style="color: var(--warning-color);"></i>
+                            完成成果提交后，教师将进行评审打分。你可以在"学习记录"中查看评审结果。
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMixedAssessment(task, assessment) {
+            return `
+                <div>
+                    <div style="background: var(--primary-light); border: 1px solid #91caff; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
+                        <div style="font-size: 13px; color: var(--primary-color);">
+                            <i class="fas fa-info-circle"></i> 混合测评：客观题占 ${assessment.mixedWeights?.objective || 40}%，主观评审占 ${assessment.mixedWeights?.subjective || 60}%
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 16px; font-weight: 500;">第一部分：客观题</div>
+                    ${renderObjectiveAssessment(task, assessment.objectiveConfig)}
+                    <div style="margin: 32px 0 16px; font-weight: 500;">第二部分：主观评审标准</div>
+                    ${renderSubjectiveAssessment(task, assessment.subjectiveConfig)}
+                </div>
+            `;
+        }
+
+        function renderDeliverableStep(task) {
+            const deliverables = task.deliverables || [];
+            if (deliverables.length === 0) return '<p>暂无交付要求</p>';
+
+            return `
+                <div class="deliverable-list">
+                    ${deliverables.map(d => {
+                        if (d.type === 'onsite_evaluation') {
+                            return `
+                                <div class="deliverable-item">
+                                    <div class="deliverable-name">
+                                        <i class="fas fa-chalkboard-teacher" style="color: var(--warning-color);"></i>
+                                        ${d.name}
+                                    </div>
+                                    <div class="deliverable-desc">${d.description}</div>
+                                    <div class="onsite-notice">
+                                        <i class="fas fa-info-circle"></i>
+                                        <div>
+                                            <div class="onsite-notice-title">现场评审安排</div>
+                                            <div class="onsite-notice-desc">
+                                                请提前准备好演示环境，按照预约时间到指定实训室接受评审。
+                                                评审将围绕评分维度进行打分，请确保功能完整、代码规范。
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return `
+                            <div class="deliverable-item">
+                                <div class="deliverable-name">
+                                    <i class="fas fa-file-upload" style="color: var(--primary-color);"></i>
+                                    ${d.name}
+                                </div>
+                                <div class="deliverable-desc">${d.description}</div>
+                                <div class="deliverable-upload-zone" onclick="alert('演示：文件上传功能')">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <div class="deliverable-upload-text">点击或拖拽文件到此处上传</div>
+                                    <div class="deliverable-upload-hint">支持格式：zip, rar, pdf, docx (最大 50MB)</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // ==================== 交互逻辑 ====================
+
+        function goToStep(index) {
+            if (!currentTaskId) return;
+            const steps = taskStepsMap[currentTaskId] || [];
+            if (index < 0 || index >= steps.length) return;
+            currentStepIndex = index;
+            renderCurrentStep();
+        }
+
+        function goToNextStep() {
+            if (!currentTaskId) return;
+            const steps = taskStepsMap[currentTaskId] || [];
+            
+            // 标记当前步骤完成
+            if (!stepCompleted[currentTaskId]) {
+                stepCompleted[currentTaskId] = {};
+            }
+            stepCompleted[currentTaskId][currentStepIndex] = true;
+
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                renderCurrentStep();
+            } else {
+                // 完成任务
+                alert('恭喜！你已完成本任务的所有学习步骤。');
+                renderCurrentStep();
+                renderTaskList();
+            }
+        }
+
+        function goToPrevStep() {
+            if (!currentTaskId) return;
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderCurrentStep();
+            }
+        }
+
+        // 客观题选择
+        function selectQuizOption(taskId, questionId, option) {
+            if (quizSubmitted[taskId]) return;
+            
+            if (!quizAnswers[taskId]) {
+                quizAnswers[taskId] = {};
+            }
+
+            const task = getTaskById(taskId);
+            const question = task?.assessment?.objectiveConfig?.questions?.find(q => q.id === questionId);
+            
+            if (question && question.type === 'multiple') {
+                // 多选题：toggle 选择
+                let current = quizAnswers[taskId][questionId];
+                if (!Array.isArray(current)) current = [];
+                if (current.includes(option)) {
+                    current = current.filter(o => o !== option);
+                } else {
+                    current.push(option);
+                }
+                quizAnswers[taskId][questionId] = current;
+            } else {
+                // 单选/判断：直接赋值
+                quizAnswers[taskId][questionId] = option;
+            }
+
+            // 重新渲染当前步骤以更新 UI
+            renderCurrentStep();
+        }
+
+        // 提交测评
+        function submitQuiz(taskId) {
+            const task = getTaskById(taskId);
+            const questions = task?.assessment?.objectiveConfig?.questions || [];
+            const answers = quizAnswers[taskId] || {};
+
+            // 检查是否全部作答
+            const unanswered = questions.filter(q => {
+                const ans = answers[q.id];
+                return ans === undefined || ans === null || (Array.isArray(ans) && ans.length === 0);
+            });
+
+            if (unanswered.length > 0) {
+                alert(`还有 ${unanswered.length} 道题目未作答，请完成后提交。`);
+                return;
+            }
+
+            quizSubmitted[taskId] = true;
+
+            // 计算得分
+            let totalScore = 0;
+            let earnedScore = 0;
+            questions.forEach(q => {
+                totalScore += q.score;
+                const ans = answers[q.id];
+                let correct = false;
+                if (Array.isArray(q.answer)) {
+                    correct = Array.isArray(ans) && 
+                        q.answer.every(a => ans.includes(a)) && 
+                        ans.length === q.answer.length;
+                } else {
+                    correct = ans === q.answer;
+                }
+                if (correct) earnedScore += q.score;
+            });
+
+            // 重新渲染显示结果
+            renderCurrentStep();
+
+            setTimeout(() => {
+                alert(`提交成功！\n得分：${earnedScore}/${totalScore} 分`);
+            }, 300);
+        }
+
+        // 知识树展开/折叠
+        function toggleTree(element) {
+            const toggle = element.querySelector('.tree-toggle');
+            const children = element.parentElement.querySelector('.tree-children');
+            if (children) {
+                toggle.classList.toggle('expanded');
+                children.classList.toggle('expanded');
+            }
+        }
+
+        // ==================== 初始化 ====================
+
+        // 更新日期时间
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            
+            const dateEl = document.getElementById('currentDate');
+            const timeEl = document.getElementById('currentTime');
+            if (dateEl) dateEl.textContent = now.toLocaleDateString('zh-CN', dateOptions);
+            if (timeEl) timeEl.textContent = now.toLocaleTimeString('zh-CN', timeOptions);
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // 标签页切换
+        const tabItems = document.querySelectorAll('.tab-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.getAttribute('data-tab');
+                tabItems.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                item.classList.add('active');
+                const target = document.getElementById(tabId);
+                if (target) target.classList.add('active');
+            });
+        });
+
+        // 收藏按钮
+        document.getElementById('favBtn')?.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                this.style.color = '#faad14';
+                this.style.borderColor = '#faad14';
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                this.style.color = '';
+                this.style.borderColor = '';
+            }
+        });
+
+        // 初始化渲染
+        function init() {
+            // 预生成所有任务的步骤
+            SCENARIO.tasks.forEach(t => {
+                taskStepsMap[t.id] = generateTaskSteps(t);
+            });
+
+            renderTaskList();
+            renderResources();
+            renderAbilities();
+            renderKnowledgeTree();
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -40,17 +40,10 @@ const statusConfig = {
   graded: { label: "已评分", className: "bg-green-50 text-green-600 border-green-200" },
 }
 
-const typeConfig = {
-  objective: { label: "客观题", className: "bg-blue-50 text-blue-600 border-blue-200" },
-  subjective: { label: "主观题", className: "bg-purple-50 text-purple-600 border-purple-200" },
-  mixed: { label: "混合", className: "bg-indigo-50 text-indigo-600 border-indigo-200" },
-}
-
 export default function GradingPage() {
   const [submissions, setSubmissions] = useState<StudentSubmission[]>(studentSubmissions)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterForm, setFilterForm] = useState<string>("all")
-  const [filterType, setFilterType] = useState<string>("all")
 
   const pendingItems = submissions.filter((s) => s.status === "pending")
   const gradedItems = submissions.filter((s) => s.status === "graded")
@@ -72,8 +65,7 @@ export default function GradingPage() {
         item.scenarioName.includes(searchQuery) ||
         item.taskName.includes(searchQuery)
       const matchesForm = filterForm === "all" || item.assessmentForm === filterForm
-      const matchesType = filterType === "all" || item.assessmentType === filterType
-      return matchesSearch && matchesForm && matchesType
+      return matchesSearch && matchesForm
     })
   }
 
@@ -110,18 +102,6 @@ export default function GradingPage() {
                   <SelectItem value="题库">题库</SelectItem>
                   <SelectItem value="评审">评审</SelectItem>
                   <SelectItem value="现场问答">现场问答</SelectItem>
-                  <SelectItem value="混合测评">混合测评</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="题型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部题型</SelectItem>
-                  <SelectItem value="objective">客观题</SelectItem>
-                  <SelectItem value="subjective">主观题</SelectItem>
-                  <SelectItem value="mixed">混合</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -137,7 +117,6 @@ export default function GradingPage() {
                   <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">场景名称</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">任务名称</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500 text-center whitespace-nowrap">测评形式</TableHead>
-                  <TableHead className="text-xs font-medium text-slate-500 text-center whitespace-nowrap">题型</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500 whitespace-nowrap">提交时间</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500 text-center whitespace-nowrap">状态</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500 text-right whitespace-nowrap sticky right-0 bg-slate-50 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
@@ -148,7 +127,7 @@ export default function GradingPage() {
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12 text-gray-500">
+                    <TableCell colSpan={8} className="text-center py-12 text-gray-500">
                       <ClipboardCheck className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                       <h3 className="text-lg font-medium text-gray-700">{emptyTitle}</h3>
                       <p className="text-sm text-gray-500 mt-1">{emptyDesc}</p>
@@ -176,11 +155,6 @@ export default function GradingPage() {
                         <Badge variant="outline" className="text-xs">
                           <FileText className="h-3 w-3 mr-1" />
                           {item.assessmentForm}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center whitespace-nowrap">
-                        <Badge variant="outline" className={typeConfig[item.assessmentType].className}>
-                          {typeConfig[item.assessmentType].label}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-gray-600 whitespace-nowrap">

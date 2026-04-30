@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useRef, useState } from "react"
+import { useParams } from "next/navigation"
 import Link from "next/link"
 import {
   ArrowLeft,
-  Award,
   CheckCircle2,
-  Clock,
+  ChevronDown,
+  ChevronUp,
   FileText,
   GraduationCap,
   Package,
@@ -20,8 +20,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Separator } from "@/components/ui/separator"
+
+
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
@@ -31,12 +31,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { studentSubmissions, students, scenarios, defaultRubricLevels } from "@/lib/mock-data"
+import { studentSubmissions, students, scenarios } from "@/lib/mock-data"
+import { cn } from "@/lib/utils"
 import type {
   StudentSubmission,
   ObjectiveSubmissionAnswer,
-  RubricScoreRecord,
-  RubricLevel,
+  DrawnQuestion,
+  EvalPointScoreRecord,
+  TaskEvalPoint,
+  GradeMapping,
+  ReviewStep,
 } from "@/lib/mock-data"
 
 // ============================================================================
@@ -51,89 +55,20 @@ function getScenario(scenarioId: string) {
   return scenarios.find((s) => s.id === scenarioId)
 }
 
-function getTaskRubricPoints(scenarioId: string, taskId: string) {
+function getTaskEvalPoints(scenarioId: string, taskId: string, methodKey: "randomDraw" | "review" | "paper" | "questionBank") {
   const scenario = getScenario(scenarioId)
   if (!scenario) return []
   const task = scenario.tasks.find((t) => t.id === taskId)
-  if (!task || !task.assessment) return []
-
-  const rubricPoints: {
-    id: string
-    name: string
-    weight: number
-    maxScore: number
-    levels: RubricLevel[]
-  }[] = []
-
-  if (task.assessment.subjectiveConfig) {
-    rubricPoints.push(...task.assessment.subjectiveConfig.rubricPoints)
-  }
-  if (task.assessment.mixedWeights && task.assessment.subjectiveConfig) {
-    rubricPoints.length = 0
-    rubricPoints.push(...task.assessment.subjectiveConfig.rubricPoints)
-  }
-
-  return rubricPoints
+  if (!task || !task.evalPoints) return []
+  return task.evalPoints[methodKey] || []
 }
 
-function getObjectiveMaxScore(scenarioId: string, taskId: string) {
+function getTaskReviewSteps(scenarioId: string, taskId: string): ReviewStep[] {
   const scenario = getScenario(scenarioId)
-  if (!scenario) return 0
+  if (!scenario) return []
   const task = scenario.tasks.find((t) => t.id === taskId)
-  if (!task || !task.assessment) return 0
-
-  if (task.assessment.objectiveConfig) {
-    return task.assessment.objectiveConfig.totalScore
-  }
-  if (task.assessment.mixedWeights && task.assessment.objectiveConfig) {
-    return task.assessment.objectiveConfig.totalScore
-  }
-  return 0
+  return task?.reviewSteps || []
 }
-
-function getSubjectiveMaxScore(scenarioId: string, taskId: string) {
-  const scenario = getScenario(scenarioId)
-  if (!scenario) return 0
-  const task = scenario.tasks.find((t) => t.id === taskId)
-  if (!task || !task.assessment) return 0
-
-  if (task.assessment.subjectiveConfig) {
-    return task.assessment.subjectiveConfig.totalScore
-  }
-  if (task.assessment.mixedWeights && task.assessment.subjectiveConfig) {
-    return task.assessment.subjectiveConfig.totalScore
-  }
-  return 0
-}
-
-function getMixedWeights(scenarioId: string, taskId: string) {
-  const scenario = getScenario(scenarioId)
-  if (!scenario) return null
-  const task = scenario.tasks.find((t) => t.id === taskId)
-  if (!task || !task.assessment) return null
-  return task.assessment.mixedWeights || null
-}
-
-function getLevelColor(levelName: string): string {
-  const colorMap: Record<string, string> = {
-    优秀: "bg-green-500",
-    良好: "bg-blue-500",
-    及格: "bg-yellow-500",
-    不合格: "bg-red-500",
-  }
-  return colorMap[levelName] || "bg-gray-400"
-}
-
-function getLevelTextColor(levelName: string): string {
-  const colorMap: Record<string, string> = {
-    优秀: "text-green-700 bg-green-50 border-green-200",
-    良好: "text-blue-700 bg-blue-50 border-blue-200",
-    及格: "text-yellow-700 bg-yellow-50 border-yellow-200",
-    不合格: "text-red-700 bg-red-50 border-red-200",
-  }
-  return colorMap[levelName] || "text-gray-700 bg-gray-50 border-gray-200"
-}
-
 // ============================================================================
 // 客观题评分卡片
 // ============================================================================
@@ -150,6 +85,9 @@ function ObjectiveGradingCard({
   onScoreChange: (questionId: string, newScore: number) => void
 }) {
   const [localScore, setLocalScore] = useState(answer.score.toString())
+  const [isExpanded, setIsExpanded] = useState(answer.questionType === "text")
+
+  const isSubjective = answer.questionType === "text"
 
   const handleBlur = () => {
     const num = parseFloat(localScore)
@@ -180,28 +118,93 @@ function ObjectiveGradingCard({
     return answer.correctAnswer
   }
 
-  const questionTypeLabel = {
-    single: "单选题",
-    multiple: "多选题",
-    judgment: "判断题",
+  const questionTypeLabel: Record<string, string> = {
+    single: "单选",
+    multiple: "多选",
+    judgment: "判断",
+    text: "问答",
   }
 
   return (
-    <Card className="border-slate-200">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-3">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                {questionTypeLabel[answer.questionType]}
-              </Badge>
-              <span className="text-sm font-medium text-gray-500">第 {index + 1} 题</span>
-              <span className="text-xs text-gray-400">（满分 {answer.maxScore} 分）</span>
-            </div>
+    <Card className={cn("border-slate-200", isSubjective && "border-amber-200")}>
+      <CardContent className="p-0">
+        {/* 折叠状态 */}
+        <div
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors",
+            isSubjective ? "bg-amber-50/40 hover:bg-amber-50/60" : "hover:bg-gray-50/50"
+          )}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <Badge variant="outline" className={cn("text-xs shrink-0", isSubjective && "border-amber-300 text-amber-700")}>
+            {questionTypeLabel[answer.questionType] || answer.questionType}
+          </Badge>
+          <span className="text-xs text-gray-400 shrink-0">第 {index + 1} 题</span>
+          <span className="text-sm font-medium text-gray-800 flex-1 truncate">
+            {answer.questionName || answer.questionContent}
+          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* 主观题：教师评分输入框 */}
+            {isSubjective ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  min={0}
+                  max={answer.maxScore}
+                  step={0.5}
+                  value={localScore}
+                  onChange={(e) => setLocalScore(e.target.value)}
+                  onBlur={handleBlur}
+                  disabled={isGraded}
+                  className="w-16 text-right h-8 text-sm font-semibold border-amber-300 focus-visible:ring-amber-400"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <span className="text-xs text-gray-400">/ {answer.maxScore}</span>
+              </div>
+            ) : (
+              /* 客观题：自动得分展示 */
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-medium text-gray-700">{answer.score}</span>
+                <span className="text-xs text-gray-400">/ {answer.maxScore}</span>
+                {answer.isCorrect ? (
+                  <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-[10px] px-1 py-0 h-5">
+                    <CheckCircle2 className="h-3 w-3 mr-0.5" />
+                    正确
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 text-[10px] px-1 py-0 h-5">
+                    <XCircle className="h-3 w-3 mr-0.5" />
+                    错误
+                  </Badge>
+                )}
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 ml-1"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsExpanded(!isExpanded)
+              }}
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* 展开详情 */}
+        {isExpanded && (
+          <div className="px-4 pb-4 pt-1 border-t border-gray-100 space-y-3">
             <p className="text-sm text-gray-800 leading-relaxed">{answer.questionContent}</p>
 
+            {/* 客观题选项展示 */}
             {answer.options && answer.options.length > 0 && (
-              <div className="space-y-1.5 pl-1">
+              <div className="space-y-1.5">
                 {answer.options.map((opt, idx) => {
                   const optLabel = String.fromCharCode(65 + idx)
                   const isSelected =
@@ -248,8 +251,9 @@ function ObjectiveGradingCard({
               </div>
             )}
 
+            {/* 判断题展示 */}
             {!answer.options && answer.questionType === "judgment" && (
-              <div className="flex items-center gap-4 pl-1">
+              <div className="flex items-center gap-4">
                 <div
                   className={`flex items-center gap-2 text-sm px-3 py-2 rounded-md ${
                     answer.correctAnswer === "true"
@@ -281,48 +285,96 @@ function ObjectiveGradingCard({
               </div>
             )}
 
-            <div className="flex items-center gap-4 pt-1">
-              <div className="text-sm">
-                <span className="text-gray-500">学生答案：</span>
-                <span className={answer.isCorrect ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                  {getAnswerLabel()}
-                </span>
+            {/* 主观题：学生答案 */}
+            {isSubjective && (
+              <div className="space-y-2">
+                <div className="bg-amber-50/50 rounded-lg border border-amber-100 p-3">
+                  <div className="text-xs text-amber-700 font-medium mb-1">学生答案</div>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{answer.studentAnswer as string}</p>
+                </div>
+                {/* 主观题评分区：0-100 标准分输入 */}
+                <SubjectiveScoreInput
+                  maxScore={answer.maxScore}
+                  actualScore={answer.score}
+                  isGraded={isGraded}
+                  onChange={(actual) => onScoreChange(answer.questionId, actual)}
+                />
               </div>
-              <div className="text-sm">
-                <span className="text-gray-500">正确答案：</span>
-                <span className="text-green-600 font-medium">{getCorrectLabel()}</span>
-              </div>
-            </div>
-          </div>
+            )}
 
-          <div className="flex flex-col items-end gap-1 min-w-[120px]">
-            <Label className="text-xs text-gray-500">得分</Label>
-            <div className="flex items-center gap-1">
-              <Input
-                type="number"
-                min={0}
-                max={answer.maxScore}
-                step={0.5}
-                value={localScore}
-                onChange={(e) => setLocalScore(e.target.value)}
-                onBlur={handleBlur}
-                disabled={isGraded}
-                className="w-20 text-right h-9"
-              />
-              <span className="text-sm text-gray-400">/ {answer.maxScore}</span>
-            </div>
-            {answer.isCorrect ? (
-              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-xs">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                正确
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 text-xs">
-                <XCircle className="h-3 w-3 mr-1" />
-                错误
-              </Badge>
+            {/* 客观题答案对比 */}
+            {!isSubjective && (
+              <div className="flex items-center gap-4 pt-1 bg-gray-50 rounded-lg px-3 py-2">
+                <div className="text-sm">
+                  <span className="text-gray-500">学生答案：</span>
+                  <span className={answer.isCorrect ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                    {getAnswerLabel()}
+                  </span>
+                </div>
+                <div className="text-sm">
+                  <span className="text-gray-500">正确答案：</span>
+                  <span className="text-green-600 font-medium">{getCorrectLabel()}</span>
+                </div>
+              </div>
             )}
           </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============================================================================
+// 现场问答抽题卡片
+// ============================================================================
+
+function DrawnQuestionCard({
+  question,
+  index,
+  isGraded,
+  onOralAnswerChange,
+}: {
+  question: DrawnQuestion
+  index: number
+  isGraded: boolean
+  onOralAnswerChange: (questionId: string, oralAnswer: string) => void
+}) {
+  const [oralAnswer, setOralAnswer] = useState(question.studentOralAnswer || "")
+
+  const getAnswerLabel = () => {
+    if (Array.isArray(question.correctAnswer)) {
+      return question.correctAnswer.join("、")
+    }
+    return question.correctAnswer
+  }
+
+  return (
+    <Card className="border-slate-200">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+            第 {index + 1} 题
+          </Badge>
+          <span className="text-xs text-gray-400">{question.questionName}</span>
+        </div>
+        <p className="text-sm text-gray-800 leading-relaxed">{question.questionContent}</p>
+
+        <div className="bg-green-50 rounded-lg border border-green-100 p-3">
+          <div className="text-xs text-green-600 font-medium mb-1">参考答案</div>
+          <p className="text-sm text-green-700 leading-relaxed">{getAnswerLabel()}</p>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs text-gray-500">学生口头回答记录（教师现场记录）</Label>
+          <Textarea
+            placeholder="请记录学生现场口头回答的要点..."
+            value={oralAnswer}
+            onChange={(e) => setOralAnswer(e.target.value)}
+            onBlur={() => onOralAnswerChange(question.questionId, oralAnswer)}
+            disabled={isGraded}
+            rows={3}
+            className="text-sm resize-none"
+          />
         </div>
       </CardContent>
     </Card>
@@ -330,150 +382,269 @@ function ObjectiveGradingCard({
 }
 
 // ============================================================================
-// 主观题 Rubric 评分卡片
+// 上一阶段评价记录（评审历史）
 // ============================================================================
 
-function RubricGradingCard({
-  rubricPoint,
+function ReviewPhaseHistory({ evalPoints }: { evalPoints: TaskEvalPoint[] }) {
+  const [expanded, setExpanded] = useState(false)
+  // 模拟上一阶段评价数据
+  const mockPhaseScores = evalPoints.map((ep) => ({
+    evalPointId: ep.id,
+    evalPointName: ep.name,
+    score: Math.round(ep.maxScore * (0.6 + Math.random() * 0.3)),
+    comment: ["表现良好，基本达到要求", "思路清晰，有改进空间", "完成度较高，细节需优化", "符合预期，建议继续保持"][Math.floor(Math.random() * 4)],
+  }))
+
+  return (
+    <div className="rounded-lg border bg-white">
+      <button
+        className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-gray-50 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <span className="text-sm font-medium text-gray-700">上一阶段评价（初评 - 张老师）</span>
+        </div>
+        {expanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3 border-t pt-2 space-y-2">
+          {mockPhaseScores.map((s) => (
+            <div key={s.evalPointId} className="text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700">{s.evalPointName}</span>
+                <span className="font-medium text-gray-800">{s.score} 分</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">{s.comment}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================================================================
+// 评价点评分卡片
+// ============================================================================
+
+function GradeMappingList({ gradeMapping }: { gradeMapping: GradeMapping[] }) {
+  const sorted = [...gradeMapping].sort((a, b) => b.maxScore - a.maxScore)
+  return (
+    <div className="space-y-1">
+      {sorted.map((g) => (
+        <div key={g.id} className="flex items-start gap-2 text-[11px] leading-tight">
+          <span className="font-medium text-gray-600 shrink-0">{g.grade}</span>
+          <span className="text-gray-400 shrink-0">({g.minScore}-{g.maxScore}分)</span>
+          {g.remark && <span className="text-gray-500">{g.remark}</span>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SubjectiveScoreInput({
+  maxScore,
+  actualScore,
+  isGraded,
+  onChange,
+}: {
+  maxScore: number
+  actualScore: number
+  isGraded: boolean
+  onChange: (actualScore: number) => void
+}) {
+  const toStandard = (actual: number) => Math.min(100, Math.max(0, Math.round((actual / maxScore) * 100)))
+  const toActual = (standard: number) => Math.min(maxScore, Math.max(0, Math.round((standard / 100) * maxScore * 10) / 10))
+
+  const [standardInput, setStandardInput] = useState(toStandard(actualScore).toString())
+  const prevActualRef = useRef(actualScore)
+  if (actualScore !== prevActualRef.current) {
+    prevActualRef.current = actualScore
+    setStandardInput(toStandard(actualScore).toString())
+  }
+
+  const standardNum = parseFloat(standardInput) || 0
+  const computedActual = toActual(standardNum)
+
+  const handleBlur = () => {
+    const num = parseFloat(standardInput)
+    if (!isNaN(num) && num >= 0 && num <= 100) {
+      onChange(toActual(num))
+    } else {
+      setStandardInput(toStandard(actualScore).toString())
+    }
+  }
+
+  return (
+    <div className="bg-gray-50 rounded-lg px-3 py-2.5">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs text-gray-500">标准评分</span>
+        <Input
+          type="number"
+          min={0}
+          max={100}
+          step={1}
+          value={standardInput}
+          onChange={(e) => setStandardInput(e.target.value)}
+          onBlur={handleBlur}
+          disabled={isGraded}
+          className="w-16 text-right h-8 text-sm font-semibold"
+        />
+        <span className="text-xs text-gray-400">/ 100</span>
+      </div>
+      <div className="text-[11px] text-gray-600">
+        换算后：<span className="font-semibold text-gray-800">{computedActual}</span> / {maxScore} 分
+      </div>
+    </div>
+  )
+}
+
+function StandardScoreInput({
+  maxScore,
+  actualScore,
+  gradeMapping,
+  isGraded,
+  onChange,
+}: {
+  maxScore: number
+  actualScore: number
+  gradeMapping?: GradeMapping[]
+  isGraded: boolean
+  onChange: (actualScore: number) => void
+}) {
+  // 实际分数 → 标准分（0-100）
+  const toStandard = (actual: number) => Math.min(100, Math.max(0, Math.round((actual / maxScore) * 100)))
+  // 标准分 → 实际分数
+  const toActual = (standard: number) => Math.min(maxScore, Math.max(0, Math.round((standard / 100) * maxScore * 10) / 10))
+
+  const [standardInput, setStandardInput] = useState(toStandard(actualScore).toString())
+
+  // 当外部 actualScore 变化时同步（如初始化或父组件更新）
+  const prevActualRef = useRef(actualScore)
+  if (actualScore !== prevActualRef.current) {
+    prevActualRef.current = actualScore
+    setStandardInput(toStandard(actualScore).toString())
+  }
+
+  const standardNum = parseFloat(standardInput) || 0
+  const computedActual = toActual(standardNum)
+  const matchedGrade = gradeMapping?.find((g) => standardNum >= g.minScore && standardNum <= g.maxScore)
+
+  const handleBlur = () => {
+    const num = parseFloat(standardInput)
+    if (!isNaN(num) && num >= 0 && num <= 100) {
+      onChange(toActual(num))
+    } else {
+      setStandardInput(toStandard(actualScore).toString())
+    }
+  }
+
+  return (
+    <div className="shrink-0">
+      <Label className="text-xs text-amber-700 font-medium block mb-1">标准评分（0-100）</Label>
+      <div className="flex items-center gap-1">
+        <Input
+          type="number"
+          min={0}
+          max={100}
+          step={1}
+          value={standardInput}
+          onChange={(e) => setStandardInput(e.target.value)}
+          onBlur={handleBlur}
+          disabled={isGraded}
+          className="w-16 text-right h-9 text-sm font-semibold bg-white"
+        />
+        <span className="text-xs text-gray-500">分</span>
+      </div>
+      {/* 换算结果 */}
+      <div className="mt-1 space-y-0.5">
+        <div className="text-[11px] text-gray-600">
+          加权后：<span className="font-semibold text-gray-800">{computedActual}</span> / {maxScore} 分
+        </div>
+        {matchedGrade && (
+          <Badge variant="outline" className="text-[10px] bg-white">
+            {matchedGrade.grade} 档 · {matchedGrade.remark}
+          </Badge>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function EvalPointGradingCard({
+  evalPoint,
   scoreRecord,
   isGraded,
   onChange,
 }: {
-  rubricPoint: {
-    id: string
-    name: string
-    weight: number
-    maxScore: number
-    levels: RubricLevel[]
-  }
-  scoreRecord?: RubricScoreRecord
+  evalPoint: TaskEvalPoint
+  scoreRecord?: EvalPointScoreRecord
   isGraded: boolean
-  onChange: (record: RubricScoreRecord) => void
+  onChange: (record: EvalPointScoreRecord) => void
 }) {
-  const [selectedLevelId, setSelectedLevelId] = useState(scoreRecord?.levelId || "")
-  const [score, setScore] = useState(scoreRecord?.score?.toString() || "")
   const [comment, setComment] = useState(scoreRecord?.comment || "")
 
-  const selectedLevel = rubricPoint.levels.find((l) => l.id === selectedLevelId)
-
-  const handleLevelChange = (levelId: string) => {
-    setSelectedLevelId(levelId)
-    const level = rubricPoint.levels.find((l) => l.id === levelId)
-    if (level) {
-      const midScore = Math.round((level.minScore + level.maxScore) / 2)
-      const clampedScore = Math.min(midScore, rubricPoint.maxScore)
-      setScore(clampedScore.toString())
-      onChange({
-        rubricPointId: rubricPoint.id,
-        rubricPointName: rubricPoint.name,
-        weight: rubricPoint.weight,
-        maxScore: rubricPoint.maxScore,
-        levelId: level.id,
-        levelName: level.name,
-        score: clampedScore,
-        comment,
-      })
-    }
-  }
-
-  const handleScoreBlur = () => {
-    const num = parseFloat(score)
-    if (!isNaN(num) && num >= 0 && num <= rubricPoint.maxScore) {
-      onChange({
-        rubricPointId: rubricPoint.id,
-        rubricPointName: rubricPoint.name,
-        weight: rubricPoint.weight,
-        maxScore: rubricPoint.maxScore,
-        levelId: selectedLevelId || undefined,
-        levelName: selectedLevel?.name || undefined,
-        score: num,
-        comment,
-      })
-    }
+  const handleScoreChange = (actualScore: number) => {
+    onChange({
+      evalPointId: evalPoint.id,
+      evalPointName: evalPoint.name,
+      weight: evalPoint.weight,
+      maxScore: evalPoint.maxScore,
+      score: actualScore,
+      comment,
+    })
   }
 
   const handleCommentBlur = () => {
-    const num = parseFloat(score) || 0
     onChange({
-      rubricPointId: rubricPoint.id,
-      rubricPointName: rubricPoint.name,
-      weight: rubricPoint.weight,
-      maxScore: rubricPoint.maxScore,
-      levelId: selectedLevelId || undefined,
-      levelName: selectedLevel?.name || undefined,
-      score: num,
+      evalPointId: evalPoint.id,
+      evalPointName: evalPoint.name,
+      weight: evalPoint.weight,
+      maxScore: evalPoint.maxScore,
+      score: scoreRecord?.score || 0,
       comment,
     })
   }
 
   return (
     <Card className="border-slate-200">
-      <CardContent className="p-5 space-y-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <h4 className="font-medium text-gray-800">{rubricPoint.name}</h4>
-            <p className="text-xs text-gray-500 mt-0.5">
-              权重 {rubricPoint.weight}% · 满分 {rubricPoint.maxScore} 分
-            </p>
-          </div>
-          <div className="flex items-center gap-1">
-            <Input
-              type="number"
-              min={0}
-              max={rubricPoint.maxScore}
-              step={0.5}
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              onBlur={handleScoreBlur}
-              disabled={isGraded}
-              className="w-20 text-right h-9"
-            />
-            <span className="text-sm text-gray-400">/ {rubricPoint.maxScore}</span>
+      <CardContent className="p-3 space-y-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-gray-800 text-sm">{evalPoint.name}</h4>
+            <p className="text-xs text-gray-500 mt-0.5">{evalPoint.desc}</p>
           </div>
         </div>
 
-        <RadioGroup
-          value={selectedLevelId}
-          onValueChange={handleLevelChange}
-          disabled={isGraded}
-          className="grid grid-cols-4 gap-2"
-        >
-          {rubricPoint.levels.map((level) => (
-            <div key={level.id}>
-              <RadioGroupItem
-                value={level.id}
-                id={`${rubricPoint.id}-${level.id}`}
-                className="sr-only"
-              />
-              <Label
-                htmlFor={`${rubricPoint.id}-${level.id}`}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg border cursor-pointer transition-all hover:bg-gray-50 ${
-                  selectedLevelId === level.id
-                    ? `border-current ring-1 ring-current ${getLevelTextColor(level.name)}`
-                    : "border-slate-200 bg-white"
-                }`}
-              >
-                <div className={`w-3 h-3 rounded-full ${getLevelColor(level.name)}`} />
-                <span className="text-sm font-medium">{level.name}</span>
-                <span className="text-xs text-gray-500">
-                  {level.minScore}-{level.maxScore}分
-                </span>
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
+        {/* 等级参考 */}
+        {evalPoint.gradeMapping && evalPoint.gradeMapping.length > 0 && (
+          <div className="bg-gray-50 rounded-md px-2.5 py-1.5">
+            <GradeMappingList gradeMapping={evalPoint.gradeMapping} />
+          </div>
+        )}
 
-        <div className="space-y-1.5">
-          <Label className="text-xs text-gray-500">评分说明/评语</Label>
-          <Textarea
-            placeholder={`请输入该维度的评分说明或改进建议...`}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            onBlur={handleCommentBlur}
-            disabled={isGraded}
-            rows={2}
-            className="text-sm resize-none"
+        {/* 评分区：标准分输入 + 评语 */}
+        <div className="flex items-start gap-3 bg-amber-50/60 border border-amber-100 rounded-lg px-3 py-2.5">
+          <StandardScoreInput
+            maxScore={evalPoint.maxScore}
+            actualScore={scoreRecord?.score || 0}
+            gradeMapping={evalPoint.gradeMapping}
+            isGraded={isGraded}
+            onChange={handleScoreChange}
           />
+          <div className="flex-1">
+            <Label className="text-xs text-amber-700 font-medium block mb-1">评语</Label>
+            <Textarea
+              placeholder="请输入评分说明或改进建议..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              onBlur={handleCommentBlur}
+              disabled={isGraded}
+              rows={2}
+              className="text-sm resize-none bg-white"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -486,7 +657,6 @@ function RubricGradingCard({
 
 export default function GradingDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const submissionId = params.id as string
 
   const [submission, setSubmission] = useState<StudentSubmission | undefined>(
@@ -497,13 +667,18 @@ export default function GradingDetailPage() {
     submission?.objectiveAnswers || []
   )
 
-  const [rubricScores, setRubricScores] = useState<RubricScoreRecord[]>(
-    submission?.rubricScores || []
+  const [evalPointScores, setEvalPointScores] = useState<EvalPointScoreRecord[]>(
+    submission?.evalPointScores || []
+  )
+
+  const [drawnQuestions, setDrawnQuestions] = useState<DrawnQuestion[]>(
+    submission?.drawnQuestions || []
   )
 
   const [teacherComment, setTeacherComment] = useState(submission?.teacherComment || "")
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [manualTotal, setManualTotal] = useState<number | null>(null)
 
   if (!submission) {
     return (
@@ -523,32 +698,48 @@ export default function GradingDetailPage() {
 
   const student = getStudent(submission.studentId)
   const scenario = getScenario(submission.scenarioId)
-  const rubricPoints = getTaskRubricPoints(submission.scenarioId, submission.taskId)
-  const objectiveMaxScore = getObjectiveMaxScore(submission.scenarioId, submission.taskId)
-  const subjectiveMaxScore = getSubjectiveMaxScore(submission.scenarioId, submission.taskId)
-  const mixedWeights = getMixedWeights(submission.scenarioId, submission.taskId)
+
+  // 根据测评形式获取对应的评价点
+  const methodKeyMap: Record<string, "randomDraw" | "review" | "paper" | "questionBank"> = {
+    "现场问答": "randomDraw",
+    "评审": "review",
+    "试卷": "paper",
+    "题库": "questionBank",
+  }
+  const evalMethodKey = methodKeyMap[submission.assessmentForm]
+  const evalPoints = evalMethodKey ? getTaskEvalPoints(submission.scenarioId, submission.taskId, evalMethodKey) : []
+  const reviewSteps = getTaskReviewSteps(submission.scenarioId, submission.taskId)
 
   const isGraded = submission.status === "graded" || isSubmitted
 
-  // 计算客观题总分
-  const objectiveTotal = objectiveAnswers.reduce((sum, a) => sum + a.score, 0)
+  // 计算客观题自动得分（单选/多选/判断）
+  const autoObjectiveScore = objectiveAnswers
+    .filter((a) => a.questionType !== "text")
+    .reduce((sum, a) => sum + a.score, 0)
+  const autoObjectiveMax = objectiveAnswers
+    .filter((a) => a.questionType !== "text")
+    .reduce((sum, a) => sum + a.maxScore, 0)
 
-  // 计算主观题总分
-  const subjectiveTotal = rubricScores.reduce((sum, r) => sum + r.score, 0)
+  // 计算主观题得分（问答）
+  const subjectiveQuestionScore = objectiveAnswers
+    .filter((a) => a.questionType === "text")
+    .reduce((sum, a) => sum + a.score, 0)
+  const subjectiveQuestionMax = objectiveAnswers
+    .filter((a) => a.questionType === "text")
+    .reduce((sum, a) => sum + a.maxScore, 0)
 
-  // 计算最终总分
-  let finalTotal = 0
-  if (submission.assessmentType === "objective") {
-    finalTotal = objectiveTotal
-  } else if (submission.assessmentType === "subjective") {
-    finalTotal = subjectiveTotal
-  } else if (submission.assessmentType === "mixed" && mixedWeights) {
-    const objRatio = mixedWeights.objective / 100
-    const subjRatio = mixedWeights.subjective / 100
-    const objScore = objectiveMaxScore > 0 ? (objectiveTotal / objectiveMaxScore) * 100 : 0
-    const subjScore = subjectiveMaxScore > 0 ? (subjectiveTotal / subjectiveMaxScore) * 100 : 0
-    finalTotal = Math.round(objScore * objRatio + subjScore * subjRatio)
-  }
+  // 计算评价点总分（评审/现场问答）
+  const evalPointTotal = evalPointScores.reduce((sum, e) => sum + e.score, 0)
+  const evalPointMaxTotal = evalPoints.reduce((sum, e) => sum + e.maxScore, 0)
+
+  // 自动计算总分
+  const autoTotal =
+    submission.assessmentForm === "试卷" || submission.assessmentForm === "题库"
+      ? autoObjectiveScore + subjectiveQuestionScore + evalPointTotal
+      : evalPointTotal
+
+  // 最终总分（教师可手动覆盖）
+  const finalTotal = manualTotal !== null ? manualTotal : autoTotal
 
   const handleObjectiveScoreChange = (questionId: string, newScore: number) => {
     setObjectiveAnswers((prev) =>
@@ -556,14 +747,20 @@ export default function GradingDetailPage() {
     )
   }
 
-  const handleRubricScoreChange = (record: RubricScoreRecord) => {
-    setRubricScores((prev) => {
-      const existing = prev.find((r) => r.rubricPointId === record.rubricPointId)
+  const handleEvalPointScoreChange = (record: EvalPointScoreRecord) => {
+    setEvalPointScores((prev) => {
+      const existing = prev.find((e) => e.evalPointId === record.evalPointId)
       if (existing) {
-        return prev.map((r) => (r.rubricPointId === record.rubricPointId ? record : r))
+        return prev.map((e) => (e.evalPointId === record.evalPointId ? record : e))
       }
       return [...prev, record]
     })
+  }
+
+  const handleOralAnswerChange = (questionId: string, oralAnswer: string) => {
+    setDrawnQuestions((prev) =>
+      prev.map((q) => (q.questionId === questionId ? { ...q, studentOralAnswer: oralAnswer } : q))
+    )
   }
 
   const handleSubmitGrading = () => {
@@ -573,11 +770,11 @@ export default function GradingDetailPage() {
         ? {
             ...prev,
             status: "graded",
-            objectiveTotalScore: objectiveTotal,
-            subjectiveTotalScore: subjectiveTotal,
+            objectiveTotalScore: autoObjectiveScore + subjectiveQuestionScore,
             totalScore: finalTotal,
             teacherComment,
-            rubricScores,
+            evalPointScores,
+            drawnQuestions,
             gradedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
             gradedBy: "张老师",
           }
@@ -586,327 +783,339 @@ export default function GradingDetailPage() {
     setIsSubmitDialogOpen(false)
   }
 
-  const allRubricScored =
-    rubricPoints.length === 0 || rubricPoints.every((rp) => rubricScores.some((s) => s.rubricPointId === rp.id))
+  const allEvalPointsScored =
+    evalPoints.length === 0 || evalPoints.every((ep) => evalPointScores.some((s) => s.evalPointId === ep.id))
 
-  const canSubmit = !isGraded && allRubricScored
+  const canSubmit = !isGraded && allEvalPointsScored
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
-      {/* 顶部导航 */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" asChild>
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* 顶部导航栏 - 紧凑 */}
+      <div className="bg-white border-b px-4 py-2 flex items-center gap-3 shrink-0">
+        <Button variant="ghost" size="sm" asChild className="h-8">
           <Link href="/approvals/grading">
             <ArrowLeft className="mr-1 h-4 w-4" />
-            返回列表
+            返回
           </Link>
         </Button>
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold text-gray-800">学生任务评分</h1>
+        <div className="h-4 w-px bg-gray-200" />
+        <div className="flex items-center gap-2 text-sm">
+          <span className="font-medium text-gray-800">{student?.name || "未知学生"}</span>
+          <span className="text-gray-400">·</span>
+          <span className="text-gray-600">{submission.taskName}</span>
+          <Badge variant="outline" className="text-xs ml-1">{submission.assessmentForm}</Badge>
         </div>
+        <div className="flex-1" />
         {isGraded && (
-          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 gap-1">
-            <CheckCircle2 className="h-3.5 w-3.5" />
+          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 gap-1 text-xs">
+            <CheckCircle2 className="h-3 w-3" />
             已评分
           </Badge>
         )}
       </div>
 
-      {/* 信息卡片 */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-slate-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2 text-gray-600">
-              <GraduationCap className="h-4 w-4" />
-              学生信息
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-600">
-                {student?.name?.charAt(0) || "?"}
-              </div>
-              <div>
-                <div className="font-medium text-gray-800">{student?.name || "未知学生"}</div>
-                <div className="text-xs text-gray-500">
-                  学号：{student?.studentNumber || "-"} · {student?.class || "-"}
+      {/* 主内容区 */}
+      <div className="flex-1 overflow-hidden">
+        {/* 试卷 / 题库 - 客观题评分 */}
+        {(submission.assessmentForm === "试卷" || submission.assessmentForm === "题库") && (
+          <div className="h-full flex flex-col">
+            {/* 顶部大字总分 */}
+            <div className="px-4 py-3 bg-white border-b shrink-0">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <h2 className="text-sm font-medium text-gray-700">{submission.assessmentForm}评分</h2>
+                    <p className="text-xs text-gray-400">
+                      共 {objectiveAnswers.length} 题
+                      （客观{objectiveAnswers.filter(a => a.questionType !== "text").length} / 主观{objectiveAnswers.filter(a => a.questionType === "text").length}）
+                      {evalPoints.length > 0 ? ` · ${evalPoints.length} 个评价点` : ""}
+                    </p>
+                  </div>
+                </div>
+                {/* 最终总分 - 教师可直接修改 */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">最终总分</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={submission.maxScore}
+                    value={manualTotal !== null ? manualTotal : autoTotal}
+                    onChange={(e) => setManualTotal(parseFloat(e.target.value) || 0)}
+                    disabled={isGraded}
+                    className="w-20 text-right h-10 text-lg font-bold text-blue-600"
+                  />
+                  <span className="text-lg text-gray-400">/ {submission.maxScore}</span>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2 text-gray-600">
-              <Package className="h-4 w-4" />
-              任务信息
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 space-y-1">
-            <div className="text-sm">
-              <span className="text-gray-500">场景：</span>
-              <span className="text-gray-800">{submission.scenarioName}</span>
-            </div>
-            <div className="text-sm">
-              <span className="text-gray-500">任务：</span>
-              <span className="text-gray-800">{submission.taskName}</span>
-            </div>
-            <div className="text-sm">
-              <span className="text-gray-500">测评形式：</span>
-              <Badge variant="outline" className="text-xs ml-1">
-                {submission.assessmentForm}
-              </Badge>
-              <Badge
-                variant="outline"
-                className={`text-xs ml-1 ${
-                  submission.assessmentType === "objective"
-                    ? "bg-blue-50 text-blue-600 border-blue-200"
-                    : submission.assessmentType === "subjective"
-                      ? "bg-purple-50 text-purple-600 border-purple-200"
-                      : "bg-indigo-50 text-indigo-600 border-indigo-200"
-                }`}
-              >
-                {submission.assessmentType === "objective"
-                  ? "客观题"
-                  : submission.assessmentType === "subjective"
-                    ? "主观题"
-                    : "混合"}
-              </Badge>
-            </div>
-            <div className="text-sm flex items-center gap-1">
-              <Clock className="h-3 w-3 text-gray-400" />
-              <span className="text-gray-500">提交时间：</span>
-              <span className="text-gray-800">{submission.submittedAt}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 客观题评分区 */}
-      {(submission.assessmentType === "objective" || submission.assessmentType === "mixed") &&
-        objectiveAnswers.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-500" />
-                客观题评分
-                {mixedWeights && (
-                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
-                    占比 {mixedWeights.objective}%
-                  </Badge>
+              {/* 分项得分 */}
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-gray-500">客观题自动得分</span>
+                  <span className="font-medium text-gray-700">{autoObjectiveScore} / {autoObjectiveMax}</span>
+                </div>
+                <div className="h-3 w-px bg-gray-200" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-gray-500">主观题得分</span>
+                  <span className={cn("font-medium", subjectiveQuestionScore > 0 ? "text-gray-700" : "text-amber-600")}>
+                    {subjectiveQuestionScore} / {subjectiveQuestionMax}
+                  </span>
+                  {subjectiveQuestionScore === 0 && !isGraded && (
+                    <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-200 bg-amber-50">待评分</Badge>
+                  )}
+                </div>
+                {evalPoints.length > 0 && (
+                  <>
+                    <div className="h-3 w-px bg-gray-200" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-500">综合评价</span>
+                      <span className="font-medium text-gray-700">{evalPointTotal} / {evalPointMaxTotal}</span>
+                    </div>
+                  </>
                 )}
-              </h2>
-              <div className="text-sm text-gray-500">
-                自动得分：
-                <span className="font-medium text-gray-800">
-                  {objectiveTotal} / {objectiveMaxScore}
-                </span>
               </div>
             </div>
-            <div className="space-y-3">
-              {objectiveAnswers.map((answer, idx) => (
-                <ObjectiveGradingCard
-                  key={answer.questionId}
-                  answer={answer}
-                  index={idx}
-                  isGraded={isGraded}
-                  onScoreChange={handleObjectiveScoreChange}
-                />
-              ))}
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* 客观题列表 */}
+              <div className="space-y-1.5">
+                {objectiveAnswers.map((answer, idx) => (
+                  <ObjectiveGradingCard
+                    key={answer.questionId}
+                    answer={answer}
+                    index={idx}
+                    isGraded={isGraded}
+                    onScoreChange={handleObjectiveScoreChange}
+                  />
+                ))}
+              </div>
+              {/* 评价点（如后台配置了试卷/题库评价点） */}
+              {evalPoints.length > 0 && (
+                <div className="space-y-2 pt-2 border-t">
+                  <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">综合评价点</h3>
+                  {evalPoints.map((ep) => (
+                    <EvalPointGradingCard
+                      key={ep.id}
+                      evalPoint={ep}
+                      scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
+                      isGraded={isGraded}
+                      onChange={handleEvalPointScoreChange}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-      {/* 主观题评分区 */}
-      {(submission.assessmentType === "subjective" || submission.assessmentType === "mixed") && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-              <Star className="h-5 w-5 text-purple-500" />
-              主观题评分
-              {mixedWeights && (
-                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-600 border-purple-200">
-                  占比 {mixedWeights.subjective}%
-                </Badge>
-              )}
-            </h2>
-            <div className="text-sm text-gray-500">
-              已评分：
-              <span className="font-medium text-gray-800">
-                {subjectiveTotal} / {subjectiveMaxScore}
-              </span>
-            </div>
-          </div>
-
-          {/* 学生提交内容 */}
-          {submission.subjectiveContent && (
-            <Card className="border-slate-200 bg-slate-50/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm text-gray-600">学生提交内容</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-3">
-                {submission.subjectiveContent.textAnswer && (
-                  <div className="bg-white rounded-lg border border-slate-200 p-4">
-                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
-                      {submission.subjectiveContent.textAnswer}
-                    </pre>
+        {/* 评审 - 左右分屏 */}
+        {submission.assessmentForm === "评审" && (
+          <div className="h-full flex">
+            {/* 左侧：评审进度 + 历史评价 + 学生材料 */}
+            <div className="w-1/2 flex flex-col border-r bg-white">
+              <div className="px-4 py-2 border-b flex items-center justify-between shrink-0">
+                <h2 className="text-sm font-medium text-gray-700">评审材料</h2>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {/* 评审进度条 */}
+                {reviewSteps.length > 0 && (
+                  <div className="px-4 py-3 border-b bg-gray-50/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-medium text-gray-500">评审进度</h3>
+                      <span className="text-xs text-gray-400">当前：{reviewSteps.filter(s => s.enabled).length} / {reviewSteps.length} 阶段</span>
+                    </div>
+                    <div className="flex items-center">
+                      {reviewSteps.map((step, idx) => {
+                        const isCompleted = idx < reviewSteps.filter(s => s.enabled).length - 1
+                        const isCurrent = step.enabled && !isCompleted
+                        return (
+                          <div key={step.id} className="flex items-center flex-1">
+                            <div className="flex flex-col items-center flex-1">
+                              <div className={cn(
+                                "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium border-2",
+                                isCompleted ? "bg-green-500 border-green-500 text-white" :
+                                isCurrent ? "bg-indigo-500 border-indigo-500 text-white" :
+                                "bg-white border-gray-300 text-gray-400"
+                              )}>
+                                {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
+                              </div>
+                              <span className={cn("text-[10px] mt-1", isCompleted || isCurrent ? "text-gray-700 font-medium" : "text-gray-400")}>
+                                {step.label}
+                              </span>
+                            </div>
+                            {idx < reviewSteps.length - 1 && (
+                              <div className={cn("h-0.5 flex-1 mx-1", idx < reviewSteps.filter(s => s.enabled).length - 1 ? "bg-green-400" : "bg-gray-200")} />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
-                {submission.subjectiveContent.attachments &&
-                  submission.subjectiveContent.attachments.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {submission.subjectiveContent.attachments.map((att) => (
-                        <div
-                          key={att.id}
-                          className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 text-sm"
-                        >
-                          <Package className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-700">{att.name}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {att.type === "code"
-                              ? "代码"
-                              : att.type === "video"
-                                ? "视频"
-                                : att.type === "document"
-                                  ? "文档"
-                                  : att.type === "image"
-                                    ? "图片"
-                                    : "其他"}
-                          </Badge>
-                        </div>
-                      ))}
+
+                <div className="p-4 space-y-4">
+                  {/* 上一阶段评价（可展开） */}
+                  {reviewSteps.length > 1 && reviewSteps.filter(s => s.enabled).length > 1 && (
+                    <ReviewPhaseHistory evalPoints={evalPoints} />
+                  )}
+
+                  {/* 学生提交内容 */}
+                  {submission.subjectiveContent?.textAnswer && (
+                    <div className="bg-gray-50 rounded-lg border p-3">
+                      <h3 className="text-xs font-medium text-gray-500 mb-2">学生提交内容</h3>
+                      <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                        {submission.subjectiveContent.textAnswer}
+                      </pre>
                     </div>
                   )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Rubric 维度评分 */}
-          {rubricPoints.length > 0 ? (
-            <div className="space-y-3">
-              {rubricPoints.map((rp) => (
-                <RubricGradingCard
-                  key={rp.id}
-                  rubricPoint={rp}
-                  scoreRecord={rubricScores.find((s) => s.rubricPointId === rp.id)}
-                  isGraded={isGraded}
-                  onChange={handleRubricScoreChange}
-                />
-              ))}
+                  {submission.subjectiveContent?.attachments &&
+                    submission.subjectiveContent.attachments.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-medium text-gray-500">附件</h3>
+                        {submission.subjectiveContent.attachments.map((att) => (
+                          <div
+                            key={att.id}
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm"
+                          >
+                            <Package className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-700">{att.name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {att.type === "code" ? "代码" : att.type === "video" ? "视频" : att.type === "document" ? "文档" : att.type === "image" ? "图片" : "其他"}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                </div>
+              </div>
             </div>
-          ) : (
-            <Card className="border-slate-200">
-              <CardContent className="py-8 text-center text-gray-500">
-                <Star className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                <p>该任务未配置评分维度</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
-
-      <Separator />
-
-      {/* 评分汇总 */}
-      <Card className="border-slate-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Award className="h-4 w-4" />
-            评分汇总
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            {submission.assessmentType === "objective" && (
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-sm text-blue-600 mb-1">客观题得分</div>
-                <div className="text-2xl font-bold text-blue-700">
-                  {objectiveTotal}
-                  <span className="text-sm font-normal text-blue-500"> / {objectiveMaxScore}</span>
+            {/* 右侧：评价点评分 */}
+            <div className="w-1/2 flex flex-col bg-gray-50">
+              <div className="px-4 py-2 bg-white border-b flex items-center justify-between shrink-0">
+                <h2 className="text-sm font-medium text-gray-700">评价点评分</h2>
+                <div className="text-sm text-gray-500">
+                  已评分：<span className="font-medium text-gray-800">{evalPointTotal} / {evalPointMaxTotal}</span>
                 </div>
               </div>
-            )}
-            {submission.assessmentType === "subjective" && (
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <div className="text-sm text-purple-600 mb-1">主观题得分</div>
-                <div className="text-2xl font-bold text-purple-700">
-                  {subjectiveTotal}
-                  <span className="text-sm font-normal text-purple-500"> / {subjectiveMaxScore}</span>
-                </div>
-              </div>
-            )}
-            {submission.assessmentType === "mixed" && (
-              <>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-sm text-blue-600 mb-1">
-                    客观题（{mixedWeights?.objective}%）
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                {evalPoints.length > 0 ? (
+                  evalPoints.map((ep) => (
+                    <EvalPointGradingCard
+                      key={ep.id}
+                      evalPoint={ep}
+                      scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
+                      isGraded={isGraded}
+                      onChange={handleEvalPointScoreChange}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-400">
+                    <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">该任务未配置评价点</p>
                   </div>
-                  <div className="text-2xl font-bold text-blue-700">
-                    {objectiveTotal}
-                    <span className="text-sm font-normal text-blue-500"> / {objectiveMaxScore}</span>
-                  </div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-sm text-purple-600 mb-1">
-                    主观题（{mixedWeights?.subjective}%）
-                  </div>
-                  <div className="text-2xl font-bold text-purple-700">
-                    {subjectiveTotal}
-                    <span className="text-sm font-normal text-purple-500"> / {subjectiveMaxScore}</span>
-                  </div>
-                </div>
-              </>
-            )}
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-sm text-green-600 mb-1">最终得分</div>
-              <div className="text-2xl font-bold text-green-700">
-                {isGraded || finalTotal > 0 ? finalTotal : "-"}
-                <span className="text-sm font-normal text-green-500"> / {submission.maxScore}</span>
+                )}
               </div>
             </div>
           </div>
+        )}
 
-          <div className="space-y-2">
-            <Label className="text-sm text-gray-600">教师评语</Label>
+        {/* 现场问答 - 左右分屏 */}
+        {submission.assessmentForm === "现场问答" && (
+          <div className="h-full flex">
+            {/* 左侧：抽出的题目 */}
+            <div className="w-1/2 flex flex-col border-r bg-white">
+              <div className="px-4 py-2 border-b flex items-center justify-between shrink-0">
+                <h2 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-amber-500" />
+                  抽题记录
+                </h2>
+                <span className="text-xs text-gray-400">{drawnQuestions.length} 题</span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {drawnQuestions.map((q, idx) => (
+                  <DrawnQuestionCard
+                    key={q.questionId}
+                    question={q}
+                    index={idx}
+                    isGraded={isGraded}
+                    onOralAnswerChange={handleOralAnswerChange}
+                  />
+                ))}
+              </div>
+            </div>
+            {/* 右侧：评价点评分 */}
+            <div className="w-1/2 flex flex-col bg-gray-50">
+              <div className="px-4 py-2 bg-white border-b flex items-center justify-between shrink-0">
+                <h2 className="text-sm font-medium text-gray-700">评价点评分</h2>
+                <div className="text-sm text-gray-500">
+                  已评分：<span className="font-medium text-gray-800">{evalPointTotal} / {evalPointMaxTotal}</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                {evalPoints.length > 0 ? (
+                  evalPoints.map((ep) => (
+                    <EvalPointGradingCard
+                      key={ep.id}
+                      evalPoint={ep}
+                      scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
+                      isGraded={isGraded}
+                      onChange={handleEvalPointScoreChange}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-400">
+                    <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">该任务未配置现场问答评价点</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 底部评分汇总栏 - 悬浮固定 */}
+      <div className="bg-white border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 py-2.5 shrink-0 z-50">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-sm text-gray-500">最终得分</span>
+            <span className="text-2xl font-bold text-green-600">
+              {isGraded || finalTotal > 0 ? finalTotal : "-"}
+            </span>
+            <span className="text-sm text-gray-400">/ {submission.maxScore}</span>
+          </div>
+          <div className="h-6 w-px bg-gray-200 shrink-0" />
+          <div className="flex-1 min-w-0">
             <Textarea
-              placeholder="请输入对学生本次任务表现的综合评价..."
+              placeholder="教师评语..."
               value={teacherComment}
               onChange={(e) => setTeacherComment(e.target.value)}
               disabled={isGraded}
-              rows={4}
-              className="resize-none"
+              rows={1}
+              className="resize-none text-sm min-h-[36px] py-2"
             />
           </div>
-
-          <div className="flex items-center justify-end gap-3 pt-2">
-            {isGraded && submission.gradedAt && (
-              <div className="text-sm text-gray-500 mr-auto">
-                评分时间：{submission.gradedAt} · 评分教师：{submission.gradedBy}
-              </div>
-            )}
-            <Button variant="outline" asChild>
-              <Link href="/approvals/grading">取消</Link>
+          {isGraded && submission.gradedAt && (
+            <div className="text-xs text-gray-400 shrink-0">
+              {submission.gradedAt} · {submission.gradedBy}
+            </div>
+          )}
+          <Button variant="outline" size="sm" asChild className="shrink-0">
+            <Link href="/approvals/grading">取消</Link>
+          </Button>
+          {!isGraded && (
+            <Button size="sm" onClick={() => setIsSubmitDialogOpen(true)} disabled={!canSubmit} className="shrink-0 gap-1">
+              <Save className="h-3.5 w-3.5" />
+              提交评分
             </Button>
-            {!isGraded && (
-              <Button
-                onClick={() => setIsSubmitDialogOpen(true)}
-                disabled={!canSubmit}
-                className="gap-1"
-              >
-                <Save className="h-4 w-4" />
-                提交评分
-              </Button>
-            )}
-            {isGraded && (
-              <Button disabled className="gap-1 bg-green-600 hover:bg-green-600">
-                <CheckCircle2 className="h-4 w-4" />
-                评分已提交
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          )}
+          {isGraded && (
+            <Button size="sm" disabled className="bg-green-600 hover:bg-green-600 shrink-0 gap-1">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              已提交
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* 提交确认对话框 */}
       <Dialog open={isSubmitDialogOpen} onOpenChange={setIsSubmitDialogOpen}>
