@@ -2071,6 +2071,130 @@
             .step-sidebar { position: relative; top: 0; max-height: none; }
             .knowledge-cards { grid-template-columns: 1fr; }
         }
+
+        /* ====== 模式选择弹窗 ====== */
+        .mode-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .mode-modal-overlay.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .mode-modal {
+            background: var(--bg-white);
+            border-radius: 12px;
+            width: 520px;
+            max-width: 90vw;
+            box-shadow: 0 20px 48px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s ease;
+            overflow: hidden;
+        }
+        .mode-modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .mode-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .mode-modal-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .mode-modal-body {
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .mode-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-white);
+        }
+        .mode-option:hover {
+            border-color: var(--primary-color);
+            background: #f6fbff;
+        }
+        .mode-option-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .mode-option-icon.separate { background: #e6f4ff; color: var(--primary-color); }
+        .mode-option-icon.integrated { background: #f6ffed; color: var(--success-color); }
+        .mode-option-content { flex: 1; }
+        .mode-option-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .mode-option-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .mode-modal-footer {
+            padding: 12px 24px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .mode-modal-btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            background: var(--bg-white);
+            color: var(--text-primary);
+        }
+        .mode-modal-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .mode-modal-btn.primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .mode-modal-btn.primary:hover { background: var(--primary-hover); }
+
+        /* ====== 模拟页面 iframe 容器 ====== */
+        .simulation-iframe-container {
+            display: none;
+            width: 100%;
+            height: calc(100vh - 180px);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+            background: var(--bg-white);
+        }
+        .simulation-iframe-container.active {
+            display: block;
+        }
+        .simulation-iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -2506,6 +2630,7 @@
                     knowledgePoints: ["kp-8", "kp-9", "kp-10", "kp-5", "kp-4", "kp-7"],
                     abilityPoints: ["ab-9", "ab-10", "ab-4", "ab-7"],
                     evaluationMethods: ["paper", "question_bank", "review", "random_draw"],
+                    simulationTaskId: "sim-paper",
                     evalPoints: {
                         paper: [
                             { id: "ep-p1-1", name: "架构理论知识", desc: "对软件架构模式（分层架构、微服务、CQRS 等）的理解深度，能否根据业务场景选择合适的架构方案", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
@@ -2609,6 +2734,7 @@
                     knowledgePoints: ["kp-1", "kp-2", "kp-3", "kp-7", "kp-14"],
                     abilityPoints: ["ab-1", "ab-2", "ab-6", "ab-7"],
                     evaluationMethods: ["question_bank"],
+                    simulationTaskId: "sim-question-bank",
                     evalPoints: {
                         questionBank: [
                             { id: "ep-qb2-1", name: "框架原理理解", desc: "对 React 18 并发特性、Hooks 原理、虚拟 DOM  Diff 算法的理解深度", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
@@ -2675,6 +2801,7 @@
                     knowledgePoints: ["kp-4", "kp-5", "kp-6", "kp-7", "kp-17"],
                     abilityPoints: ["ab-3", "ab-4", "ab-5", "ab-8"],
                     evaluationMethods: ["review"],
+                    simulationTaskId: "sim-review",
                     evalPoints: {
                         review: [
                             { id: "ep-r3-1", name: "代码规范与结构", desc: "代码风格统一、目录结构清晰、命名规范、注释完整，符合 Node.js 社区最佳实践", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING },
@@ -2762,6 +2889,7 @@
                     knowledgePoints: ["kp-11", "kp-12", "kp-17", "kp-1", "kp-4", "kp-5"],
                     abilityPoints: ["ab-9", "ab-6", "ab-8", "ab-5", "ab-11"],
                     evaluationMethods: ["random_draw", "review"],
+                    simulationTaskId: "sim-random-draw",
                     evalPoints: {
                         randomDraw: [
                             { id: "ep-rd4-1", name: "业务理解深度", desc: "对电商订单、支付、库存业务流程的理解是否深入，能否准确描述各环节的依赖关系和时序", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
@@ -2847,6 +2975,7 @@
                     knowledgePoints: ["kp-13", "kp-14", "kp-11", "kp-6"],
                     abilityPoints: ["ab-11", "ab-6", "ab-5", "ab-8"],
                     evaluationMethods: ["paper"],
+                    simulationTaskId: "sim-paper",
                     evalPoints: {
                         paper: [
                             { id: "ep-p5-1", name: "测试理论知识", desc: "对单元测试、集成测试、端到端测试、Mock、Stub 等测试概念的理解", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING },
@@ -2912,6 +3041,7 @@
                     knowledgePoints: ["kp-15", "kp-16", "kp-18", "kp-7"],
                     abilityPoints: ["ab-12", "ab-7", "ab-13", "ab-14"],
                     evaluationMethods: ["review"],
+                    simulationTaskId: "sim-review",
                     evalPoints: {
                         review: [
                             { id: "ep-r6-1", name: "部署方案完整性", desc: "Docker 配置是否合理，服务编排是否完整，网络和数据卷配置是否正确，是否支持一键启动", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING },
@@ -3384,6 +3514,8 @@
 
         // ==================== 学习视图 ====================
 
+        let pendingSimulationTask = null;
+
         function enterTaskLearning(taskId) {
             const task = getTaskById(taskId);
             if (!task) return;
@@ -3400,12 +3532,25 @@
 
             currentTaskId = taskId;
 
-            // 确保步骤已生成（用于任务列表进度计算）
-            if (!taskStepsMap[taskId]) {
-                taskStepsMap[taskId] = generateTaskSteps(task);
+            // 如果任务配置了模拟页面，弹出模式选择
+            if (task.simulationTaskId) {
+                pendingSimulationTask = task;
+                document.getElementById('modeSelectTaskName').textContent = `「${task.name}」请选择适合的学习方式`;
+                document.getElementById('modeSelectModal').classList.add('active');
+                return;
             }
-            if (!stepCompleted[taskId]) {
-                stepCompleted[taskId] = {};
+
+            // 否则走原有的学习流程
+            startOriginalLearning(task);
+        }
+
+        function startOriginalLearning(task) {
+            // 确保步骤已生成（用于任务列表进度计算）
+            if (!taskStepsMap[task.id]) {
+                taskStepsMap[task.id] = generateTaskSteps(task);
+            }
+            if (!stepCompleted[task.id]) {
+                stepCompleted[task.id] = {};
             }
 
             // 更新学习视图标题
@@ -3423,6 +3568,19 @@
             window.scrollTo(0, 0);
         }
 
+        function closeModeModal() {
+            document.getElementById('modeSelectModal').classList.remove('active');
+            pendingSimulationTask = null;
+        }
+
+        function selectMode(mode) {
+            if (!pendingSimulationTask) return;
+            const task = pendingSimulationTask;
+            closeModeModal();
+            // 跳转到独立的模拟页面
+            window.location.href = '/simulation.html?taskId=' + encodeURIComponent(task.simulationTaskId) + '&mode=' + encodeURIComponent(mode) + '&name=' + encodeURIComponent(task.name);
+        }
+
         function exitTaskLearning() {
             document.getElementById('scenarioDetailView').style.display = 'grid';
             document.getElementById('taskLearningView').classList.remove('active');
@@ -3432,6 +3590,7 @@
             document.getElementById('globalResourceSidebar')?.classList.remove('active');
             currentGlobalResourceTab = null;
             currentTaskId = null;
+
             window.scrollTo(0, 0);
             renderTaskList(); // 刷新进度
         }
@@ -4779,5 +4938,39 @@
 
         init();
     </script>
+    <!-- 学习模式选择弹窗 -->
+    <div class="mode-modal-overlay" id="modeSelectModal" onclick="if(event.target===this)closeModeModal()">
+        <div class="mode-modal">
+            <div class="mode-modal-header">
+                <div class="mode-modal-title">选择学习模式</div>
+                <div class="mode-modal-subtitle" id="modeSelectTaskName">请为该任务选择适合的学习方式</div>
+            </div>
+            <div class="mode-modal-body">
+                <div class="mode-option" onclick="selectMode('separate')">
+                    <div class="mode-option-icon separate">
+                        <i class="fas fa-book-reader"></i>
+                    </div>
+                    <div class="mode-option-content">
+                        <div class="mode-option-title">先学后测</div>
+                        <div class="mode-option-desc">先完成学习阶段，掌握任务知识点和能力要求后，再进入测评环节。适合需要充分准备的学习者。</div>
+                    </div>
+                </div>
+                <div class="mode-option" onclick="selectMode('integrated')">
+                    <div class="mode-option-icon integrated">
+                        <i class="fas fa-columns"></i>
+                    </div>
+                    <div class="mode-option-content">
+                        <div class="mode-option-title">测评一体</div>
+                        <div class="mode-option-desc">学习与测评同步进行，左侧查看任务内容，右侧直接完成测评。适合边学边练、快速检验的学习者。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mode-modal-footer">
+                <button class="mode-modal-btn" onclick="closeModeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模拟页面 iframe 容器（动态插入到 learningLayout 中） -->
 </body>
 </html>

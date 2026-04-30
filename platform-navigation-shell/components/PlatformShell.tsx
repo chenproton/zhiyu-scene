@@ -282,16 +282,30 @@ export function PlatformSideNav({ config }: { config: PlatformNavigationConfig }
 
                     return item.children?.map((child) => {
                       const isChildActive = bestMatch?.id === child.id
+                      const childClassName = cn(
+                        "block rounded-lg px-3 py-2 text-sm transition-colors",
+                        isChildActive
+                          ? "bg-primary text-white font-medium"
+                          : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                      )
+                      if (child.external) {
+                        return (
+                          <a
+                            key={child.id}
+                            href={child.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={childClassName}
+                          >
+                            {child.label}
+                          </a>
+                        )
+                      }
                       return (
                         <Link
                           key={child.id}
                           href={child.href}
-                          className={cn(
-                            "block rounded-lg px-3 py-2 text-sm transition-colors",
-                            isChildActive
-                              ? "bg-primary text-white font-medium"
-                              : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                          )}
+                          className={childClassName}
                         >
                           {child.label}
                         </Link>

@@ -123,9 +123,13 @@ function PlatformSideNav({ config }) {
                                     }, null);
                                     return item.children?.map((child) => {
                                         const isChildActive = bestMatch?.id === child.id;
-                                        return ((0, jsx_runtime_1.jsx)(link_1.default, { href: child.href, className: (0, utils_1.cn)("block rounded-lg px-3 py-2 text-sm transition-colors", isChildActive
-                                                ? "bg-primary text-white font-medium"
-                                                : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"), children: child.label }, child.id));
+                                        const childClassName = (0, utils_1.cn)("block rounded-lg px-3 py-2 text-sm transition-colors", isChildActive
+                                            ? "bg-primary text-white font-medium"
+                                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-800");
+                                        if (child.external) {
+                                            return ((0, jsx_runtime_1.jsx)("a", { href: child.href, target: "_blank", rel: "noopener noreferrer", className: childClassName, children: child.label }, child.id));
+                                        }
+                                        return ((0, jsx_runtime_1.jsx)(link_1.default, { href: child.href, className: childClassName, children: child.label }, child.id));
                                     });
                                 })() })) : null] }, item.id));
                 }) })] }));

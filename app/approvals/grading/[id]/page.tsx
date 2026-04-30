@@ -8,11 +8,16 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Eye,
+  FileCode,
   FileText,
   GraduationCap,
+  Image,
   Package,
   Save,
   Star,
+  Video,
+  X,
   XCircle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -41,6 +46,7 @@ import type {
   TaskEvalPoint,
   GradeMapping,
   ReviewStep,
+  SubmissionAttachment,
 } from "@/lib/mock-data"
 
 // ============================================================================
@@ -341,7 +347,30 @@ function DrawnQuestionCard({
 }) {
   const [oralAnswer, setOralAnswer] = useState(question.studentOralAnswer || "")
 
+  const getQuestionTypeLabel = () => {
+    switch (question.questionType) {
+      case "single": return "单选题"
+      case "multiple": return "多选题"
+      case "judgment": return "判断题"
+      case "subjective": return "主观题"
+      default: return question.questionType
+    }
+  }
+
+  const getQuestionTypeColor = () => {
+    switch (question.questionType) {
+      case "single": return "bg-purple-50 text-purple-600 border-purple-200"
+      case "multiple": return "bg-indigo-50 text-indigo-600 border-indigo-200"
+      case "judgment": return "bg-orange-50 text-orange-600 border-orange-200"
+      case "subjective": return "bg-blue-50 text-blue-600 border-blue-200"
+      default: return "bg-gray-50 text-gray-600 border-gray-200"
+    }
+  }
+
   const getAnswerLabel = () => {
+    if (question.questionType === "judgment") {
+      return question.correctAnswer === "true" ? "正确" : "错误"
+    }
     if (Array.isArray(question.correctAnswer)) {
       return question.correctAnswer.join("、")
     }
@@ -351,13 +380,47 @@ function DrawnQuestionCard({
   return (
     <Card className="border-slate-200">
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-xs bg-slate-50 text-slate-600 border-slate-200">
             第 {index + 1} 题
+          </Badge>
+          <Badge variant="outline" className={`text-xs ${getQuestionTypeColor()}`}>
+            {getQuestionTypeLabel()}
           </Badge>
           <span className="text-xs text-gray-400">{question.questionName}</span>
         </div>
         <p className="text-sm text-gray-800 leading-relaxed">{question.questionContent}</p>
+
+        {question.options && question.options.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="text-xs text-gray-500 font-medium">选项</div>
+            <div className="space-y-1">
+              {question.options.map((opt, optIdx) => {
+                const isCorrect = Array.isArray(question.correctAnswer)
+                  ? question.correctAnswer.includes(opt)
+                  : question.correctAnswer === opt
+                return (
+                  <div
+                    key={optIdx}
+                    className={`flex items-center gap-2 text-sm px-2.5 py-1.5 rounded border ${
+                      isCorrect
+                        ? "bg-green-50 border-green-200 text-green-700"
+                        : "bg-gray-50 border-gray-100 text-gray-600"
+                    }`}
+                  >
+                    <span className={`text-xs font-mono w-5 h-5 flex items-center justify-center rounded shrink-0 ${
+                      isCorrect ? "bg-green-200 text-green-800" : "bg-gray-200 text-gray-500"
+                    }`}>
+                      {String.fromCharCode(65 + optIdx)}
+                    </span>
+                    <span>{opt}</span>
+                    {isCorrect && <CheckCircle2 className="h-3.5 w-3.5 text-green-600 ml-auto shrink-0" />}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="bg-green-50 rounded-lg border border-green-100 p-3">
           <div className="text-xs text-green-600 font-medium mb-1">参考答案</div>
@@ -421,6 +484,102 @@ function ReviewPhaseHistory({ evalPoints }: { evalPoints: TaskEvalPoint[] }) {
         </div>
       )}
     </div>
+  )
+}
+
+// ============================================================================
+// 附件预览
+// ============================================================================
+
+function AttachmentPreview({
+  attachment,
+  onClose,
+}: {
+  attachment: SubmissionAttachment
+  onClose: () => void
+}) {
+  const getTypeLabel = () => {
+    switch (attachment.type) {
+      case "code": return "代码"
+      case "video": return "视频"
+      case "document": return "文档"
+      case "image": return "图片"
+      default: return "其他"
+    }
+  }
+
+  const getTypeIcon = () => {
+    switch (attachment.type) {
+      case "code": return <FileCode className="h-5 w-5 text-blue-500" />
+      case "video": return <Video className="h-5 w-5 text-red-500" />
+      case "document": return <FileText className="h-5 w-5 text-amber-500" />
+      case "image": return <Image className="h-5 w-5 text-green-500" />
+      default: return <Package className="h-5 w-5 text-gray-500" />
+    }
+  }
+
+  return (
+    <Dialog open={!!attachment} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl w-[90vw] max-h-[90vh] p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-4 py-3 border-b shrink-0">
+          <div className="flex items-center gap-2">
+            {getTypeIcon()}
+            <DialogTitle className="text-sm font-medium">{attachment.name}</DialogTitle>
+            <Badge variant="outline" className="text-xs ml-1">{getTypeLabel()}</Badge>
+          </div>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto p-4 bg-gray-50 min-h-[300px] max-h-[calc(90vh-120px)]">
+          {attachment.type === "image" && (
+            <div className="flex items-center justify-center">
+              <img
+                src={attachment.url}
+                alt={attachment.name}
+                className="max-w-full max-h-[70vh] rounded-lg shadow-sm border"
+              />
+            </div>
+          )}
+          {attachment.type === "video" && (
+            <div className="flex items-center justify-center">
+              <video
+                src={attachment.url}
+                controls
+                className="max-w-full max-h-[70vh] rounded-lg shadow-sm border"
+                preload="metadata"
+              />
+            </div>
+          )}
+          {attachment.type === "code" && (
+            <div className="bg-slate-900 rounded-lg overflow-hidden">
+              <div className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 border-b border-slate-700">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <span className="text-xs text-slate-400 ml-2">{attachment.name}</span>
+              </div>
+              <pre className="p-4 text-sm text-slate-200 overflow-x-auto whitespace-pre font-mono leading-relaxed">
+                {attachment.content || "// 暂无预览内容"}
+              </pre>
+            </div>
+          )}
+          {attachment.type === "document" && (
+            <div className="bg-white rounded-lg border p-6 max-w-2xl mx-auto">
+              <div className="prose prose-sm max-w-none">
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                  {attachment.content || "暂无预览内容"}
+                </pre>
+              </div>
+            </div>
+          )}
+          {attachment.type === "other" && (
+            <div className="text-center py-12 text-gray-400">
+              <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm">该类型文件暂不支持在线预览</p>
+              <p className="text-xs mt-1">文件名：{attachment.name}</p>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -679,6 +838,7 @@ export default function GradingDetailPage() {
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [manualTotal, setManualTotal] = useState<number | null>(null)
+  const [previewAttachment, setPreviewAttachment] = useState<SubmissionAttachment | null>(null)
 
   if (!submission) {
     return (
@@ -974,13 +1134,22 @@ export default function GradingDetailPage() {
                         {submission.subjectiveContent.attachments.map((att) => (
                           <div
                             key={att.id}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm group"
                           >
                             <Package className="h-4 w-4 text-gray-400" />
-                            <span className="text-gray-700">{att.name}</span>
-                            <Badge variant="outline" className="text-xs">
+                            <span className="text-gray-700 flex-1 min-w-0 truncate">{att.name}</span>
+                            <Badge variant="outline" className="text-xs shrink-0">
                               {att.type === "code" ? "代码" : att.type === "video" ? "视频" : att.type === "document" ? "文档" : att.type === "image" ? "图片" : "其他"}
                             </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                              onClick={() => setPreviewAttachment(att)}
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1" />
+                              预览
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -1158,6 +1327,14 @@ export default function GradingDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 附件预览 */}
+      {previewAttachment && (
+        <AttachmentPreview
+          attachment={previewAttachment}
+          onClose={() => setPreviewAttachment(null)}
+        />
+      )}
     </div>
   )
 }

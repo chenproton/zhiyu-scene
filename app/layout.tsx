@@ -39,6 +39,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" className="bg-background">
       <body className="font-sans antialiased">
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){try{if(window.location.search.includes('embedded=1')||window.self!==window.top){document.documentElement.classList.add('embedded')}}catch(e){}})();`
+        }} />
         <PlatformShellWrapper>{children}</PlatformShellWrapper>
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <AnnotationClient />

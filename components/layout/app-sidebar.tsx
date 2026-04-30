@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, BarChart3, CheckSquare, FolderKanban, LayoutGrid, GitBranch } from "lucide-react"
+import { ArrowLeft, BarChart3, CheckSquare, ClipboardCheck, FolderKanban, LayoutGrid, GitBranch, GraduationCap } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -37,6 +37,16 @@ const navItems: NavItem[] = [
     href: "/approvals",
     icon: CheckSquare,
   },
+  {
+    title: "教师端任务评分模拟",
+    href: "/approvals/grading",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "学生端任务学习模拟",
+    href: "/approvals/grading/simulation",
+    icon: GraduationCap,
+  },
 ]
 
 export function AppSidebar() {
@@ -45,6 +55,15 @@ export function AppSidebar() {
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/" || pathname.startsWith("/scenarios")
+    }
+    if (href === "/approvals/grading/simulation") {
+      return pathname.startsWith("/approvals/grading/simulation")
+    }
+    if (href === "/approvals") {
+      return pathname.startsWith("/approvals") && !pathname.startsWith("/approvals/grading")
+    }
+    if (href === "/approvals/grading") {
+      return pathname.startsWith("/approvals/grading") && !pathname.startsWith("/approvals/grading/simulation")
     }
     if (href === "/students") {
       return pathname.startsWith("/students")

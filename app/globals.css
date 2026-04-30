@@ -123,3 +123,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ====== 嵌入模式：隐藏导航 ====== */
+html.embedded > body > header {
+  display: none !important;
+}
+html.embedded > body > div > aside {
+  display: none !important;
+}
+html.embedded > body > div {
+  padding-top: 0 !important;
+}
+html.embedded main > div {
+  padding: 0 !important;
+}
