@@ -4509,6 +4509,24 @@ function EditCardDialog({
           updateState({ methodWeights: newWeights })
         }
 
+        const moveMethodUp = (index: number) => {
+          if (index <= 0) return
+          const newMethods = [...state.evaluationMethods]
+          const temp = newMethods[index]
+          newMethods[index] = newMethods[index - 1]
+          newMethods[index - 1] = temp
+          updateState({ evaluationMethods: newMethods })
+        }
+
+        const moveMethodDown = (index: number) => {
+          if (index >= state.evaluationMethods.length - 1) return
+          const newMethods = [...state.evaluationMethods]
+          const temp = newMethods[index]
+          newMethods[index] = newMethods[index + 1]
+          newMethods[index + 1] = temp
+          updateState({ evaluationMethods: newMethods })
+        }
+
         return (
           <div className="h-full flex flex-col">
             {state.evaluationMethods.length === 0 ? (
@@ -4519,6 +4537,51 @@ function EditCardDialog({
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto space-y-5 p-1">
+                {/* 评价方式顺序配置 */}
+                <div className="border rounded-xl p-4 bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <ListOrdered className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold">评价方式顺序配置</p>
+                    </div>
+                    <span className="text-xs text-gray-400">点击箭头调整执行顺序</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {state.evaluationMethods.map((methodKey, index) => {
+                      const method = evaluationMethodOptions.find(o => o.key === methodKey)
+                      if (!method) return null
+                      return (
+                        <div
+                          key={methodKey}
+                          className="flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 bg-gray-50/50"
+                        >
+                          <span className="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-[10px] flex items-center justify-center font-medium">
+                            {index + 1}
+                          </span>
+                          <div className={cn("p-1.5 rounded-md", method.color)}>{method.icon}</div>
+                          <span className="text-sm font-medium flex-1">{method.label}</span>
+                          <div className="flex items-center gap-0.5">
+                            <button
+                              onClick={() => moveMethodUp(index)}
+                              disabled={index === 0}
+                              className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => moveMethodDown(index)}
+                              disabled={index === state.evaluationMethods.length - 1}
+                              className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
                 {/* 评价方式权重配置 */}
                 <div className="border rounded-xl p-4 bg-white">
                   <div className="flex items-center justify-between mb-4">
