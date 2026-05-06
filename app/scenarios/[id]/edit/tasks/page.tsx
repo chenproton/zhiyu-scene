@@ -187,7 +187,7 @@ const resourceTypeColors: Record<string, string> = {
 
 const evaluationMethodOptions = [
   { key: "random_draw", label: "现场问答", icon: <FileQuestion className="h-5 w-5" />, color: "bg-blue-50 text-blue-600 border-blue-200", available: true, desc: "从题库抽取题目，教师现场提问", category: "综合评估" },
-  { key: "review", label: "评审", icon: <Gavel className="h-5 w-5" />, color: "bg-purple-50 text-purple-600 border-purple-200", available: true, desc: "教师根据表现/材料给评价点打分", category: "综合评估" },
+  { key: "review", label: "现场评审", icon: <Gavel className="h-5 w-5" />, color: "bg-purple-50 text-purple-600 border-purple-200", available: true, desc: "教师根据表现/材料给评价点打分", category: "综合评估" },
   { key: "paper", label: "试卷", icon: <ClipboardList className="h-5 w-5" />, color: "bg-green-50 text-green-600 border-green-200", available: true, desc: "使用固定试卷进行考核", category: "基础考核" },
   { key: "question_bank", label: "题库", icon: <Database className="h-5 w-5" />, color: "bg-orange-50 text-orange-600 border-orange-200", available: true, desc: "从题库选题组成测评资源", category: "基础考核" },
   { key: "defense", label: "答辩", icon: <MessageSquare className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生进行现场答辩", category: "互动评价" },
@@ -405,7 +405,7 @@ const defaultEvalSubjects: EvalSubjectConfig[] = [
   },
   {
     type: "peer",
-    enabled: true,
+    enabled: false,
     params: {
       peerCount: 4,
       peerRule: "随机分配",
@@ -782,9 +782,24 @@ export default function TasksEditPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg">{existingScenario?.name || "新建场景"}</CardTitle>
+                <div className="flex items-center gap-2 mb-1">
+                  <CardTitle className="text-lg">{existingScenario?.name || "新建场景"}</CardTitle>
+                  {existingScenario && existingScenario.coBuilders.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px]">共建</Badge>
+                  )}
+                </div>
                 <CardDescription>
                   {existingScenario?.positionName} | {existingScenario?.industryName} | {existingScenario?.professionName}
+                  {existingScenario && existingScenario.coBuilders.length > 0 && (
+                    <span className="ml-2">
+                      共建人：
+                      {existingScenario.coBuilders.map((cb, i) => (
+                        <Badge key={cb.id} variant="outline" className="text-[10px] ml-1">
+                          {cb.name}
+                        </Badge>
+                      ))}
+                    </span>
+                  )}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-3">
@@ -1183,7 +1198,7 @@ function EditCardDialog({
   const [assessActiveTab, setAssessActiveTab] = useState<string | null>(state.evaluationMethods[0] || null)
 
   // For method dialog view mode (scheme list / scheme edit) — persisted across remounts
-  const [methodDialogViews, setMethodDialogViews] = useState<Record<string, "list" | "edit">>({})
+  const [methodDialogViews, setMethodDialogViews] = useState<Record<string, "list" | "edit" | "template">>({})
   const [newPointName, setNewPointName] = useState("")
 
   // Rubric library — shared across all methods
@@ -1216,7 +1231,7 @@ function EditCardDialog({
   const [rubricAbTargetField, setRubricAbTargetField] = useState<string | null>(null)
 
   // Mock resource config states
-  const [mockResRandomDraw, setMockResRandomDraw] = useState({ questionCount: 5, difficulty: "mixed", types: { single: true, multiple: true, judge: true } })
+  const [mockResRandomDraw, setMockResRandomDraw] = useState({ questionCount: 5, difficulty: "mixed", types: { single: true, multiple: true, judge: true }, autoDraw: true })
   const [mockResPaper, setMockResPaper] = useState({ duration: 60, passScore: 60, allowRetake: false, retakeCount: 1, shuffleQuestions: true, showResult: true, activationMode: "manual" as "manual" | "scheduled" | "always", scheduledTime: "" })
   const [selectedPaperForDetail, setSelectedPaperForDetail] = useState<string | null>(null)
   const [paperDetailOpen, setPaperDetailOpen] = useState(false)
@@ -1225,11 +1240,11 @@ function EditCardDialog({
   const [newPaperQuestionCount, setNewPaperQuestionCount] = useState(10)
   const [newPaperTotalScore, setNewPaperTotalScore] = useState(100)
   const [mockResQuestionBank, setMockResQuestionBank] = useState({ questionCount: 10, difficulty: "mixed", totalScore: 100, autoGenerate: false, timeLimit: 90, typeWeights: {} as Record<string, number>, allowRetake: false, retakeCount: 1, shuffleQuestions: true, showResult: true })
-  const [mockResReview, setMockResReview] = useState({ materialType: "project_report", submitFormats: ["pdf"] as string[], deadlineDays: 7, allowResubmit: false })
+  const [mockResReview, setMockResReview] = useState({ materialType: "project_report", submitFormatDesc: "请提交 PDF 格式的项目报告，包含完整的项目背景、实现方案、测试结果和总结反思。", deadlineDays: 7, allowResubmit: false })
   const [reviewSteps, setReviewSteps] = useState([
-    { id: "rs-1", label: "初评", desc: "由指导教师进行第一轮评审", enabled: true, subjectType: "teacher" as string | null },
-    { id: "rs-2", label: "复评", desc: "由专家组进行第二轮复核", enabled: false, subjectType: null as string | null },
-    { id: "rs-3", label: "终评", desc: "答辩委员会最终评定", enabled: false, subjectType: null as string | null },
+    { id: "rs-1", label: "初评", desc: "由指导教师进行第一轮评审", enabled: true, subjectType: "teacher" as string | null, weight: 40 },
+    { id: "rs-2", label: "复评", desc: "由专家组进行第二轮复核", enabled: false, subjectType: null as string | null, weight: 30 },
+    { id: "rs-3", label: "终评", desc: "答辩委员会最终评定", enabled: false, subjectType: null as string | null, weight: 30 },
   ])
   const [editingReviewStepId, setEditingReviewStepId] = useState<string | null>(null)
   const [editingStepLabel, setEditingStepLabel] = useState("")
@@ -1273,6 +1288,7 @@ function EditCardDialog({
           desc: s.desc,
           enabled: s.enabled,
           subjectType: s.subjectType,
+          weight: s.weight,
         })),
       })
     }
@@ -2411,26 +2427,28 @@ function EditCardDialog({
                     <Label>资源名称</Label>
                     <Input value={newResName} onChange={e => setNewResName(e.target.value)} placeholder="输入资源名称" className="mt-1.5" />
                   </div>
-                  <div>
-                    <Label>资源类型</Label>
-                    <Select value={newResType} onValueChange={v => setNewResType(v)}>
-                      <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="document">文档资源</SelectItem>
-                        <SelectItem value="spreadsheet">表格资源</SelectItem>
-                        <SelectItem value="image">图片资源</SelectItem>
-                        <SelectItem value="link">链接资源</SelectItem>
-                        <SelectItem value="audio">音频资源</SelectItem>
-                        <SelectItem value="video">视频资源</SelectItem>
-                        <SelectItem value="archive">压缩包资源</SelectItem>
-                        <SelectItem value="tool">软件工具资源</SelectItem>
-                        <SelectItem value="venue">场地资源</SelectItem>
-                        <SelectItem value="facility">设施设备资源</SelectItem>
-                        <SelectItem value="software">软件资源</SelectItem>
-                        <SelectItem value="other">其他资源</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {newResType === "all" && (
+                    <div>
+                      <Label>资源类型</Label>
+                      <Select value={newResType} onValueChange={v => setNewResType(v)}>
+                        <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="document">文档资源</SelectItem>
+                          <SelectItem value="spreadsheet">表格资源</SelectItem>
+                          <SelectItem value="image">图片资源</SelectItem>
+                          <SelectItem value="link">链接资源</SelectItem>
+                          <SelectItem value="audio">音频资源</SelectItem>
+                          <SelectItem value="video">视频资源</SelectItem>
+                          <SelectItem value="archive">压缩包资源</SelectItem>
+                          <SelectItem value="tool">软件工具资源</SelectItem>
+                          <SelectItem value="venue">场地资源</SelectItem>
+                          <SelectItem value="facility">设施设备资源</SelectItem>
+                          <SelectItem value="software">软件资源</SelectItem>
+                          <SelectItem value="other">其他资源</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
                   {/* Link type: URL */}
                   {newResType === "link" && (
@@ -2592,15 +2610,26 @@ function EditCardDialog({
                                 <p className="text-[11px] text-gray-400 mt-0.5">{method.desc}</p>
                               </div>
                             </div>
-                            {enabled && (
-                              <div className="flex items-center gap-1.5 text-primary text-xs font-medium bg-primary/5 px-2 py-1 rounded-full">
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                已开通
-                              </div>
-                            )}
-                            {!method.available && (
-                              <Badge variant="outline" className="text-[10px] text-gray-400 border-gray-300 bg-white">未购买</Badge>
-                            )}
+                            <div className="flex items-center gap-1.5">
+                              {method.available && (
+                                <span
+                                  className="p-1 rounded-md text-gray-400 hover:text-primary hover:bg-gray-100 transition-colors cursor-pointer"
+                                  onClick={(e) => { e.stopPropagation(); window.open(`/wiki/eval-method?key=${method.key}`, '_blank') }}
+                                  title="查看介绍"
+                                >
+                                  <BookOpen className="h-3.5 w-3.5" />
+                                </span>
+                              )}
+                              {enabled && (
+                                <div className="flex items-center gap-1.5 text-primary text-xs font-medium bg-primary/5 px-2 py-1 rounded-full">
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  已开通
+                                </div>
+                              )}
+                              {!method.available && (
+                                <Badge variant="outline" className="text-[10px] text-gray-400 border-gray-300 bg-white">未购买</Badge>
+                              )}
+                            </div>
                           </div>
                         </button>
                       )
@@ -2615,6 +2644,8 @@ function EditCardDialog({
                 <p className="text-sm">请选择至少一种评价方式</p>
               </div>
             )}
+
+
           </div>
         )
       }
@@ -2628,6 +2659,9 @@ function EditCardDialog({
         const setKpSearchForEval = setErKpSearch
         const abSearchForEval = erAbSearch
         const setAbSearchForEval = setErAbSearch
+
+        const [isOrderConfigOpen, setIsOrderConfigOpen] = useState(false)
+        const [isWeightConfigOpen, setIsWeightConfigOpen] = useState(false)
 
         const subjectLabels: Record<string, string> = {
           teacher: "教师",
@@ -2643,7 +2677,7 @@ function EditCardDialog({
             case "random_draw":
               return { title: "现场问答", summary: `${state.randomDrawQuestions.length} 题 / ${state.randomDrawEvalPoints.length} 个评价点`, configured: state.randomDrawQuestions.length > 0 || state.randomDrawEvalPoints.length > 0 }
             case "review":
-              return { title: "评审", summary: `${state.reviewEvalPoints.length} 个评价点`, configured: state.reviewEvalPoints.length > 0 }
+              return { title: "现场评审", summary: `${state.reviewEvalPoints.length} 个评价点`, configured: state.reviewEvalPoints.length > 0 }
             case "paper":
               return { title: "试卷", summary: state.paperId ? paperMocks.find(p => p.id === state.paperId)?.name || "已选择" : "未选择", configured: !!state.paperId }
             case "question_bank":
@@ -3318,43 +3352,32 @@ function EditCardDialog({
               <div className="space-y-4">
                 <QuestionSelectorPanel field="randomDrawQuestions" selectedIds={state.randomDrawQuestions} />
                 <div className="border rounded-xl p-4">
-                  <p className="text-sm font-medium mb-3">抽题规则</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-gray-500">抽取题数</Label>
-                      <Input type="number" value={mockResRandomDraw.questionCount} onChange={e => setMockResRandomDraw({ ...mockResRandomDraw, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">难度分布</Label>
-                      <Select value={mockResRandomDraw.difficulty} onValueChange={v => setMockResRandomDraw({ ...mockResRandomDraw, difficulty: v })}>
-                        <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="easy">简单为主</SelectItem>
-                          <SelectItem value="mixed">难易混合</SelectItem>
-                          <SelectItem value="hard">困难为主</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium">抽题规则</p>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResRandomDraw.autoDraw} onCheckedChange={v => setMockResRandomDraw({ ...mockResRandomDraw, autoDraw: v })} />
+                      <span className="text-xs text-gray-600">{mockResRandomDraw.autoDraw ? "自动抽题" : "教师手动选择"}</span>
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <Label className="text-xs text-gray-500 mb-1">题型范围</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { key: "single", label: "单选题" },
-                        { key: "multiple", label: "多选题" },
-                        { key: "judge", label: "判断题" },
-                      ].map(t => (
-                        <Badge
-                          key={t.key}
-                          variant={mockResRandomDraw.types[t.key as keyof typeof mockResRandomDraw.types] ? "default" : "outline"}
-                          className="cursor-pointer text-[10px] h-6"
-                          onClick={() => setMockResRandomDraw({ ...mockResRandomDraw, types: { ...mockResRandomDraw.types, [t.key]: !mockResRandomDraw.types[t.key as keyof typeof mockResRandomDraw.types] } })}
-                        >
-                          {t.label}
-                        </Badge>
-                      ))}
+                  {mockResRandomDraw.autoDraw && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs text-gray-500">抽取题数</Label>
+                        <Input type="number" value={mockResRandomDraw.questionCount} onChange={e => setMockResRandomDraw({ ...mockResRandomDraw, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-500">难度分布</Label>
+                        <Select value={mockResRandomDraw.difficulty} onValueChange={v => setMockResRandomDraw({ ...mockResRandomDraw, difficulty: v })}>
+                          <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="easy">简单为主</SelectItem>
+                            <SelectItem value="mixed">难易混合</SelectItem>
+                            <SelectItem value="hard">困难为主</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )
@@ -3393,32 +3416,14 @@ function EditCardDialog({
                     </div>
                   </div>
                   <div className="mt-3">
-                    <Label className="text-xs text-gray-500 mb-2">提交格式（可多选）</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { key: "pdf", label: "PDF" },
-                        { key: "doc", label: "Word" },
-                        { key: "excel", label: "Excel" },
-                        { key: "txt", label: "TXT" },
-                        { key: "ppt", label: "PPT" },
-                        { key: "image", label: "图片" },
-                        { key: "zip", label: "压缩包" },
-                        { key: "link", label: "在线链接" },
-                      ].map(fmt => {
-                        const selected = mockResReview.submitFormats.includes(fmt.key)
-                        return (
-                          <Badge
-                            key={fmt.key}
-                            variant={selected ? "default" : "outline"}
-                            className="cursor-pointer text-[11px] h-7 px-2.5"
-                            onClick={() => setMockResReview({ ...mockResReview, submitFormats: selected ? mockResReview.submitFormats.filter(f => f !== fmt.key) : [...mockResReview.submitFormats, fmt.key] })}
-                          >
-                            {selected && <Check className="h-3 w-3 mr-1" />}
-                            {fmt.label}
-                          </Badge>
-                        )
-                      })}
-                    </div>
+                    <Label className="text-xs text-gray-500 mb-1.5">提交材料要求</Label>
+                    <Textarea
+                      value={mockResReview.submitFormatDesc}
+                      onChange={e => setMockResReview({ ...mockResReview, submitFormatDesc: e.target.value })}
+                      placeholder="请用一句话说明学生需要提交的材料要求..."
+                      rows={2}
+                      className="text-sm"
+                    />
                   </div>
                   <div className="mt-3">
                     <div className="flex items-center gap-2">
@@ -3429,10 +3434,42 @@ function EditCardDialog({
                 </div>
                 <div className="border rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium">评审流程设置</p>
-                    <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => { setShowAddStep(true); setNewStepLabel(""); setNewStepDesc(""); }}>
-                      <Plus className="h-3.5 w-3.5 mr-1" />新增步骤
-                    </Button>
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm font-medium">评审流程设置</p>
+                      {(() => {
+                        const enabledSteps = reviewSteps.filter(s => s.enabled)
+                        const totalWeight = enabledSteps.reduce((sum, s) => sum + (s.weight || 0), 0)
+                        return enabledSteps.length > 0 && (
+                          <div className={cn(
+                            "flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full font-medium",
+                            totalWeight === 100 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                          )}>
+                            <span>权重合计 {totalWeight}%</span>
+                            {totalWeight !== 100 && <span className="text-[10px]">(需等于100%)</span>}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => {
+                        const enabled = reviewSteps.filter(s => s.enabled)
+                        const count = enabled.length
+                        if (count === 0) return
+                        const base = Math.floor(100 / count)
+                        const remainder = 100 % count
+                        const newSteps = reviewSteps.map(s => {
+                          if (!s.enabled) return s
+                          const idx = enabled.findIndex(e => e.id === s.id)
+                          return { ...s, weight: base + (idx < remainder ? 1 : 0) }
+                        })
+                        setReviewSteps(newSteps)
+                      }}>
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />一键平均权重
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => { setShowAddStep(true); setNewStepLabel(""); setNewStepDesc(""); }}>
+                        <Plus className="h-3.5 w-3.5 mr-1" />新增步骤
+                      </Button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     {reviewSteps.map((step, i) => (
@@ -3477,7 +3514,20 @@ function EditCardDialog({
                                 <Badge variant="secondary" className="text-[10px]">{subjectLabels[step.subjectType] || step.subjectType}</Badge>
                               )}
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
+                              {step.enabled && (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    type="number"
+                                    value={step.weight || 0}
+                                    onChange={e => setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, weight: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } : s))}
+                                    className="h-7 text-xs w-14 text-center"
+                                    min={0}
+                                    max={100}
+                                  />
+                                  <span className="text-xs text-gray-400">%</span>
+                                </div>
+                              )}
                               <Button variant="ghost" size="sm" className="h-6 text-[11px] px-1.5 text-gray-400 hover:text-primary" onClick={() => { setEditingReviewStepId(step.id); setEditingStepLabel(step.label); setEditingStepDesc(step.desc); }}>
                                 <Pencil className="h-3 w-3" />
                               </Button>
@@ -3504,7 +3554,7 @@ function EditCardDialog({
                       <div className="flex items-center gap-2">
                         <Button size="sm" className="h-7 text-xs" onClick={() => {
                           if (!newStepLabel.trim()) return
-                          setReviewSteps([...reviewSteps, { id: `rs-${Date.now()}`, label: newStepLabel, desc: newStepDesc, enabled: true, subjectType: null }])
+                          setReviewSteps([...reviewSteps, { id: `rs-${Date.now()}`, label: newStepLabel, desc: newStepDesc, enabled: true, subjectType: null, weight: 0 }])
                           setShowAddStep(false)
                           setNewStepLabel("")
                           setNewStepDesc("")
@@ -3638,14 +3688,14 @@ function EditCardDialog({
               <div className="space-y-4">
                 <QuestionSelectorPanel field="questionBankQuestions" selectedIds={state.questionBankQuestions} />
                 <div className="border rounded-xl p-4">
-                  <p className="text-sm font-medium mb-3">组卷规则</p>
+                  <p className="text-sm font-medium mb-3">抽题规则</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-gray-500">组卷题数</Label>
+                      <Label className="text-xs text-gray-500">随机抽题数量</Label>
                       <Input type="number" value={mockResQuestionBank.questionCount} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-500">试卷总分</Label>
+                      <Label className="text-xs text-gray-500">题目测评总分</Label>
                       <Input type="number" value={mockResQuestionBank.totalScore} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, totalScore: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
                     </div>
                     <div>
@@ -3667,7 +3717,7 @@ function EditCardDialog({
                   <div className="mt-3 flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Switch checked={mockResQuestionBank.allowRetake} onCheckedChange={v => setMockResQuestionBank({ ...mockResQuestionBank, allowRetake: v })} />
-                      <span className="text-xs text-gray-600">允许重考</span>
+                      <span className="text-xs text-gray-600">允许重复测评</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch checked={mockResQuestionBank.shuffleQuestions} onCheckedChange={v => setMockResQuestionBank({ ...mockResQuestionBank, shuffleQuestions: v })} />
@@ -3675,7 +3725,7 @@ function EditCardDialog({
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch checked={mockResQuestionBank.showResult} onCheckedChange={v => setMockResQuestionBank({ ...mockResQuestionBank, showResult: v })} />
-                      <span className="text-xs text-gray-600">交卷后显示成绩</span>
+                      <span className="text-xs text-gray-600">提交后展示成绩</span>
                     </div>
                   </div>
                   {mockResQuestionBank.allowRetake && (
@@ -3687,28 +3737,7 @@ function EditCardDialog({
                     </div>
                   )}
                 </div>
-                {selectedTypes.length > 0 && (
-                  <div className="border rounded-xl p-4">
-                    <p className="text-sm font-medium mb-3">题型权重配置</p>
-                    <div className="space-y-3">
-                      {selectedTypes.map(type => (
-                        <div key={type} className="flex items-center gap-3">
-                          <Label className="text-xs text-gray-500 w-24 shrink-0">{questionTypeLabels[type] || type}权重</Label>
-                          <Input
-                            type="number"
-                            value={mockResQuestionBank.typeWeights[type] || 0}
-                            onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, typeWeights: { ...mockResQuestionBank.typeWeights, [type]: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })}
-                            className="w-24 text-sm"
-                            min={0}
-                            max={100}
-                          />
-                          <span className="text-xs text-gray-500">%</span>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2">各题型权重之和建议为 100%</p>
-                  </div>
-                )}
+
               </div>
             )
           }
@@ -3803,26 +3832,19 @@ function EditCardDialog({
                 </Button>
               </div>
               <div className="space-y-3">
-                {currentSubjects.map((subject, idx) => {
-                  const isPeerDisabled = subject.type === "peer" && evalObject !== "group"
+                {currentSubjects.filter(subject => !(subject.type === "peer" && evalObject !== "group")).map((subject, idx) => {
                   return (
                     <div key={subject.type} className={cn("p-4 rounded-xl border transition-all", subject.enabled ? "border-primary bg-primary/[0.03]" : "border-gray-200 bg-white")}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <Switch checked={subject.enabled} disabled={isPeerDisabled} onCheckedChange={v => updateMethodEvalSubject(methodKey, idx, { enabled: v })} />
+                          <Switch checked={subject.enabled} onCheckedChange={v => updateMethodEvalSubject(methodKey, idx, { enabled: v })} />
                           <span className="text-sm font-medium">{subjectLabels[subject.type]}</span>
                         </div>
                         {subject.enabled && subject.params?.weightPercent !== undefined && (
                           <Badge variant="outline" className="text-[10px]">权重 {subject.params.weightPercent}%</Badge>
                         )}
                       </div>
-                      {isPeerDisabled && (
-                        <div className="pl-12 pb-1 text-xs text-amber-600 flex items-center gap-1">
-                          <Info className="h-3 w-3 shrink-0" />
-                          测评对象为「个人」时，不可选择同伴测评
-                        </div>
-                      )}
-                      {subject.enabled && !isPeerDisabled && (
+                      {subject.enabled && (
                         <div className="pl-12 space-y-3">
                           {subject.type === "teacher" && (
                             <>
@@ -4066,8 +4088,8 @@ function EditCardDialog({
           const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
           const rubricIdField = methodKey === "random_draw" ? "randomDrawRubricId" : "reviewRubricId"
           const currentRubricId = (state as any)[rubricIdField] as string | null
-          const view = methodDialogViews[methodKey] || "list"
-          const setView = (v: "list" | "edit") => setMethodDialogViews(prev => ({ ...prev, [methodKey]: v }))
+          const view = methodDialogViews[methodKey] || "edit"
+          const setView = (v: "list" | "edit" | "template") => setMethodDialogViews(prev => ({ ...prev, [methodKey]: v }))
 
           const currentScheme = rubricLibrary.find(s => s.id === currentRubricId)
 
@@ -4116,9 +4138,12 @@ function EditCardDialog({
           if (view === "edit") {
             return (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => { setView("list"); setEditingRubricId(null); }}>
-                    <ChevronLeft className="h-3.5 w-3.5 mr-1" />返回量规列表
+                <div className="flex items-center justify-between mb-2">
+                  <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => { setErDialogOpen(null); setEditingRubricId(null); }}>
+                    <ChevronLeft className="h-3.5 w-3.5 mr-1" />返回评价规则
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => { setView("template"); setEditingRubricId(null); }}>
+                    <BookOpen className="h-3.5 w-3.5 mr-1" />选择量规模板覆盖
                   </Button>
                 </div>
                 <div className="border rounded-xl p-4 bg-gray-50/50">
@@ -4318,6 +4343,49 @@ function EditCardDialog({
             )
           }
 
+          if (view === "template") {
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => setView("edit")}>
+                    <ChevronLeft className="h-3.5 w-3.5 mr-1" />返回量规编辑
+                  </Button>
+                </div>
+                <p className="text-sm font-medium">选择量规模板进行覆盖</p>
+                <div className="grid grid-cols-1 gap-3">
+                  {rubricLibrary.map(scheme => (
+                    <div
+                      key={scheme.id}
+                      className="p-4 rounded-xl border border-gray-200 bg-white hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer"
+                      onClick={() => {
+                        applyScheme(scheme.id)
+                        setView("edit")
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <p className="text-sm font-semibold">{scheme.name}</p>
+                          </div>
+                          <p className="text-xs text-gray-400 mb-2">{scheme.desc}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {scheme.types.map(type => (
+                              <Badge key={type} variant="outline" className={cn("text-[10px]", evalSubTypeColors[type])}>{evalSubTypeLabels[type]}</Badge>
+                            ))}
+                          </div>
+                          <p className="text-xs text-gray-400 mt-1.5">{scheme.points.length} 个评价点</p>
+                        </div>
+                        <Button size="sm" className="h-7 text-[11px] px-2.5 shrink-0 mt-0.5" onClick={(e) => { e.stopPropagation(); applyScheme(scheme.id); setView("edit"); }}>
+                          使用此模板
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+
           return (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -4425,7 +4493,8 @@ function EditCardDialog({
 
         const SubjectCard = ({ methodKey, onClick }: { methodKey: string; onClick: () => void }) => {
           const currentSubjects = state.methodEvalSubjects[methodKey] || state.evalSubjects
-          const enabledSubjects = currentSubjects.filter(s => s.enabled)
+          const evalObject = state.methodEvalObjects[methodKey] || state.evalObject
+          const enabledSubjects = currentSubjects.filter(s => s.enabled && !(s.type === "peer" && evalObject !== "group"))
           const totalWeight = enabledSubjects.reduce((s, sub) => s + (sub.params?.weightPercent || 0), 0)
           return (
             <button onClick={onClick} className="flex-1 min-w-0 p-4 rounded-xl border text-left transition-all hover:border-primary/50 hover:bg-primary/[0.02] bg-white group">
@@ -4537,101 +4606,128 @@ function EditCardDialog({
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto space-y-5 p-1">
-                {/* 评价方式顺序配置 */}
-                <div className="border rounded-xl p-4 bg-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <ListOrdered className="h-4 w-4 text-primary" />
-                      <p className="text-sm font-semibold">评价方式顺序配置</p>
-                    </div>
-                    <span className="text-xs text-gray-400">点击箭头调整执行顺序</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {state.evaluationMethods.map((methodKey, index) => {
-                      const method = evaluationMethodOptions.find(o => o.key === methodKey)
-                      if (!method) return null
-                      return (
-                        <div
-                          key={methodKey}
-                          className="flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 bg-gray-50/50"
-                        >
-                          <span className="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-[10px] flex items-center justify-center font-medium">
-                            {index + 1}
-                          </span>
-                          <div className={cn("p-1.5 rounded-md", method.color)}>{method.icon}</div>
-                          <span className="text-sm font-medium flex-1">{method.label}</span>
-                          <div className="flex items-center gap-0.5">
-                            <button
-                              onClick={() => moveMethodUp(index)}
-                              disabled={index === 0}
-                              className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <ChevronUp className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => moveMethodDown(index)}
-                              disabled={index === state.evaluationMethods.length - 1}
-                              className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <ChevronDown className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                {/* 评价方式顺序和权重配置入口 */}
+                <div className="flex items-center gap-3">
+                  <Button variant="outline" size="sm" className="text-xs h-9" onClick={() => setIsOrderConfigOpen(true)}>
+                    <ListOrdered className="h-3.5 w-3.5 mr-1.5" />
+                    配置评价顺序
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs h-9" onClick={() => setIsWeightConfigOpen(true)}>
+                    <Scale className="h-3.5 w-3.5 mr-1.5" />
+                    配置评价权重
+                    <span className={cn(
+                      "ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                      methodWeightTotal === 100 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                    )}>
+                      {methodWeightTotal}%
+                    </span>
+                  </Button>
                 </div>
 
-                {/* 评价方式权重配置 */}
-                <div className="border rounded-xl p-4 bg-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <Scale className="h-4 w-4 text-primary" />
-                      <p className="text-sm font-semibold">评价方式权重配置</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium",
-                        methodWeightTotal === 100 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
-                      )}>
-                        <span>合计</span>
-                        <span>{methodWeightTotal}%</span>
-                        {methodWeightTotal !== 100 && <span className="text-[10px]">(需等于100%)</span>}
-                      </div>
-                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={distributeMethodWeights}>
-                        <RotateCcw className="h-3.5 w-3.5 mr-1" />一键平均
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    {state.evaluationMethods.map(methodKey => {
-                      const method = evaluationMethodOptions.find(o => o.key === methodKey)
-                      if (!method) return null
-                      const weight = state.methodWeights[methodKey] || 0
-                      return (
-                        <div key={methodKey} className="flex items-center gap-2.5 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
-                          <div className={cn("p-1.5 rounded-md shrink-0", method.color)}>
-                            {method.icon}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-gray-700 truncate">{method.label}</p>
-                            <div className="flex items-center gap-1 mt-1">
-                              <Input
-                                type="number"
-                                value={weight}
-                                onChange={e => updateMethodWeight(methodKey, parseInt(e.target.value) || 0)}
-                                className="h-7 text-xs w-16 text-center"
-                                min={0}
-                                max={100}
-                              />
-                              <span className="text-xs text-gray-400">%</span>
+                {/* 评价方式顺序配置弹窗 */}
+                <Dialog open={isOrderConfigOpen} onOpenChange={setIsOrderConfigOpen}>
+                  <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>评价方式顺序配置</DialogTitle>
+                      <DialogDescription>点击箭头调整评价方式的执行顺序</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-1.5 py-4">
+                      {state.evaluationMethods.map((methodKey, index) => {
+                        const method = evaluationMethodOptions.find(o => o.key === methodKey)
+                        if (!method) return null
+                        return (
+                          <div
+                            key={methodKey}
+                            className="flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 bg-gray-50/50"
+                          >
+                            <span className="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-[10px] flex items-center justify-center font-medium">
+                              {index + 1}
+                            </span>
+                            <div className={cn("p-1.5 rounded-md", method.color)}>{method.icon}</div>
+                            <span className="text-sm font-medium flex-1">{method.label}</span>
+                            <div className="flex items-center gap-0.5">
+                              <button
+                                onClick={() => moveMethodUp(index)}
+                                disabled={index === 0}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => moveMethodDown(index)}
+                                disabled={index === state.evaluationMethods.length - 1}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              </button>
                             </div>
                           </div>
+                        )
+                      })}
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => setIsOrderConfigOpen(false)}>完成</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* 评价方式权重配置弹窗 */}
+                <Dialog open={isWeightConfigOpen} onOpenChange={setIsWeightConfigOpen}>
+                  <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>评价方式权重配置</DialogTitle>
+                      <DialogDescription>
+                        配置各评价方式的权重占比，合计需等于 100%
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className={cn(
+                          "flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium",
+                          methodWeightTotal === 100 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                        )}>
+                          <span>合计</span>
+                          <span>{methodWeightTotal}%</span>
+                          {methodWeightTotal !== 100 && <span className="text-[10px]">(需等于100%)</span>}
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
+                        <Button variant="outline" size="sm" className="text-xs h-8" onClick={distributeMethodWeights}>
+                          <RotateCcw className="h-3.5 w-3.5 mr-1" />一键平均
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        {state.evaluationMethods.map(methodKey => {
+                          const method = evaluationMethodOptions.find(o => o.key === methodKey)
+                          if (!method) return null
+                          const weight = state.methodWeights[methodKey] || 0
+                          return (
+                            <div key={methodKey} className="flex items-center gap-2.5 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                              <div className={cn("p-1.5 rounded-md shrink-0", method.color)}>
+                                {method.icon}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-gray-700 truncate">{method.label}</p>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Input
+                                    type="number"
+                                    value={weight}
+                                    onChange={e => updateMethodWeight(methodKey, parseInt(e.target.value) || 0)}
+                                    className="h-7 text-xs w-16 text-center"
+                                    min={0}
+                                    max={100}
+                                  />
+                                  <span className="text-xs text-gray-400">%</span>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => setIsWeightConfigOpen(false)}>完成</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
                 {state.evaluationMethods.map(methodKey => {
                   const method = evaluationMethodOptions.find(o => o.key === methodKey)

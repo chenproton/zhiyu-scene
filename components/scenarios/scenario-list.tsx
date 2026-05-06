@@ -1,6 +1,6 @@
 "use client"
 
-import { Copy, Eye, GitBranch, Pencil, Send, Undo2, MessageSquare } from "lucide-react"
+import { Copy, Eye, GitBranch, Pencil, Send, Trash2, Undo2, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,7 @@ interface ScenarioListProps {
   onSelectId?: (id: string, checked: boolean) => void
   onSelectAll?: (checked: boolean) => void
   onClone?: (scenario: Scenario) => void
+  onDelete?: (scenario: Scenario) => void
   onSubmitApproval?: (scenario: Scenario) => void
   onWithdrawApproval?: (scenario: Scenario) => void
   onViewRejectReason?: (scenario: Scenario) => void
@@ -34,6 +35,7 @@ export function ScenarioList({
   onSelectId,
   onSelectAll,
   onClone,
+  onDelete,
   onSubmitApproval,
   onWithdrawApproval,
   onViewRejectReason,
@@ -181,6 +183,20 @@ export function ScenarioList({
                     >
                       <MessageSquare className="mr-1 h-3 w-3" />
                       查看驳回原因
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDelete(scenario)
+                      }}
+                    >
+                      <Trash2 className="mr-1 h-3 w-3" />
+                      删除
                     </Button>
                   )}
                 </div>

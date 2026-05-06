@@ -52,7 +52,7 @@ export default function BatchesPage() {
     const newBatch: Batch = {
       id: `batch-${Date.now()}`,
       name: newBatchName,
-      code: `BG-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`,
+      code: Array.from({ length: 6 }, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join(""),
       departmentId: "",
       departmentName: "",
       workflowId: newBatchWorkflow,

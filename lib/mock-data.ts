@@ -417,7 +417,7 @@ export const industries = [
 export const approvalWorkflows: ApprovalWorkflow[] = [
   {
     id: "wf-1",
-    name: "单级教研组长审批",
+    name: "教研组长审批",
     description: "仅需教研组长审批即可通过",
     steps: [
       { id: "step-1", order: 1, name: "教研组长审批", approverRole: "教研组长" },
@@ -426,7 +426,7 @@ export const approvalWorkflows: ApprovalWorkflow[] = [
   },
   {
     id: "wf-2",
-    name: "多级校企联合审批",
+    name: "校企联合审批",
     description: "需经教研组长、系主任、企业导师三级审批",
     steps: [
       { id: "step-1", order: 1, name: "教研组长审批", approverRole: "教研组长" },
@@ -437,7 +437,7 @@ export const approvalWorkflows: ApprovalWorkflow[] = [
   },
   {
     id: "wf-3",
-    name: "两级部门审批",
+    name: "部门审批",
     description: "教研组长和系主任两级审批",
     steps: [
       { id: "step-1", order: 1, name: "教研组长审批", approverRole: "教研组长" },
@@ -452,7 +452,7 @@ export const batches: Batch[] = [
   {
     id: "batch-1",
     name: "2026春季电商实训场景开发",
-    code: "BG-2026-0001",
+    code: "DH2DW3",
     departmentId: "dept-1",
     departmentName: "信息工程系",
     professionId: "prof-2",
@@ -466,7 +466,7 @@ export const batches: Batch[] = [
   {
     id: "batch-2",
     name: "2026春季前端开发场景建设",
-    code: "BG-2026-0002",
+    code: "A1B2C3",
     departmentId: "dept-1",
     departmentName: "信息工程系",
     professionId: "prof-1",
@@ -480,7 +480,7 @@ export const batches: Batch[] = [
   {
     id: "batch-3",
     name: "2025秋季财务管理场景",
-    code: "BG-2025-0003",
+    code: "X9Y8Z7",
     departmentId: "dept-2",
     departmentName: "经济管理系",
     professionId: "prof-3",

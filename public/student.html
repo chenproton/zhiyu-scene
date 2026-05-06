@@ -1273,13 +1273,13 @@
 
         .learning-layout {
             display: flex;
-            gap: 24px;
+            gap: 20px;
             min-height: calc(100vh - 280px);
             align-items: flex-start;
         }
 
         .task-learning-panel {
-            flex: 1;
+            flex: 3;
             min-width: 0;
             background: var(--bg-white);
             border-radius: 8px;
@@ -1289,11 +1289,13 @@
 
         .task-assessment-panel {
             flex: 1;
-            min-width: 0;
+            min-width: 300px;
+            max-width: 360px;
             background: var(--bg-white);
             border-radius: 8px;
             box-shadow: var(--shadow);
-            padding: 24px;
+            padding: 0;
+            overflow: hidden;
         }
 
         .task-assessment-panel:empty {
@@ -2298,7 +2300,8 @@
             .tab-item { white-space: nowrap; padding: 12px 16px; }
             .resource-list { grid-template-columns: 1fr; }
             .rubric-table { display: block; overflow-x: auto; }
-            .learning-layout { grid-template-columns: 1fr; }
+            .learning-layout { flex-direction: column; }
+            .task-assessment-panel { max-width: none; width: 100%; }
             .step-sidebar { position: relative; top: 0; max-height: none; }
             .knowledge-cards { grid-template-columns: 1fr; }
         }
@@ -3856,16 +3859,9 @@
 
             currentTaskId = taskId;
 
-            // 如果任务配置了模拟页面，弹出模式选择
-            if (task.simulationTaskId) {
-                pendingSimulationTask = task;
-                document.getElementById('modeSelectTaskName').textContent = `「${task.name}」请选择适合的学习方式`;
-                document.getElementById('modeSelectModal').classList.add('active');
-                return;
-            }
-
-            // 否则走原有的学习流程
-            startOriginalLearning(task);
+            // 直接进入测评一体模式（跳过弹窗）
+            pendingSimulationTask = task;
+            selectMode('integrated');
         }
 
         function startOriginalLearning(task) {
@@ -3930,7 +3926,7 @@
             const iframeContainer = document.getElementById('simulationIframeContainer');
             const iframe = document.getElementById('simulationIframe');
             const methods = task.evaluationMethods ? task.evaluationMethods.join(',') : '';
-            iframe.src = '/simulation.html?taskId=' + encodeURIComponent(task.simulationTaskId) + '&mode=' + encodeURIComponent(mode) + '&name=' + encodeURIComponent(task.name) + '&embedded=1&methods=' + encodeURIComponent(methods);
+            iframe.src = '/approvals/grading/simulation/' + encodeURIComponent(task.simulationTaskId) + '?mode=' + encodeURIComponent(mode) + '&name=' + encodeURIComponent(task.name) + '&embedded=1&methods=' + encodeURIComponent(methods);
             iframeContainer.classList.add('active');
             window.scrollTo(0, 0);
         }
@@ -3969,19 +3965,26 @@
             const hasAssessment = evalMethods.length > 0 || task.assessment;
             const isSubmitted = taskSubmissionStatus[task.id] === 'submitted' || taskSubmissionStatus[task.id] === 'graded';
 
-            // 1. 渲染学习面板
-            document.getElementById('taskLearningPanel').innerHTML = renderLearningStep(task);
-
-            // 2. 渲染测评面板（有测评时）
-            const assessmentPanel = document.getElementById('taskAssessmentPanel');
+            // 1. 渲染学习面板（任务说明 + 测评内容上下排列）
+            let learningHtml = renderLearningStep(task);
             if (hasAssessment) {
                 const method = evalMethods.length === 1 ? evalMethods[0] : (evalMethods.length > 1 ? 'mixed' : null);
-                assessmentPanel.innerHTML = renderAssessmentStep(task, method);
-                assessmentPanel.style.display = 'block';
-            } else {
-                assessmentPanel.innerHTML = '';
-                assessmentPanel.style.display = 'none';
+                learningHtml += `
+                    <div style="margin-top: 32px; padding-top: 32px; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-clipboard-check" style="color: var(--primary-color);"></i>
+                            任务测评
+                        </div>
+                        ${renderAssessmentStep(task, method)}
+                    </div>
+                `;
             }
+            document.getElementById('taskLearningPanel').innerHTML = learningHtml;
+
+            // 2. 右侧测评面板已为空（测评内容已整合到左侧学习面板下方）
+            const assessmentPanel = document.getElementById('taskAssessmentPanel');
+            assessmentPanel.innerHTML = '';
+            assessmentPanel.style.display = 'none';
 
             // 3. 渲染底部提交栏
             const submitBar = document.getElementById('taskSubmitBar');

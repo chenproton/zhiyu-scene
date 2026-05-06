@@ -117,6 +117,11 @@ export default function SceneHallPage() {
   const [approvalScenario, setApprovalScenario] = useState<Scenario | null>(null)
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>("")
 
+  // Clone rename dialog
+  const [isCloneRenameDialogOpen, setIsCloneRenameDialogOpen] = useState(false)
+  const [cloneRenameValue, setCloneRenameValue] = useState("")
+  const [cloneTargetScenario, setCloneTargetScenario] = useState<Scenario | null>(null)
+
   const toggleBatch = (batchId: string) => {
     setExpandedBatches((prev) =>
       prev.includes(batchId) ? prev.filter((id) => id !== batchId) : [...prev, batchId]
@@ -320,14 +325,21 @@ export default function SceneHallPage() {
   }
 
   const handleClone = (scenario: Scenario) => {
+    setCloneTargetScenario(scenario)
+    setCloneRenameValue(`${scenario.name} (克隆)`)
+    setIsCloneRenameDialogOpen(true)
+  }
+
+  const handleConfirmClone = () => {
+    if (!cloneTargetScenario) return
     const newScenario: Scenario = {
-      ...scenario,
+      ...cloneTargetScenario,
       id: `scenario-${Date.now()}`,
       code: `SC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`,
-      name: `${scenario.name} (克隆)`,
+      name: cloneRenameValue,
       status: "draft",
       version: "v1.0",
-      tasks: scenario.tasks.map((t) => ({
+      tasks: cloneTargetScenario.tasks.map((t) => ({
         ...t,
         id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         code: `T-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`,
@@ -336,6 +348,9 @@ export default function SceneHallPage() {
       updatedAt: new Date().toISOString().split("T")[0],
     }
     setScenarios((prev) => [...prev, newScenario])
+    setIsCloneRenameDialogOpen(false)
+    setCloneTargetScenario(null)
+    setCloneRenameValue("")
   }
 
   const handleDelete = (scenario: Scenario) => {
@@ -380,7 +395,7 @@ export default function SceneHallPage() {
     const newBatch = {
       id: `batch-${Date.now()}`,
       name: newBatchName,
-      code: `BG-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`,
+      code: Array.from({ length: 6 }, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join(""),
       departmentId: "",
       departmentName: "",
       workflowId: newBatchWorkflow,
@@ -1197,6 +1212,33 @@ export default function SceneHallPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsApprovalWorkflowDialogOpen(false)}>关闭</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Clone Rename Dialog */}
+      <Dialog open={isCloneRenameDialogOpen} onOpenChange={setIsCloneRenameDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>克隆场景</DialogTitle>
+            <DialogDescription>
+              请为克隆后的场景命名
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="cloneName">场景名称</Label>
+              <Input
+                id="cloneName"
+                value={cloneRenameValue}
+                onChange={(e) => setCloneRenameValue(e.target.value)}
+                placeholder="输入新场景名称"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCloneRenameDialogOpen(false)}>取消</Button>
+            <Button onClick={handleConfirmClone}>确认克隆</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

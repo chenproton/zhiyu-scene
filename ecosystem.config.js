@@ -1,20 +1,20 @@
 module.exports = {
   apps: [
     {
-      name: 'next-app',
-      cwd: '/var/www/next-app',
-      script: 'node_modules/next/dist/bin/next',
+      name: 'scene',
+      cwd: '/var/www/scene',
+      script: 'pnpm',
       args: 'start',
       instances: 1,
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 3003,
       },
       // 日志配置
-      log_file: '/var/log/pm2/next-app-combined.log',
-      out_file: '/var/log/pm2/next-app-out.log',
-      error_file: '/var/log/pm2/next-app-error.log',
+      log_file: '/var/log/pm2/scene-combined.log',
+      out_file: '/var/log/pm2/scene-out.log',
+      error_file: '/var/log/pm2/scene-error.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       // 自动重启
       autorestart: true,

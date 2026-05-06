@@ -20,14 +20,29 @@ import {
   Sparkles,
   Bookmark,
   BookMarked,
+  Lightbulb,
+  Award,
+  Link2,
+  ExternalLink,
+  FileText,
+  Video,
+  Image,
+  Eye,
+  File,
+  Package,
+  Maximize2,
+  Minimize2,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { studentSubmissions } from "@/lib/mock-data"
 import type { LocalSubmission, TaskPhase, SimulatedTask, AssessmentForm } from "../components/types"
-import { simulatedTasksMap, paperQuestions, questionBankQuestions } from "../components/task-data"
+import { simulatedTasksMap, paperQuestions, questionBankQuestions, granularLessons } from "../components/task-data"
 import { LearningFloat } from "../components/learning-float"
 import { ExamPanel } from "../components/exam-panel"
 import { ReviewSubmitPanel } from "../components/review-submit"
@@ -56,6 +71,47 @@ const formColors: Record<string, string> = {
 }
 
 const ASSESSMENT_SEQUENCE: AssessmentForm[] = ["paper", "question_bank", "review", "random_draw"]
+
+// ============================================================================
+// 关联内容面板常量
+// ============================================================================
+const resourceTypeIcons: Record<string, React.ReactNode> = {
+  link: <ExternalLink className="h-3.5 w-3.5 text-blue-500" />,
+  document: <FileText className="h-3.5 w-3.5 text-blue-500" />,
+  video: <Video className="h-3.5 w-3.5 text-rose-500" />,
+  image: <Image className="h-3.5 w-3.5 text-green-500" />,
+  tool: <ExternalLink className="h-3.5 w-3.5 text-cyan-500" />,
+  spreadsheet: <FileText className="h-3.5 w-3.5 text-teal-500" />,
+  audio: <Video className="h-3.5 w-3.5 text-violet-500" />,
+  archive: <FileText className="h-3.5 w-3.5 text-orange-500" />,
+  venue: <GraduationCap className="h-3.5 w-3.5 text-indigo-500" />,
+  facility: <GraduationCap className="h-3.5 w-3.5 text-gray-500" />,
+  software: <ExternalLink className="h-3.5 w-3.5 text-pink-500" />,
+  other: <File className="h-3.5 w-3.5 text-gray-500" />,
+}
+
+const resourceTypeLabels: Record<string, string> = {
+  link: "链接",
+  document: "文档",
+  video: "视频",
+  image: "图片",
+  tool: "工具",
+  spreadsheet: "表格",
+  audio: "音频",
+  archive: "压缩包",
+  venue: "场地",
+  facility: "设备",
+  software: "软件",
+  other: "其他",
+}
+
+const requiredLevelColors: Record<string, string> = {
+  "精通": "border-green-200 text-green-700 bg-green-50",
+  "熟练": "border-blue-200 text-blue-700 bg-blue-50",
+  "掌握": "border-cyan-200 text-cyan-700 bg-cyan-50",
+  "理解": "border-amber-200 text-amber-700 bg-amber-50",
+  "了解": "border-gray-200 text-gray-700 bg-gray-50",
+}
 
 // ============================================================================
 // 方案 A：先学后测 - 学习阶段主界面（大卡片任务说明书）
@@ -218,7 +274,322 @@ function LearningPhaseView({
 }
 
 // ============================================================================
-// 方案 B：学测一体 - 左右分栏布局（等宽铺满）
+// 关联内容面板（右侧固定栏）
+// ============================================================================
+function RelatedContentPanel({ task }: { task: SimulatedTask }) {
+  const [fullscreenOpen, setFullscreenOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [detailType, setDetailType] = useState<"knowledge" | "ability" | "resource" | null>(null)
+  const [detailItem, setDetailItem] = useState<any>(null)
+
+  const openDetail = (type: "knowledge" | "ability" | "resource", item: any) => {
+    setDetailType(type)
+    setDetailItem(item)
+    setDetailOpen(true)
+  }
+
+  return (
+    <>
+      <Card className="border-l-4 border-l-blue-400 h-fit lg:sticky lg:top-4">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookMarked className="h-4 w-4 text-blue-500" />
+              <CardTitle className="text-sm">关联内容</CardTitle>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={() => setFullscreenOpen(true)}
+              title="全屏查看"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <Tabs defaultValue="knowledge">
+            <TabsList className="grid grid-cols-3 w-full mb-3">
+              <TabsTrigger value="knowledge" className="text-xs gap-1">
+                <Lightbulb className="h-3 w-3" />
+                知识点
+              </TabsTrigger>
+              <TabsTrigger value="ability" className="text-xs gap-1">
+                <Award className="h-3 w-3" />
+                能力点
+              </TabsTrigger>
+              <TabsTrigger value="resources" className="text-xs gap-1">
+                <Link2 className="h-3 w-3" />
+                资源
+              </TabsTrigger>
+            </TabsList>
+
+            <ScrollArea className="h-[calc(100vh-300px)] min-h-[320px]">
+              <TabsContent value="knowledge" className="m-0 space-y-2">
+                {task.knowledgePoints.map((kp) => (
+                  <div
+                    key={kp.id}
+                    className="p-2.5 rounded-lg bg-amber-50/50 border border-amber-100 hover:bg-amber-50 transition-colors cursor-pointer"
+                    onClick={() => openDetail("knowledge", kp)}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Lightbulb className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      <span className="text-sm font-medium text-gray-800">{kp.name}</span>
+                      {kp.code && (
+                        <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
+                          {kp.code}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2">{kp.description}</p>
+                    {kp.category && (
+                      <Badge variant="secondary" className="mt-1 text-[10px] h-4">
+                        {kp.category}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="ability" className="m-0 space-y-2">
+                {task.abilityPoints.map((ap) => (
+                  <div
+                    key={ap.id}
+                    className="p-2.5 rounded-lg bg-purple-50/50 border border-purple-100 hover:bg-purple-50 transition-colors cursor-pointer"
+                    onClick={() => openDetail("ability", ap)}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Award className="h-3.5 w-3.5 text-purple-500 shrink-0" />
+                      <span className="text-sm font-medium text-gray-800">{ap.name}</span>
+                      {ap.code && (
+                        <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
+                          {ap.code}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2">{ap.description}</p>
+                    <div className="flex items-center gap-1 mt-1 flex-wrap">
+                      {ap.domain && (
+                        <Badge variant="secondary" className="text-[10px] h-4">
+                          {ap.domain}
+                        </Badge>
+                      )}
+                      {ap.requiredLevel && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] h-4 ${requiredLevelColors[ap.requiredLevel] || ""}`}
+                        >
+                          {ap.requiredLevel}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="resources" className="m-0 space-y-2">
+                {task.resources.map((res) => (
+                  <div
+                    key={res.id}
+                    className="p-2.5 rounded-lg bg-cyan-50/50 border border-cyan-100 hover:bg-cyan-50 transition-colors cursor-pointer"
+                    onClick={() => openDetail("resource", res)}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {resourceTypeIcons[res.type] || <FileText className="h-3.5 w-3.5 text-gray-400" />}
+                      <span className="text-sm font-medium text-gray-800">{res.name}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2">{res.description}</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Badge variant="outline" className="text-[10px] h-4">
+                        {resourceTypeLabels[res.type] || res.type}
+                      </Badge>
+                      {res.size && <span className="text-[10px] text-gray-400">{res.size}</span>}
+                    </div>
+                  </div>
+                ))}
+              </TabsContent>
+            </ScrollArea>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* 全屏查看弹窗 */}
+      <Dialog open={fullscreenOpen} onOpenChange={setFullscreenOpen}>
+        <DialogContent showCloseButton={false} className="sm:max-w-[95vw] sm:max-h-[95vh] h-[95vh] w-[95vw] p-0 flex flex-col gap-0">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50/50 shrink-0">
+              <div className="flex items-center gap-2">
+                <BookMarked className="h-5 w-5 text-blue-500" />
+                <span className="text-base font-medium">关联内容</span>
+                <Badge variant="outline" className="text-xs">{task.scenarioName}</Badge>
+              </div>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setFullscreenOpen(false)} title="退出全屏">
+                <Minimize2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden p-4">
+              <Tabs defaultValue="knowledge" className="h-full flex flex-col">
+                <TabsList className="shrink-0 grid grid-cols-3 h-10 mb-4">
+                  <TabsTrigger value="knowledge" className="text-sm gap-1.5">
+                    <Lightbulb className="h-4 w-4" />
+                    知识点
+                  </TabsTrigger>
+                  <TabsTrigger value="ability" className="text-sm gap-1.5">
+                    <Award className="h-4 w-4" />
+                    能力点
+                  </TabsTrigger>
+                  <TabsTrigger value="resources" className="text-sm gap-1.5">
+                    <Link2 className="h-4 w-4" />
+                    资源
+                  </TabsTrigger>
+                </TabsList>
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                  <TabsContent value="knowledge" className="m-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {task.knowledgePoints.map((kp) => {
+                        const relatedLessons =
+                          kp.granularLessons
+                            ?.map((gid) => granularLessons.find((g) => g.id === gid))
+                            .filter(Boolean) || []
+                        return (
+                          <Card
+                            key={kp.id}
+                            className="p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-amber-300"
+                            onClick={() => openDetail("knowledge", kp)}
+                          >
+                            <div className="flex items-start gap-2 mb-2">
+                              <div className="p-1.5 bg-amber-50 rounded-lg shrink-0">
+                                <Lightbulb className="h-4 w-4 text-amber-500" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-800 truncate">{kp.name}</p>
+                                {kp.code && (
+                                  <Badge variant="outline" className="text-[10px] h-4 font-mono mt-0.5">
+                                    {kp.code}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 line-clamp-2 mb-2">{kp.description}</p>
+                            {kp.category && (
+                              <Badge variant="secondary" className="text-[10px] h-4">
+                                {kp.category}
+                              </Badge>
+                            )}
+                            {relatedLessons.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {relatedLessons.slice(0, 3).map((gl) => (
+                                  <Badge key={gl!.id} variant="outline" className="text-[10px] h-4">
+                                    <Sparkles className="h-2.5 w-2.5 mr-0.5 text-blue-400" />
+                                    {gl!.name}
+                                  </Badge>
+                                ))}
+                                {relatedLessons.length > 3 && (
+                                  <Badge variant="outline" className="text-[10px] h-4">
+                                    +{relatedLessons.length - 3}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="ability" className="m-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {task.abilityPoints.map((ap) => (
+                        <Card
+                          key={ap.id}
+                          className="p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-purple-300"
+                          onClick={() => openDetail("ability", ap)}
+                        >
+                          <div className="flex items-start gap-2 mb-2">
+                            <div className="p-1.5 bg-purple-50 rounded-lg shrink-0">
+                              <Award className="h-4 w-4 text-purple-500" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-gray-800 truncate">{ap.name}</p>
+                              {ap.code && (
+                                <Badge variant="outline" className="text-[10px] h-4 font-mono mt-0.5">
+                                  {ap.code}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500 line-clamp-2 mb-2">{ap.description}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {ap.domain && (
+                              <Badge variant="secondary" className="text-[10px] h-4">{ap.domain}</Badge>
+                            )}
+                            {ap.requiredLevel && (
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] h-4 ${requiredLevelColors[ap.requiredLevel] || ""}`}
+                              >
+                                {ap.requiredLevel}
+                              </Badge>
+                            )}
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="resources" className="m-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {task.resources.map((res) => (
+                        <Card
+                          key={res.id}
+                          className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+                          onClick={() => openDetail("resource", res)}
+                        >
+                          <div className="relative h-24 bg-gray-50 border-b border-gray-100 overflow-hidden">
+                            {res.type === "image" ? (
+                              <img src={res.url || "/placeholder.svg"} alt={res.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <div className={`p-2.5 rounded-xl border ${res.type === "document" ? "bg-blue-50 border-blue-200" : res.type === "video" ? "bg-rose-50 border-rose-200" : res.type === "link" ? "bg-cyan-50 border-cyan-200" : "bg-gray-50 border-gray-200"}`}>
+                                  {resourceTypeIcons[res.type] || <Package className="h-6 w-6 text-gray-400" />}
+                                </div>
+                              </div>
+                            )}
+                            <div className="absolute bottom-1.5 left-1.5">
+                              <Badge variant="outline" className="text-[9px] border">
+                                {resourceTypeLabels[res.type] || res.type}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="p-3">
+                            <p className="text-sm font-medium text-gray-800 truncate mb-1">{res.name}</p>
+                            <p className="text-xs text-gray-500 line-clamp-2 mb-2">{res.description}</p>
+                            <div className="flex items-center justify-between text-[11px] text-gray-400">
+                              <span>{res.size || "—"}</span>
+                              <span className="flex items-center gap-0.5 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Eye className="h-3 w-3" />查看详情
+                              </span>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <DetailDialog open={detailOpen} onOpenChange={setDetailOpen} type={detailType} item={detailItem} />
+    </>
+  )
+}
+
+// ============================================================================
+// 方案 B：学测一体 - 左右分栏布局（主内容 + 关联内容侧边栏）
 // ============================================================================
 function IntegratedLayout({
   task,
@@ -230,10 +601,11 @@ function IntegratedLayout({
   assessmentPanels: React.ReactNode
 }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* 左侧：任务说明书 */}
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 items-start">
+      {/* 左侧：主内容区（任务说明书 + 测评内容上下排列） */}
       <div className="space-y-4">
-        <Card className="border-l-4 border-l-emerald-500 h-full">
+        {/* 任务说明书 */}
+        <Card className="border-l-4 border-l-emerald-500">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-emerald-500" />
@@ -356,12 +728,15 @@ function IntegratedLayout({
             </div>
           </CardContent>
         </Card>
+
+        {/* 测评内容（放在任务说明下方） */}
+        <div>
+          {assessmentPanels}
+        </div>
       </div>
 
-      {/* 右侧：测评内容 */}
-      <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
-        {assessmentPanels}
-      </div>
+      {/* 右侧：关联内容面板 */}
+      <RelatedContentPanel task={task} />
     </div>
   )
 }
@@ -497,7 +872,7 @@ function SimulationTaskInner() {
     <div className={`space-y-4 pb-20 ${mode === "integrated" ? (embedded ? "px-6" : "") : "max-w-6xl mx-auto"} ${embedded ? "pt-16" : ""}`}>
       {embedded && (
         <button
-          onClick={() => window.top.postMessage({ type: "exit-simulation" }, "*")}
+          onClick={() => window.top?.postMessage({ type: "exit-simulation" }, "*")}
           className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-black/80 text-white rounded-full text-sm backdrop-blur-sm transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -693,6 +1068,176 @@ function SimulationTaskInner() {
         </>
       )}
     </div>
+  )
+}
+
+// ============================================================================
+// 详情弹窗组件
+// ============================================================================
+function DetailDialog({
+  open,
+  onOpenChange,
+  type,
+  item,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  type: "knowledge" | "ability" | "resource" | null
+  item: any
+}) {
+  if (!item || !type) return null
+
+  if (type === "knowledge") {
+    const kp = item
+    const relatedLessons =
+      kp.granularLessons?.map((gid: string) => granularLessons.find((g) => g.id === gid)).filter(Boolean) || []
+
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
+              知识点详情
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <div className="text-xs text-gray-500 mb-1">知识点名称</div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">{kp.name}</p>
+                {kp.code && <Badge variant="outline" className="text-[10px] h-5 font-mono">{kp.code}</Badge>}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500 mb-1">知识点描述</div>
+              <p className="text-sm text-gray-700">{kp.description}</p>
+            </div>
+            {kp.category && (
+              <div>
+                <div className="text-xs text-gray-500 mb-1">所属分类</div>
+                <Badge variant="secondary">{kp.category}</Badge>
+              </div>
+            )}
+            <div>
+              <div className="text-xs text-gray-500 mb-1">关联颗粒课 ({relatedLessons.length})</div>
+              <div className="flex flex-wrap gap-1.5">
+                {relatedLessons.length > 0 ? (
+                  relatedLessons.map((gl: any) => (
+                    <Badge key={gl.id} variant="outline" className="text-xs cursor-pointer hover:bg-blue-50">
+                      <Sparkles className="h-3 w-3 mr-1 text-blue-400" />
+                      {gl.name}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400">暂无关联颗粒课</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  if (type === "ability") {
+    const ap = item
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-purple-500" />
+              能力点详情
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <div className="text-xs text-gray-500 mb-1">能力点名称</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-base font-semibold">{ap.name}</p>
+                {ap.code && <Badge variant="outline" className="text-[10px] h-5 font-mono">{ap.code}</Badge>}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500 mb-1">能力点描述</div>
+              <p className="text-sm text-gray-700">{ap.description}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {ap.domain && (
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">所属领域</div>
+                  <Badge variant="secondary">{ap.domain}</Badge>
+                </div>
+              )}
+              {ap.category && (
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">分类</div>
+                  <Badge variant="outline">{ap.category}</Badge>
+                </div>
+              )}
+            </div>
+            {ap.requiredLevel && (
+              <div>
+                <div className="text-xs text-gray-500 mb-1">掌握程度要求</div>
+                <Badge
+                  variant="outline"
+                  className={requiredLevelColors[ap.requiredLevel] || "border-gray-200 text-gray-700 bg-gray-50"}
+                >
+                  {ap.requiredLevel}
+                </Badge>
+              </div>
+            )}
+            {ap.proficiencyDesc && (
+              <div>
+                <div className="text-xs text-gray-500 mb-1">熟练程度描述</div>
+                <div className="text-sm text-gray-700 whitespace-pre-line bg-gray-50 rounded-lg p-3">
+                  {ap.proficiencyDesc}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  const res = item
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Link2 className="h-5 w-5 text-cyan-500" />
+            资源详情
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gray-50 rounded-lg">
+              {resourceTypeIcons[res.type] || <FileText className="h-5 w-5 text-gray-400" />}
+            </div>
+            <div>
+              <p className="text-sm font-semibold">{res.name}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <Badge variant="outline" className="text-xs">{resourceTypeLabels[res.type] || res.type}</Badge>
+                {res.size && <span className="text-xs text-gray-400">{res.size}</span>}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 mb-1">资源描述</div>
+            <p className="text-sm text-gray-700">{res.description}</p>
+          </div>
+          {res.url && (
+            <div>
+              <div className="text-xs text-gray-500 mb-1">访问链接</div>
+              <p className="text-sm text-blue-600 break-all">{res.url}</p>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
