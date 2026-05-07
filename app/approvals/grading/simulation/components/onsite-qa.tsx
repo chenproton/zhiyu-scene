@@ -182,36 +182,10 @@ export function OnSiteQAPanel({
         </CardContent>
       </Card>
 
-      {/* 备考笔记 + 提交申请 */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-blue-500" />
-            备考准备
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Textarea
-            placeholder="可以在这里记录复习要点、准备回答的思路..."
-            rows={4}
-            value={state.notes}
-            onChange={(e) => setState((prev) => ({ ...prev, notes: e.target.value }))}
-          />
-          <div className="flex items-start gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
-            <UserCheck className="h-4 w-4 mt-0.5 shrink-0" />
-            <div>
-              <p className="font-medium">下一步</p>
-              <p className="text-xs mt-0.5">
-                点击「提交测评申请」后，系统将通知任课教师安排现场问答时间。你会收到具体的测评时间和地点通知。
-              </p>
-            </div>
-          </div>
-          <Button className="w-full" onClick={handleNotifyTeacher}>
-            <ClipboardCheck className="h-4 w-4 mr-1" />
-            提交测评申请
-          </Button>
-        </CardContent>
-      </Card>
+      <Button className="w-full" onClick={handleNotifyTeacher}>
+        <ClipboardCheck className="h-4 w-4 mr-1" />
+        提交测评申请
+      </Button>
 
       {/* 抽题记录对话框 */}
       <Dialog open={showQuestions} onOpenChange={setShowQuestions}>

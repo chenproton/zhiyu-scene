@@ -82,7 +82,7 @@ import {
 } from "lucide-react"
 import NextLink from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { useState, useMemo, useRef, useCallback } from "react"
+import { useState, useMemo, useRef, useCallback, useLayoutEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -1181,7 +1181,7 @@ function EditCardDialog({
   const [questionTab, setQuestionTab] = useState<"my" | "collab" | "public">("my")
   const [questionSearch, setQuestionSearch] = useState("")
   const [showAddQuestion, setShowAddQuestion] = useState(false)
-  const [newQuestionType, setNewQuestionType] = useState<"single" | "multiple" | "judgment" | "subjective">("single")
+  const [newQuestionType, setNewQuestionType] = useState<"single" | "multiple" | "judgment" | "short_answer" | "essay" | "fill_blank">("single")
   const [newQuestionName, setNewQuestionName] = useState("")
   const [newQuestionContent, setNewQuestionContent] = useState("")
   const [newQuestionDifficulty, setNewQuestionDifficulty] = useState<"easy" | "medium" | "hard">("easy")
@@ -1259,8 +1259,8 @@ function EditCardDialog({
   const [newPaperName, setNewPaperName] = useState("")
   const [newPaperQuestionCount, setNewPaperQuestionCount] = useState(10)
   const [newPaperTotalScore, setNewPaperTotalScore] = useState(100)
-  const [mockResQuestionBank, setMockResQuestionBank] = useState({ questionCount: 10, difficulty: "mixed", totalScore: 100, autoGenerate: false, timeLimit: 90, typeWeights: {} as Record<string, number>, allowRetake: false, retakeCount: 1, shuffleQuestions: true, showResult: true })
-  const [mockResReview, setMockResReview] = useState({ materialType: "project_report", submitFormatDesc: "请提交 PDF 格式的项目报告，包含完整的项目背景、实现方案、测试结果和总结反思。", deadlineDays: 7, allowResubmit: false, venueResources: "多媒体教室（容纳30人）、投影仪、白板、评委席桌椅、计时器、签到表、评分表及文具。" })
+  const [mockResQuestionBank, setMockResQuestionBank] = useState({ questionCount: 10, difficulty: "mixed", totalScore: 100, autoGenerate: false, timeLimit: 90, typeWeights: {} as Record<string, number>, allowRetake: false, retakeCount: 1, shuffleQuestions: true, showResult: true, questionScores: {} as Record<string, number> })
+  const [mockResReview, setMockResReview] = useState({ materialType: "project_report", submitFormatDesc: "请提交 PDF 格式的项目报告，包含完整的项目背景、实现方案、测试结果和总结反思。", deadlineDays: 7, allowResubmit: false, venueResources: "多媒体教室（容纳30人）、投影仪、白板、评委席桌椅、计时器、签到表、评分表及文具。", requiresMaterial: true })
   const [reviewSteps, setReviewSteps] = useState([
     { id: "rs-1", label: "初评", desc: "由指导教师进行第一轮评审", enabled: true, subjectType: "teacher" as string | null, weight: 40 },
     { id: "rs-2", label: "复评", desc: "由专家组进行第二轮复核", enabled: false, subjectType: null as string | null, weight: 30 },
@@ -2620,7 +2620,7 @@ function EditCardDialog({
                         >
                           {!method.available && (
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                              <span className="text-xl font-bold text-gray-300/60 rotate-[-12deg] select-none border-2 border-gray-300/40 px-3 py-1 rounded">未购买</span>
+                              <span className="text-xl font-bold text-gray-300/60 rotate-[-12deg] select-none border-2 border-gray-300/40 px-3 py-1 rounded">未开通</span>
                             </div>
                           )}
                           <div className="flex items-center justify-between relative z-10">
@@ -2648,7 +2648,7 @@ function EditCardDialog({
                                 </div>
                               )}
                               {!method.available && (
-                                <Badge variant="outline" className="text-[10px] text-gray-400 border-gray-300 bg-white">未购买</Badge>
+                                <Badge variant="outline" className="text-[10px] text-gray-400 border-gray-300 bg-white">未开通</Badge>
                               )}
                             </div>
                           </div>
@@ -2752,7 +2752,7 @@ function EditCardDialog({
             knowledgePointIds: preset?.knowledgePointIds,
             abilityPointIds: preset?.abilityPointIds,
             scoringMethod: preset?.scoringMethod || "level",
-            gradeMapping: preset?.gradeMapping || JSON.parse(JSON.stringify(defaultGradeMapping)),
+            gradeMapping: preset?.gradeMapping !== undefined ? preset.gradeMapping : (preset?.name === "" ? [] : JSON.parse(JSON.stringify(defaultGradeMapping))),
           }
           setEvalPoints(field, [...getEvalPoints(field), newPoint])
           setNewPointName("")
@@ -3228,7 +3228,9 @@ function EditCardDialog({
           single: "单选",
           multiple: "多选",
           judgment: "判断",
-          subjective: "主观填写",
+          short_answer: "简答",
+          essay: "论述",
+          fill_blank: "填空",
         }
 
         const difficultyLabels: Record<string, string> = {
@@ -3353,7 +3355,24 @@ function EditCardDialog({
                             <div className="flex items-center gap-1.5">
                               <Badge variant="secondary" className="text-[10px]">{questionTypeLabels[q.type] || q.type}</Badge>
                               <span className="text-[10px] text-gray-400">{difficultyLabels[q.difficulty] || q.difficulty}</span>
-                              <span className="text-[10px] text-gray-400">{q.score}分</span>
+                              {field === "questionBankQuestions" ? (
+                                <div className="flex items-center gap-1 ml-auto">
+                                  <span className="text-[10px] text-gray-400">分值</span>
+                                  <Input
+                                    type="number"
+                                    value={mockResQuestionBank.questionScores[qid] ?? q.score}
+                                    onChange={e => {
+                                      const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0))
+                                      setMockResQuestionBank(prev => ({ ...prev, questionScores: { ...prev.questionScores, [qid]: val } }))
+                                    }}
+                                    className="w-14 h-5 text-[10px] px-1 py-0"
+                                    min={0}
+                                    max={100}
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-gray-400">{q.score}分</span>
+                              )}
                             </div>
                           </div>
                         )
@@ -3414,38 +3433,33 @@ function EditCardDialog({
                   <p>评审时教师根据学生现场表现或提交的材料进行打分。评价点配置请在「评价标准配置」卡片中设置。</p>
                 </div>
                 <div className="border rounded-xl p-4">
-                  <p className="text-sm font-medium mb-3">评审材料要求</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-gray-500">材料类型</Label>
-                      <Select value={mockResReview.materialType} onValueChange={v => setMockResReview({ ...mockResReview, materialType: v })}>
-                        <SelectTrigger className="mt-1 text-sm h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="project_report">项目报告</SelectItem>
-                          <SelectItem value="code_repo">代码仓库</SelectItem>
-                          <SelectItem value="design_doc">设计文档</SelectItem>
-                          <SelectItem value="demo_video">演示视频</SelectItem>
-                          <SelectItem value="presentation">答辩 PPT</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
-                      <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium">评审材料要求</p>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResReview.requiresMaterial} onCheckedChange={v => setMockResReview({ ...mockResReview, requiresMaterial: v })} />
+                      <span className="text-xs text-gray-600">是否需要提交评审材料</span>
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <Label className="text-xs text-gray-500 mb-1.5">提交材料要求</Label>
-                    <Textarea
-                      value={mockResReview.submitFormatDesc}
-                      onChange={e => setMockResReview({ ...mockResReview, submitFormatDesc: e.target.value })}
-                      placeholder="请用一句话说明学生需要提交的材料要求..."
-                      rows={2}
-                      className="text-sm"
-                    />
-                  </div>
+                  {mockResReview.requiresMaterial && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
+                          <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Label className="text-xs text-gray-500 mb-1.5">提交材料要求</Label>
+                        <Textarea
+                          value={mockResReview.submitFormatDesc}
+                          onChange={e => setMockResReview({ ...mockResReview, submitFormatDesc: e.target.value })}
+                          placeholder="请用一句话说明学生需要提交的材料要求..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
                   <div className="mt-3">
                     <Label className="text-xs text-gray-500 mb-1.5">评审场地/环境资源准备</Label>
                     <Textarea
@@ -3509,22 +3523,17 @@ function EditCardDialog({
                           <div className="space-y-2">
                             <div className="grid grid-cols-2 gap-2">
                               <Input value={editingStepLabel} onChange={e => setEditingStepLabel(e.target.value)} placeholder="步骤名称" className="text-sm h-8" />
-                              {(() => {
-                                const usedSubjects = reviewSteps.filter(s => s.enabled && s.id !== step.id && s.subjectType).map(s => s.subjectType)
-                                return (
-                                  <Select value={step.subjectType || ""} onValueChange={v => setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, subjectType: v } : s))}>
-                                    <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="teacher" disabled={usedSubjects.includes("teacher")}>教师</SelectItem>
-                                      <SelectItem value="enterprise_mentor" disabled={usedSubjects.includes("enterprise_mentor")}>企业导师</SelectItem>
-                                      <SelectItem value="peer" disabled={usedSubjects.includes("peer")}>互评</SelectItem>
-                                      <SelectItem value="self" disabled={usedSubjects.includes("self")}>自评</SelectItem>
-                                      <SelectItem value="ai" disabled={usedSubjects.includes("ai")}>AI 评价</SelectItem>
-                                      <SelectItem value="service_target" disabled={usedSubjects.includes("service_target")}>服务对象</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                )
-                              })()}
+                              <Select value={step.subjectType || ""} onValueChange={v => setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, subjectType: v } : s))}>
+                                <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="teacher">教师</SelectItem>
+                                  <SelectItem value="enterprise_mentor">企业导师</SelectItem>
+                                  <SelectItem value="peer">互评</SelectItem>
+                                  <SelectItem value="self">自评</SelectItem>
+                                  <SelectItem value="ai">AI 评价</SelectItem>
+                                  <SelectItem value="service_target">服务对象</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                             <Input value={editingStepDesc} onChange={e => setEditingStepDesc(e.target.value)} placeholder="步骤描述" className="text-sm h-8" />
                             <div className="flex items-center gap-2">
@@ -3541,9 +3550,7 @@ function EditCardDialog({
                               <div className="flex items-center gap-2">
                                 <Switch checked={step.enabled} onCheckedChange={v => {
                                   if (v && !step.subjectType) {
-                                    const used = reviewSteps.filter(s => s.enabled && s.id !== step.id && s.subjectType).map(s => s.subjectType)
-                                    const firstUnused = ["teacher","enterprise_mentor","peer","self","ai","service_target"].find(t => !used.includes(t))
-                                    setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, enabled: v, subjectType: firstUnused || "teacher" } : s))
+                                    setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, enabled: v, subjectType: "teacher" } : s))
                                   } else {
                                     setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, enabled: v } : s))
                                   }
@@ -3587,22 +3594,17 @@ function EditCardDialog({
                     <div className="mt-2 p-3 rounded-lg border border-dashed border-primary/30 bg-primary/[0.02] space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <Input value={newStepLabel} onChange={e => setNewStepLabel(e.target.value)} placeholder="步骤名称" className="text-sm h-8" />
-                        {(() => {
-                          const usedSubjects = reviewSteps.filter(s => s.enabled && s.subjectType).map(s => s.subjectType)
-                          return (
-                            <Select value={newStepSubjectType} onValueChange={v => setNewStepSubjectType(v)}>
-                              <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="teacher" disabled={usedSubjects.includes("teacher")}>教师</SelectItem>
-                                <SelectItem value="enterprise_mentor" disabled={usedSubjects.includes("enterprise_mentor")}>企业导师</SelectItem>
-                                <SelectItem value="peer" disabled={usedSubjects.includes("peer")}>互评</SelectItem>
-                                <SelectItem value="self" disabled={usedSubjects.includes("self")}>自评</SelectItem>
-                                <SelectItem value="ai" disabled={usedSubjects.includes("ai")}>AI 评价</SelectItem>
-                                <SelectItem value="service_target" disabled={usedSubjects.includes("service_target")}>服务对象</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )
-                        })()}
+                        <Select value={newStepSubjectType} onValueChange={v => setNewStepSubjectType(v)}>
+                          <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="teacher">教师</SelectItem>
+                            <SelectItem value="enterprise_mentor">企业导师</SelectItem>
+                            <SelectItem value="peer">互评</SelectItem>
+                            <SelectItem value="self">自评</SelectItem>
+                            <SelectItem value="ai">AI 评价</SelectItem>
+                            <SelectItem value="service_target">服务对象</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <Input value={newStepDesc} onChange={e => setNewStepDesc(e.target.value)} placeholder="步骤描述" className="text-sm h-8" />
                       <div className="flex items-center gap-2">
@@ -3662,15 +3664,11 @@ function EditCardDialog({
                   </div>
                 </div>
                 <div className="border rounded-xl p-4">
-                  <p className="text-sm font-medium mb-3">考试设置</p>
+                  <p className="text-sm font-medium mb-3">考卷设置</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs text-gray-500">考试时长（分钟）</Label>
                       <Input type="number" value={mockResPaper.duration} onChange={e => setMockResPaper({ ...mockResPaper, duration: Math.max(5, parseInt(e.target.value) || 5) })} className="mt-1 text-sm" min={5} />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">及格分数线</Label>
-                      <Input type="number" value={mockResPaper.passScore} onChange={e => setMockResPaper({ ...mockResPaper, passScore: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })} className="mt-1 text-sm" min={0} max={100} />
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">允许重考</Label>
@@ -3748,10 +3746,6 @@ function EditCardDialog({
                     <div>
                       <Label className="text-xs text-gray-500">随机抽题数量</Label>
                       <Input type="number" value={mockResQuestionBank.questionCount} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">题目测评总分</Label>
-                      <Input type="number" value={mockResQuestionBank.totalScore} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, totalScore: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">难度分布</Label>
@@ -3887,15 +3881,24 @@ function EditCardDialog({
                 </Button>
               </div>
               <div className="space-y-3">
-                {currentSubjects.filter(subject => !(subject.type === "peer" && evalObject !== "group")).map((subject, idx) => {
+                {currentSubjects.map((subject, idx) => {
+                  const allowedSubjectsForMethod: Record<string, string[]> = {
+                    paper: ["teacher", "enterprise_mentor"],
+                    question_bank: ["teacher", "enterprise_mentor"],
+                    random_draw: ["teacher", "enterprise_mentor", "self", "peer"],
+                    review: ["teacher", "enterprise_mentor", "self", "peer", "service_target"],
+                  }
+                  const methodAllowed = (allowedSubjectsForMethod[methodKey] || []).includes(subject.type)
+                  const peerAllowed = subject.type !== "peer" || evalObject === "group"
+                  const allowed = methodAllowed && peerAllowed
                   return (
-                    <div key={subject.type} className={cn("p-4 rounded-xl border transition-all", subject.enabled ? "border-primary bg-primary/[0.03]" : "border-gray-200 bg-white")}>
+                    <div key={subject.type} className={cn("p-4 rounded-xl border transition-all", !allowed ? "opacity-50 bg-gray-50 border-gray-200" : subject.enabled ? "border-primary bg-primary/[0.03]" : "border-gray-200 bg-white")}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <Switch checked={subject.enabled} onCheckedChange={v => updateMethodEvalSubject(methodKey, idx, { enabled: v })} />
-                          <span className="text-sm font-medium">{subjectLabels[subject.type]}</span>
+                          <Switch checked={subject.enabled} disabled={!allowed} onCheckedChange={v => updateMethodEvalSubject(methodKey, idx, { enabled: v })} />
+                          <span className={cn("text-sm font-medium", !allowed && "text-gray-400")}>{subjectLabels[subject.type]}</span>
                         </div>
-                        {subject.enabled && subject.params?.weightPercent !== undefined && (
+                        {subject.enabled && allowed && subject.params?.weightPercent !== undefined && (
                           <Badge variant="outline" className="text-[10px]">权重 {subject.params.weightPercent}%</Badge>
                         )}
                       </div>
@@ -4132,6 +4135,230 @@ function EditCardDialog({
           )
         }
 
+        function MixedTagEditor({
+          text,
+          knowledgePointIds,
+          abilityPointIds,
+          onChange,
+          onOpenKpDialog,
+          onOpenAbDialog,
+        }: {
+          text: string
+          knowledgePointIds: string[]
+          abilityPointIds: string[]
+          onChange: (updates: { name?: string; knowledgePointIds?: string[]; abilityPointIds?: string[] }) => void
+          onOpenKpDialog: () => void
+          onOpenAbDialog: () => void
+        }) {
+          const ref = useRef<HTMLDivElement>(null)
+          const isComposing = useRef(false)
+          const onChangeRef = useRef(onChange)
+          onChangeRef.current = onChange
+          const kpIdsRef = useRef(knowledgePointIds)
+          kpIdsRef.current = knowledgePointIds
+          const abIdsRef = useRef(abilityPointIds)
+          abIdsRef.current = abilityPointIds
+          const prevTags = useRef({ kp: [] as string[], ab: [] as string[] })
+          const cursorOffsetRef = useRef<number | null>(null)
+
+          const updateCursorOffset = () => {
+            const el = ref.current
+            if (!el) return
+            const selection = document.getSelection()
+            if (!selection || !selection.rangeCount) return
+            const range = selection.getRangeAt(0)
+            if (!el.contains(range.startContainer) && range.startContainer !== el) return
+
+            let offset = 0
+            if (range.startContainer.nodeType === Node.TEXT_NODE) {
+              const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+              let node
+              while ((node = walker.nextNode())) {
+                if (node === range.startContainer) {
+                  offset += range.startOffset
+                  break
+                }
+                offset += node.textContent?.length || 0
+              }
+            } else if (range.startContainer === el) {
+              for (let i = 0; i < range.startOffset && i < el.childNodes.length; i++) {
+                const child = el.childNodes[i]
+                if (child.nodeType === Node.TEXT_NODE) {
+                  offset += child.textContent?.length || 0
+                }
+              }
+            }
+            cursorOffsetRef.current = offset
+          }
+
+          const createTagSpan = (type: 'kp' | 'ab', id: string): HTMLSpanElement | null => {
+            const span = document.createElement('span')
+            span.contentEditable = 'false'
+            span.dataset.tag = 'true'
+            span.dataset.type = type
+            span.dataset.id = id
+            if (type === 'kp') {
+              const kp = knowledgePoints.find(k => k.id === id)
+              if (!kp) return null
+              span.className = 'inline-flex items-center px-1 py-0.5 rounded text-[10px] font-normal bg-blue-50 text-blue-600 border border-blue-200 mx-0.5 align-middle cursor-default'
+              span.innerHTML = `${kp.name}<button class="ml-0.5 text-blue-400 hover:text-red-500 leading-none">×</button>`
+              span.querySelector('button')!.onclick = (e) => {
+                e.stopPropagation()
+                span.remove()
+                onChangeRef.current({ knowledgePointIds: kpIdsRef.current.filter(i => i !== id) })
+              }
+            } else {
+              const ab = abilityPoints.find(a => a.id === id)
+              if (!ab) return null
+              span.className = 'inline-flex items-center px-1 py-0.5 rounded text-[10px] font-normal bg-amber-50 text-amber-600 border border-amber-200 mx-0.5 align-middle cursor-default'
+              span.innerHTML = `${ab.name}<button class="ml-0.5 text-amber-400 hover:text-red-500 leading-none">×</button>`
+              span.querySelector('button')!.onclick = (e) => {
+                e.stopPropagation()
+                span.remove()
+                onChangeRef.current({ abilityPointIds: abIdsRef.current.filter(i => i !== id) })
+              }
+            }
+            return span
+          }
+
+          // Initial mount only
+          useLayoutEffect(() => {
+            const el = ref.current
+            if (!el) return
+            if (text) el.textContent = text
+            else el.innerHTML = ''
+            knowledgePointIds.forEach(kpid => {
+              const span = createTagSpan('kp', kpid)
+              if (span) el.appendChild(span)
+            })
+            abilityPointIds.forEach(abId => {
+              const span = createTagSpan('ab', abId)
+              if (span) el.appendChild(span)
+            })
+            prevTags.current = { kp: [...knowledgePointIds], ab: [...abilityPointIds] }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+          }, [])
+
+          // Tag / text changes from parent
+          useLayoutEffect(() => {
+            const el = ref.current
+            if (!el) return
+            const kpChanged = JSON.stringify(prevTags.current.kp) !== JSON.stringify(knowledgePointIds)
+            const abChanged = JSON.stringify(prevTags.current.ab) !== JSON.stringify(abilityPointIds)
+            const domText = Array.from(el.childNodes)
+              .filter(n => n.nodeType === Node.TEXT_NODE)
+              .map(n => n.textContent)
+              .join('')
+            const textChanged = domText !== (text || '')
+            if (!kpChanged && !abChanged && !textChanged) return
+
+            if (el !== document.activeElement) {
+              const newKpIds = knowledgePointIds.filter(id => !prevTags.current.kp.includes(id))
+              const newAbIds = abilityPointIds.filter(id => !prevTags.current.ab.includes(id))
+              const existingKpIds = knowledgePointIds.filter(id => prevTags.current.kp.includes(id))
+              const existingAbIds = abilityPointIds.filter(id => prevTags.current.ab.includes(id))
+
+              if ((newKpIds.length > 0 || newAbIds.length > 0) && cursorOffsetRef.current != null) {
+                const offset = cursorOffsetRef.current
+                const before = text?.slice(0, offset) || ''
+                const after = text?.slice(offset) || ''
+                el.textContent = ''
+                if (before) el.appendChild(document.createTextNode(before))
+                newKpIds.forEach(kpid => {
+                  const span = createTagSpan('kp', kpid)
+                  if (span) el.appendChild(span)
+                })
+                newAbIds.forEach(abId => {
+                  const span = createTagSpan('ab', abId)
+                  if (span) el.appendChild(span)
+                })
+                if (after) el.appendChild(document.createTextNode(after))
+                existingKpIds.forEach(kpid => {
+                  const span = createTagSpan('kp', kpid)
+                  if (span) el.appendChild(span)
+                })
+                existingAbIds.forEach(abId => {
+                  const span = createTagSpan('ab', abId)
+                  if (span) el.appendChild(span)
+                })
+                cursorOffsetRef.current = null
+              } else {
+                if (text) el.textContent = text
+                else el.innerHTML = ''
+                knowledgePointIds.forEach(kpid => {
+                  const span = createTagSpan('kp', kpid)
+                  if (span) el.appendChild(span)
+                })
+                abilityPointIds.forEach(abId => {
+                  const span = createTagSpan('ab', abId)
+                  if (span) el.appendChild(span)
+                })
+              }
+            } else if (kpChanged || abChanged) {
+              const existingKp = new Set(Array.from(el.querySelectorAll('[data-type="kp"]')).map(el => (el as HTMLElement).dataset.id))
+              const existingAb = new Set(Array.from(el.querySelectorAll('[data-type="ab"]')).map(el => (el as HTMLElement).dataset.id))
+              knowledgePointIds.forEach(kpid => {
+                if (!existingKp.has(kpid)) {
+                  const span = createTagSpan('kp', kpid)
+                  if (span) el.appendChild(span)
+                }
+              })
+              abilityPointIds.forEach(abId => {
+                if (!existingAb.has(abId)) {
+                  const span = createTagSpan('ab', abId)
+                  if (span) el.appendChild(span)
+                }
+              })
+            }
+            prevTags.current = { kp: [...knowledgePointIds], ab: [...abilityPointIds] }
+          }, [knowledgePointIds, abilityPointIds, text])
+
+          const handleBlur = () => {
+            if (isComposing.current) return
+            const el = ref.current
+            if (!el) return
+            let newText = ''
+            const newKpIds: string[] = []
+            const newAbIds: string[] = []
+            el.childNodes.forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE) {
+                newText += node.textContent || ''
+              } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const dataset = (node as HTMLElement).dataset
+                if (dataset.tag) {
+                  if (dataset.type === 'kp' && dataset.id) newKpIds.push(dataset.id)
+                  if (dataset.type === 'ab' && dataset.id) newAbIds.push(dataset.id)
+                }
+              }
+            })
+            onChangeRef.current({ name: newText, knowledgePointIds: newKpIds, abilityPointIds: newAbIds })
+          }
+
+          return (
+            <div className="min-h-[32px] rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-sm flex flex-wrap gap-1 items-center">
+              <div
+                ref={ref}
+                contentEditable
+                suppressContentEditableWarning
+                className="flex-1 outline-none min-w-[80px] text-sm leading-6 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+                data-placeholder="输入评价维度"
+                onBlur={handleBlur}
+                onKeyUp={updateCursorOffset}
+                onClick={updateCursorOffset}
+                onCompositionStart={() => { isComposing.current = true }}
+                onCompositionEnd={() => { isComposing.current = false }}
+                onPaste={(e) => {
+                  e.preventDefault()
+                  const pasted = e.clipboardData.getData('text/plain')
+                  document.execCommand('insertText', false, pasted)
+                }}
+              />
+              <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1 text-gray-400 hover:text-primary shrink-0" onMouseDown={updateCursorOffset} onClick={onOpenKpDialog}>+知识点</Button>
+              <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1 text-gray-400 hover:text-primary shrink-0" onMouseDown={updateCursorOffset} onClick={onOpenAbDialog}>+能力点</Button>
+            </div>
+          )
+        }
+
         const rubricSchemes = [
           { id: "scheme-fe", name: "前端开发能力评价量规", types: ["knowledge_mastery", "operation_standard", "task_completion", "result_quality"] as EvalSubType[], desc: "涵盖前端核心技术能力、操作规范、任务完成度和成果质量", pointIndices: [0, 1, 8, 5] },
           { id: "scheme-review", name: "通用评审量规", types: ["knowledge_mastery", "communication", "collaboration", "professionalism", "result_quality"] as EvalSubType[], desc: "适用于项目评审，关注知识掌握、沟通协作与职业素养", pointIndices: [2, 3, 6, 9, 12, 13] },
@@ -4144,6 +4371,9 @@ function EditCardDialog({
           const [gradeMappingDialogOpen, setGradeMappingDialogOpen] = useState(false)
           const [editingGradeMappingPointId, setEditingGradeMappingPointId] = useState<string | null>(null)
           const [localDraft, setLocalDraft] = useState<{ name: string; mode: "rubric" | "score_rule"; types: EvalSubType[]; scoreRuleItems: ScoreRuleItem[] }>({ name: "", mode: "rubric", types: [], scoreRuleItems: [] })
+          const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false)
+          const [saveTemplateMode, setSaveTemplateMode] = useState<"new" | "replace">("new")
+          const [selectedReplaceTemplateId, setSelectedReplaceTemplateId] = useState<string | null>(null)
           const rubricIdField = methodKey === "random_draw" ? "randomDrawRubricId" : "reviewRubricId"
           const currentRubricId = (state as any)[rubricIdField] as string | null
           const view = methodDialogViews[methodKey] || "edit"
@@ -4272,18 +4502,29 @@ function EditCardDialog({
                   <div className="border rounded-xl p-4 overflow-hidden">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-medium">评价量规配置表</p>
-                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })}>
-                        <Plus className="h-3.5 w-3.5 mr-1" />添加评价维度
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => {
+                          const count = info.points.length
+                          if (count === 0) return
+                          const base = Math.floor(100 / count)
+                          const remainder = 100 % count
+                          const newPoints = info.points.map((p, i) => ({ ...p, weight: base + (i < remainder ? 1 : 0) }))
+                          setEvalPoints(info.field, newPoints)
+                        }}>
+                          <RotateCcw className="h-3.5 w-3.5 mr-1" />一键均分
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })}>
+                          <Plus className="h-3.5 w-3.5 mr-1" />添加评价维度
+                        </Button>
+                      </div>
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm border-collapse min-w-[1100px]">
+                      <table className="w-full text-sm border-collapse min-w-[900px]">
                         <thead>
                           <tr className="border-b bg-gray-50 text-gray-500 text-xs">
                             <th className="py-2.5 px-2 text-left w-12">序号</th>
-                            <th className="py-2.5 px-2 text-left min-w-[140px]">评价维度</th>
-                            <th className="py-2.5 px-2 text-left min-w-[220px]">关联知识点/能力点</th>
-                            <th className="py-2.5 px-2 text-left min-w-[440px]">评分等级</th>
+                            <th className="py-2.5 px-2 text-left min-w-[360px]">评价维度名称/关联知识点/能力点</th>
+                            <th className="py-2.5 px-2 text-left min-w-[440px]">评价等级</th>
                             <th className="py-2.5 px-2 text-center w-16">权重(%)</th>
                             <th className="py-2.5 px-2 text-center w-14">操作</th>
                           </tr>
@@ -4295,31 +4536,14 @@ function EditCardDialog({
                                 <span className="text-gray-600 align-middle">{idx + 1}</span>
                               </td>
                               <td className="py-3 px-2">
-                                <Input value={ep.name} onChange={e => updateEvalPoint(info.field, ep.id, { name: e.target.value })} className="h-8 text-sm" placeholder="输入评价维度" />
-                              </td>
-                              <td className="py-3 px-2">
-                                <div className="flex flex-wrap gap-1 items-center">
-                                  {(ep.knowledgePointIds || []).map(kpid => {
-                                    const kp = knowledgePoints.find(k => k.id === kpid)
-                                    return kp ? (
-                                      <Badge key={kpid} variant="secondary" className="text-[10px] font-normal bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100">
-                                        {kp.name}
-                                        <button onClick={() => updateEvalPoint(info.field, ep.id, { knowledgePointIds: (ep.knowledgePointIds || []).filter(id => id !== kpid) })} className="ml-1 text-blue-400 hover:text-red-500">×</button>
-                                      </Badge>
-                                    ) : null
-                                  })}
-                                  {(ep.abilityPointIds || []).map(abId => {
-                                    const ab = abilityPoints.find(a => a.id === abId)
-                                    return ab ? (
-                                      <Badge key={abId} variant="secondary" className="text-[10px] font-normal bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100">
-                                        {ab.name}
-                                        <button onClick={() => updateEvalPoint(info.field, ep.id, { abilityPointIds: (ep.abilityPointIds || []).filter(id => id !== abId) })} className="ml-1 text-amber-400 hover:text-red-500">×</button>
-                                      </Badge>
-                                    ) : null
-                                  })}
-                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricKpDialog(ep.id, info.field)}>+ 知识点</Button>
-                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricAbDialog(ep.id, info.field)}>+ 能力点</Button>
-                                </div>
+                                <MixedTagEditor
+                                  text={ep.name}
+                                  knowledgePointIds={ep.knowledgePointIds || []}
+                                  abilityPointIds={ep.abilityPointIds || []}
+                                  onChange={updates => updateEvalPoint(info.field, ep.id, updates)}
+                                  onOpenKpDialog={() => openRubricKpDialog(ep.id, info.field)}
+                                  onOpenAbDialog={() => openRubricAbDialog(ep.id, info.field)}
+                                />
                               </td>
                               <td className="py-3 px-2">
                                 <button
@@ -4334,7 +4558,7 @@ function EditCardDialog({
                                       {gm.grade} ({gm.minScore}-{gm.maxScore}分) {gm.remark}
                                     </div>
                                   ))}
-                                  {!ep.gradeMapping?.length && "点击配置评分等级"}
+                                  {!ep.gradeMapping?.length && "点击配置评价等级"}
                                 </button>
                               </td>
                               <td className="py-3 px-2">
@@ -4376,26 +4600,42 @@ function EditCardDialog({
                   <div className="border rounded-xl p-4 overflow-hidden">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-medium">评分规则配置表</p>
-                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => {
-                        const newItem: ScoreRuleItem = { id: `sr-${Date.now()}`, name: "", desc: "", rule: "", weight: 0 }
-                        if (editingRubricId) {
-                          setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: [...(s.scoreRuleItems || []), newItem] } : s))
-                        } else {
-                          setLocalDraft(prev => ({ ...prev, scoreRuleItems: [...(prev.scoreRuleItems || []), newItem] }))
-                        }
-                      }}>
-                        <Plus className="h-3.5 w-3.5 mr-1" />添加评价项
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => {
+                          const items = draftScheme.scoreRuleItems || []
+                          const count = items.length
+                          if (count === 0) return
+                          const base = Math.floor(100 / count)
+                          const remainder = 100 % count
+                          const newItems = items.map((it, i) => ({ ...it, weight: base + (i < remainder ? 1 : 0) }))
+                          if (editingRubricId) {
+                            setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: newItems } : s))
+                          } else {
+                            setLocalDraft(prev => ({ ...prev, scoreRuleItems: newItems }))
+                          }
+                        }}>
+                          <RotateCcw className="h-3.5 w-3.5 mr-1" />一键均分
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => {
+                          const newItem: ScoreRuleItem = { id: `sr-${Date.now()}`, name: "", desc: "", rule: "", weight: 0 }
+                          if (editingRubricId) {
+                            setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: [...(s.scoreRuleItems || []), newItem] } : s))
+                          } else {
+                            setLocalDraft(prev => ({ ...prev, scoreRuleItems: [...(prev.scoreRuleItems || []), newItem] }))
+                          }
+                        }}>
+                          <Plus className="h-3.5 w-3.5 mr-1" />添加评价项
+                        </Button>
+                      </div>
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm border-collapse min-w-[800px]">
+                      <table className="w-full text-sm border-collapse min-w-[700px]">
                         <thead>
                           <tr className="border-b bg-gray-50 text-gray-500 text-xs">
                             <th className="py-2.5 px-2 text-left w-16">序号</th>
-                            <th className="py-2.5 px-2 text-left min-w-[160px]">评价项</th>
-                            <th className="py-2.5 px-2 text-left min-w-[200px]">评分标准描述</th>
+                            <th className="py-2.5 px-2 text-left min-w-[300px]">评价项/评分标准描述</th>
                             <th className="py-2.5 px-2 text-left min-w-[200px]">加减分规则</th>
-                            <th className="py-2.5 px-2 text-center w-20">权重(%)</th>
+                            <th className="py-2.5 px-2 text-center w-20">分值</th>
                             <th className="py-2.5 px-2 text-center w-16">操作</th>
                           </tr>
                         </thead>
@@ -4406,22 +4646,16 @@ function EditCardDialog({
                                 <span className="text-gray-600 align-middle">{idx + 1}</span>
                               </td>
                               <td className="py-3 px-2">
-                                <Input value={item.name} onChange={e => {
+                                <Textarea value={item.name + (item.desc ? `\n${item.desc}` : "")} onChange={e => {
+                                  const lines = e.target.value.split('\n')
+                                  const newName = lines[0] || ""
+                                  const newDesc = lines.slice(1).join('\n')
                                   if (editingRubricId) {
-                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, name: e.target.value } : it) } : s))
+                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, name: newName, desc: newDesc } : it) } : s))
                                   } else {
-                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, name: e.target.value } : it) }))
+                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, name: newName, desc: newDesc } : it) }))
                                   }
-                                }} className="h-8 text-sm" placeholder="输入评价项" />
-                              </td>
-                              <td className="py-3 px-2">
-                                <Textarea value={item.desc} onChange={e => {
-                                  if (editingRubricId) {
-                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, desc: e.target.value } : it) } : s))
-                                  } else {
-                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, desc: e.target.value } : it) }))
-                                  }
-                                }} className="text-sm min-h-[60px]" placeholder="输入评分标准描述" rows={2} />
+                                }} className="text-sm min-h-[60px]" placeholder="请输入评分描述" rows={2} />
                               </td>
                               <td className="py-3 px-2">
                                 <Textarea value={item.rule} onChange={e => {
@@ -4469,7 +4703,7 @@ function EditCardDialog({
                       </button>
                       {(draftScheme.scoreRuleItems || []).length > 0 && (
                         <div className="flex justify-end text-xs items-center gap-1">
-                          <span className="text-gray-500">权重合计：</span>
+                          <span className="text-gray-500">分值合计：</span>
                           <span className={cn("font-semibold", ((draftScheme.scoreRuleItems || []).reduce((sum, it) => sum + (it.weight || 0), 0)) === 100 ? "text-green-600" : "text-red-500")}>
                             {(draftScheme.scoreRuleItems || []).reduce((sum, it) => sum + (it.weight || 0), 0)}%
                           </span>
@@ -4488,29 +4722,97 @@ function EditCardDialog({
                     )}
                   </div>
                 )}
-                {editingRubricId && (
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" className="text-xs h-8" onClick={() => {
-                      // Save points back to library
+                <div className="flex items-center gap-2">
+                  <Button size="sm" className="text-xs h-8" onClick={() => {
+                    if (editingRubricId) {
                       setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, points: info.points.map(p => ({ ...p })) } : s))
-                      setView("list")
-                      setEditingRubricId(null)
-                    }}>
-                      保存评价标准
-                    </Button>
-                  </div>
-                )}
-                {!editingRubricId && (
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" className="text-xs h-8" onClick={() => {
+                    } else {
                       saveRubricToLibrary(null, { name: draftScheme.name || "新建评价标准", types: draftScheme.types, desc: "", mode: draftScheme.mode, scoreRuleItems: draftScheme.scoreRuleItems })
-                      setView("list")
-                      setEditingRubricId(null)
-                    }}>
-                      保存评价标准
-                    </Button>
-                  </div>
-                )}
+                    }
+                    setView("list")
+                    setEditingRubricId(null)
+                  }}>
+                    保存
+                  </Button>
+                  <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => { setSaveTemplateDialogOpen(true); setSaveTemplateMode("new"); setSelectedReplaceTemplateId(null); }}>
+                    保存到模板
+                  </Button>
+                </div>
+                <Dialog open={saveTemplateDialogOpen} onOpenChange={setSaveTemplateDialogOpen}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>保存到模板</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSaveTemplateMode("new")}
+                          className={cn(
+                            "flex-1 px-3 py-2 rounded-lg text-xs border transition-all",
+                            saveTemplateMode === "new" ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"
+                          )}
+                        >
+                          新增模板
+                        </button>
+                        <button
+                          onClick={() => setSaveTemplateMode("replace")}
+                          className={cn(
+                            "flex-1 px-3 py-2 rounded-lg text-xs border transition-all",
+                            saveTemplateMode === "replace" ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"
+                          )}
+                        >
+                          替换现有模板
+                        </button>
+                      </div>
+                      {saveTemplateMode === "new" ? (
+                        <div>
+                          <Label className="text-xs text-gray-500">模板名称</Label>
+                          <Input value={draftScheme.name} onChange={e => {
+                            if (editingRubricId) {
+                              setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, name: e.target.value } : s))
+                            } else {
+                              setLocalDraft(prev => ({ ...prev, name: e.target.value }))
+                            }
+                          }} className="mt-1 text-sm" placeholder="输入模板名称" />
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label className="text-xs text-gray-500">选择要替换的模板</Label>
+                          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                            {rubricLibrary.map(scheme => (
+                              <div
+                                key={scheme.id}
+                                onClick={() => setSelectedReplaceTemplateId(scheme.id)}
+                                className={cn(
+                                  "p-3 rounded-lg border cursor-pointer transition-all",
+                                  selectedReplaceTemplateId === scheme.id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
+                                )}
+                              >
+                                <p className="text-sm font-medium">{scheme.name}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">{scheme.mode === "rubric" ? "评价量规" : "评分规则"}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" size="sm" className="text-xs" onClick={() => setSaveTemplateDialogOpen(false)}>取消</Button>
+                      <Button size="sm" className="text-xs" onClick={() => {
+                        if (saveTemplateMode === "new") {
+                          saveRubricToLibrary(null, { name: draftScheme.name || "新建评价标准", types: draftScheme.types, desc: "", mode: draftScheme.mode, scoreRuleItems: draftScheme.scoreRuleItems })
+                        } else if (selectedReplaceTemplateId) {
+                          setRubricLibrary(prev => prev.map(s => s.id === selectedReplaceTemplateId ? { ...s, points: info.points.map(p => ({ ...p })), mode: draftScheme.mode, scoreRuleItems: draftScheme.scoreRuleItems || [] } : s))
+                        }
+                        setSaveTemplateDialogOpen(false)
+                        setView("list")
+                        setEditingRubricId(null)
+                      }} disabled={saveTemplateMode === "replace" && !selectedReplaceTemplateId}>
+                        确认保存
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Dialog open={gradeMappingDialogOpen} onOpenChange={v => !v && setGradeMappingDialogOpen(false)}>
                   <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
@@ -5157,7 +5459,7 @@ function EditCardDialog({
                   <div>
                     <Label className="text-xs text-gray-500">题目类型</Label>
                     <Select value={newQuestionType} onValueChange={v => {
-                      setNewQuestionType(v as "single" | "multiple" | "judgment" | "subjective")
+                      setNewQuestionType(v as "single" | "multiple" | "judgment" | "short_answer" | "essay" | "fill_blank")
                       setNewQuestionAnswer("")
                       setNewQuestionMultipleAnswer([])
                       setNewQuestionJudgmentAnswer("true")
@@ -5170,7 +5472,9 @@ function EditCardDialog({
                         <SelectItem value="single">单选题</SelectItem>
                         <SelectItem value="multiple">多选题</SelectItem>
                         <SelectItem value="judgment">判断题</SelectItem>
-                        <SelectItem value="subjective">主观填写</SelectItem>
+                        <SelectItem value="short_answer">简答题</SelectItem>
+                        <SelectItem value="essay">论述题</SelectItem>
+                        <SelectItem value="fill_blank">填空题</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -5182,22 +5486,16 @@ function EditCardDialog({
                     <Label className="text-xs text-gray-500">题目内容</Label>
                     <Textarea value={newQuestionContent} onChange={e => setNewQuestionContent(e.target.value)} placeholder="输入题目内容" className="mt-1 text-sm" rows={3} />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-gray-500">难度</Label>
-                      <Select value={newQuestionDifficulty} onValueChange={v => setNewQuestionDifficulty(v as "easy" | "medium" | "hard")}>
-                        <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="easy">简单</SelectItem>
-                          <SelectItem value="medium">中等</SelectItem>
-                          <SelectItem value="hard">困难</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">分值</Label>
-                      <Input type="number" value={newQuestionScore} onChange={e => setNewQuestionScore(Math.max(1, parseInt(e.target.value) || 1))} className="mt-1 text-sm" min={1} />
-                    </div>
+                  <div>
+                    <Label className="text-xs text-gray-500">难度</Label>
+                    <Select value={newQuestionDifficulty} onValueChange={v => setNewQuestionDifficulty(v as "easy" | "medium" | "hard")}>
+                      <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="easy">简单</SelectItem>
+                        <SelectItem value="medium">中等</SelectItem>
+                        <SelectItem value="hard">困难</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label className="text-xs text-gray-500">所属题库</Label>
@@ -5289,10 +5587,23 @@ function EditCardDialog({
                       </div>
                     </div>
                   )}
-                  {newQuestionType === "subjective" && (
+                  {newQuestionType === "short_answer" && (
                     <div>
-                      <Label className="text-xs text-gray-500">参考答案（可选）</Label>
+                      <Label className="text-xs text-gray-500">参考答案</Label>
                       <Textarea value={newQuestionAnswer} onChange={e => setNewQuestionAnswer(e.target.value)} placeholder="输入参考答案" className="mt-1 text-sm" rows={3} />
+                    </div>
+                  )}
+                  {newQuestionType === "essay" && (
+                    <div>
+                      <Label className="text-xs text-gray-500">参考答案</Label>
+                      <Textarea value={newQuestionAnswer} onChange={e => setNewQuestionAnswer(e.target.value)} placeholder="输入参考答案" className="mt-1 text-sm" rows={5} />
+                    </div>
+                  )}
+                  {newQuestionType === "fill_blank" && (
+                    <div className="space-y-2">
+                      <Label className="text-xs text-gray-500">参考答案</Label>
+                      <Textarea value={newQuestionAnswer} onChange={e => setNewQuestionAnswer(e.target.value)} placeholder="输入参考答案，多个填空用 / 分隔" className="mt-1 text-sm" rows={3} />
+                      <p className="text-xs text-gray-400">多个填空答案请用“/”分隔，如：答案1/答案2/答案3</p>
                     </div>
                   )}
                 </div>
@@ -5306,7 +5617,7 @@ function EditCardDialog({
                       type: newQuestionType,
                       content: newQuestionContent || "",
                       difficulty: newQuestionDifficulty,
-                      score: newQuestionScore,
+                      score: 0,
                       source: "my" as const,
                       questionBank: newQuestionBank,
                     }
@@ -5318,7 +5629,7 @@ function EditCardDialog({
                       newQuestion.answer = newQuestionMultipleAnswer
                     } else if (newQuestionType === "judgment") {
                       newQuestion.answer = newQuestionJudgmentAnswer
-                    } else if (newQuestionType === "subjective") {
+                    } else if (["short_answer", "essay", "fill_blank"].includes(newQuestionType)) {
                       newQuestion.answer = newQuestionAnswer || ""
                     }
                     allQuestions.push(newQuestion)

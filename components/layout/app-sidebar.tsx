@@ -38,14 +38,9 @@ const navItems: NavItem[] = [
     icon: CheckSquare,
   },
   {
-    title: "教师端任务评分模拟",
+    title: "场景任务评价",
     href: "/approvals/grading",
     icon: ClipboardCheck,
-  },
-  {
-    title: "学生端任务学习模拟",
-    href: "/approvals/grading/simulation",
-    icon: GraduationCap,
   },
 ]
 

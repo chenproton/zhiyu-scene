@@ -344,15 +344,9 @@ export default function GradingPage() {
       <div className="bg-white border-b border-gray-200 shrink-0">
         <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-gray-800">教师端任务评分模拟</h1>
+            <h1 className="text-xl font-semibold text-gray-800">场景任务评价</h1>
             <p className="text-sm text-gray-500 mt-0.5">选择场景与任务，查看学生提交并进行评分</p>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/approvals/grading/simulation">
-              <GraduationCap className="mr-2 h-4 w-4" />
-              学生端任务学习模拟
-            </Link>
-          </Button>
         </div>
       </div>
 

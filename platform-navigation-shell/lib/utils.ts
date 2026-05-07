@@ -11,6 +11,9 @@ export function matchesPath(pathname: string, href?: string, matchers?: string[]
     if (target === "/") {
       return pathname === "/"
     }
+    if (target.endsWith("$")) {
+      return pathname === target.slice(0, -1)
+    }
     return pathname === target || pathname.startsWith(`${target}/`)
   })
 }

@@ -42,7 +42,7 @@ exports.senceNavigationTemplate = {
             label: "我的服务台",
             href: "/approvals",
             icon: "briefcase",
-            matchers: ["/approvals"],
+            matchers: ["/approvals$"],
         },
         {
             id: "apps",
@@ -61,10 +61,15 @@ exports.senceNavigationTemplate = {
                 { id: "scene-resource", label: "场景资源管理", href: "/", matchers: ["/"] },
                 { id: "batch-group", label: "批次分组管理", href: "/batches", matchers: ["/batches"] },
                 { id: "approval-workflow", label: "审批流程管理", href: "/workflows", matchers: ["/workflows"] },
-                { id: "resource-approval", label: "资源审批管理", href: "/approvals", matchers: ["/approvals"] },
-                { id: "student-grading", label: "教师端任务评分模拟", href: "/approvals/grading", matchers: ["/approvals/grading"] },
-                { id: "student-simulation", label: "学生端任务学习模拟", href: "/student.html", external: true },
+                { id: "resource-approval", label: "资源审批管理", href: "/approvals", matchers: ["/approvals$"] },
             ],
+        },
+        {
+            id: "scene-evaluation",
+            label: "场景任务评价",
+            icon: "clipboardCheck",
+            href: "/approvals/grading",
+            matchers: ["/approvals/grading"],
         },
     ],
 };

@@ -9,6 +9,9 @@ export function matchesPath(pathname, href, matchers) {
         if (target === "/") {
             return pathname === "/";
         }
+        if (target.endsWith("$")) {
+            return pathname === target.slice(0, -1);
+        }
         return pathname === target || pathname.startsWith(`${target}/`);
     });
 }

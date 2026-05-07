@@ -4590,20 +4590,23 @@
 
         // 综合测评（多种方法组合）
         function renderMixedMethodAssessment(task, methods) {
-            let content = '';
+            const methodLabels = { random_draw: '现场问答', review: '教师评审', paper: '试卷测评', question_bank: '题库测评' };
+            let content = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">';
             methods.forEach((m, idx) => {
-                const methodLabels = { random_draw: '现场问答', review: '教师评审', paper: '试卷测评', question_bank: '题库测评' };
                 content += `
-                    <div style="margin-bottom: 8px; font-weight: 600; font-size: 15px; color: var(--text-primary); padding-top: ${idx > 0 ? '24px' : '0'};">
-                        <span style="display: inline-block; width: 24px; height: 24px; background: var(--primary-color); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; margin-right: 8px;">${idx + 1}</span>
-                        ${methodLabels[m] || m}
-                    </div>
+                    <div style="border: 1px solid #f0f0f0; border-radius: 8px; padding: 20px; background: var(--bg-white);">
+                        <div style="margin-bottom: 16px; font-weight: 600; font-size: 15px; color: var(--text-primary);">
+                            <span style="display: inline-block; width: 24px; height: 24px; background: var(--primary-color); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; margin-right: 8px;">${idx + 1}</span>
+                            ${methodLabels[m] || m}
+                        </div>
                 `;
                 if (m === 'paper') content += renderPaperAssessment(task);
                 else if (m === 'question_bank') content += renderQuestionBankAssessment(task);
                 else if (m === 'review') content += renderReviewAssessment(task);
                 else if (m === 'random_draw') content += renderRandomDrawAssessment(task);
+                content += '</div>';
             });
+            content += '</div>';
             return content;
         }
 

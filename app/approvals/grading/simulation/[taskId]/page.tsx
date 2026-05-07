@@ -552,7 +552,7 @@ function IntegratedLayout({
         <TaskDescriptionDialog task={task} open={descOpen} onOpenChange={setDescOpen} />
 
         {/* 测评内容（放在任务说明下方） */}
-        <div>
+        <div className="grid grid-cols-2 gap-4">
           {assessmentPanels}
         </div>
       </div>

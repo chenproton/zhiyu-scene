@@ -129,6 +129,9 @@ function ObjectiveGradingCard({
     multiple: "多选",
     judgment: "判断",
     text: "问答",
+    short_answer: "简答",
+    essay: "论述",
+    fill_blank: "填空",
   }
 
   return (
@@ -839,6 +842,7 @@ export default function GradingDetailPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [manualTotal, setManualTotal] = useState<number | null>(null)
   const [previewAttachment, setPreviewAttachment] = useState<SubmissionAttachment | null>(null)
+  const [questionFilter, setQuestionFilter] = useState<"all" | "pending">("all")
 
   if (!submission) {
     return (
@@ -1024,7 +1028,7 @@ export default function GradingDetailPage() {
                     <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-200 bg-amber-50">待评分</Badge>
                   )}
                 </div>
-                {evalPoints.length > 0 && (
+                {evalPoints.length > 0 && submission.assessmentForm === "试卷" && (
                   <>
                     <div className="h-3 w-px bg-gray-200" />
                     <div className="flex items-center gap-1.5">
@@ -1036,20 +1040,41 @@ export default function GradingDetailPage() {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* 题目筛选标签 */}
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+                    questionFilter === "all" ? "bg-primary text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
+                  onClick={() => setQuestionFilter("all")}
+                >
+                  全部题目 ({objectiveAnswers.length})
+                </button>
+                <button
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+                    questionFilter === "pending" ? "bg-amber-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
+                  onClick={() => setQuestionFilter("pending")}
+                >
+                  待评分题目 ({objectiveAnswers.filter(a => a.questionType === "text" && a.score === 0).length})
+                </button>
+              </div>
               {/* 客观题列表 */}
               <div className="space-y-1.5">
-                {objectiveAnswers.map((answer, idx) => (
+                {(questionFilter === "all" ? objectiveAnswers : objectiveAnswers.filter(a => a.questionType === "text" && a.score === 0)).map((answer, idx) => (
                   <ObjectiveGradingCard
                     key={answer.questionId}
                     answer={answer}
-                    index={idx}
+                    index={questionFilter === "all" ? idx : objectiveAnswers.indexOf(answer)}
                     isGraded={isGraded}
                     onScoreChange={handleObjectiveScoreChange}
                   />
                 ))}
               </div>
-              {/* 评价点（如后台配置了试卷/题库评价点） */}
-              {evalPoints.length > 0 && (
+              {/* 评价点（仅试卷显示） */}
+              {evalPoints.length > 0 && submission.assessmentForm === "试卷" && (
                 <div className="space-y-2 pt-2 border-t">
                   <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">综合评价点</h3>
                   {evalPoints.map((ep) => (
@@ -1141,15 +1166,33 @@ export default function GradingDetailPage() {
                             <Badge variant="outline" className="text-xs shrink-0">
                               {att.type === "code" ? "代码" : att.type === "video" ? "视频" : att.type === "document" ? "文档" : att.type === "image" ? "图片" : "其他"}
                             </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                              onClick={() => setPreviewAttachment(att)}
-                            >
-                              <Eye className="h-3.5 w-3.5 mr-1" />
-                              预览
-                            </Button>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                              {["image", "video", "code", "document"].includes(att.type) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => setPreviewAttachment(att)}
+                                >
+                                  <Eye className="h-3.5 w-3.5 mr-1" />
+                                  预览
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => {
+                                  const a = document.createElement("a")
+                                  a.href = att.url
+                                  a.download = att.name
+                                  a.click()
+                                }}
+                              >
+                                <Package className="h-3.5 w-3.5 mr-1" />
+                                下载
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
