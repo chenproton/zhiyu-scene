@@ -2,7 +2,7 @@
 
 import { ArrowRight, ChevronDown, ChevronRight, Eye, ImagePlus, List, ListOrdered, Save, Search, Star, X, UserPlus } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Suspense, useState, useMemo } from "react"
+import { Suspense, useState, useMemo, useRef, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -39,6 +39,104 @@ const departmentTree = departments.map(dept => ({
 // Position tab filter type
 type PositionTab = "my" | "collab" | "public"
 
+function IndustryProfessionSelector({
+  options,
+  selectedIds,
+  onChange,
+  placeholder,
+}: {
+  options: { id: string; name: string }[]
+  selectedIds: string[]
+  onChange: (ids: string[]) => void
+  placeholder: string
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const toggleOption = (id: string) => {
+    onChange(selectedIds.includes(id) ? selectedIds.filter(i => i !== id) : [...selectedIds, id])
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex h-auto min-h-[36px] w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {selectedIds.length === 0 ? (
+          <span className="text-muted-foreground">{placeholder}</span>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {selectedIds.map(id => {
+              const opt = options.find(o => o.id === id)
+              if (!opt) return null
+              return (
+                <span
+                  key={id}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary"
+                >
+                  {opt.name}
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation()
+                      toggleOption(id)
+                    }}
+                    className="hover:bg-primary/20 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )
+            })}
+          </div>
+        )}
+        <ChevronDown className="h-4 w-4 opacity-50 ml-2 shrink-0" />
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none">
+          <div className="p-2 max-h-[240px] overflow-y-auto">
+            {options.map(opt => (
+              <div
+                key={opt.id}
+                onClick={() => toggleOption(opt.id)}
+                className={cn(
+                  "flex items-center gap-2 px-2 py-1.5 rounded text-sm cursor-pointer hover:bg-gray-50",
+                  selectedIds.includes(opt.id) && "bg-primary/5 text-primary"
+                )}
+              >
+                <div className={cn(
+                  "w-4 h-4 rounded border flex items-center justify-center flex-shrink-0",
+                  selectedIds.includes(opt.id) ? "bg-primary border-primary" : "border-gray-300"
+                )}>
+                  {selectedIds.includes(opt.id) && (
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span>{opt.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function NewScenarioEditForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -62,8 +160,8 @@ function NewScenarioEditForm() {
   const [scenarioCode] = useState(`SC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`)
   const [positionId, setPositionId] = useState(positionIdFromQuery || "")
   const [batchId, setBatchId] = useState(batchIdFromQuery || "")
-  const [industryId, setIndustryId] = useState("")
-  const [relatedProfessionId, setRelatedProfessionId] = useState(initialProfession?.id || "")
+  const [industryIds, setIndustryIds] = useState<string[]>([])
+  const [professionIds, setProfessionIds] = useState<string[]>(initialProfession?.id ? [initialProfession.id] : [])
   const [difficulty, setDifficulty] = useState<number>(3)
   const [background, setBackground] = useState("")
   const [creatorName] = useState("当前用户")
@@ -116,8 +214,8 @@ function NewScenarioEditForm() {
     const params = new URLSearchParams({
       name: scenarioName,
       code: scenarioCode,
-      industryId,
-      professionId: relatedProfessionId,
+      industryId: industryIds[0] || "",
+      professionId: professionIds[0] || "",
       difficulty: String(difficulty),
       background,
     })
@@ -152,7 +250,7 @@ function NewScenarioEditForm() {
     setPositionId(posId)
     const pos = allPositions.find(p => p.id === posId)
     if (pos) {
-      setRelatedProfessionId(pos.professionId)
+      setProfessionIds(prev => prev.includes(pos.professionId) ? prev : [...prev, pos.professionId])
     }
     setIsPositionPopoverOpen(false)
   }
@@ -184,7 +282,7 @@ function NewScenarioEditForm() {
             </Button>
             <Button 
               onClick={handleProceed}
-              disabled={!scenarioName || !industryId}
+              disabled={!scenarioName || industryIds.length === 0}
             >
               下一步
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -242,37 +340,25 @@ function NewScenarioEditForm() {
                   <p className="text-xs text-gray-400">系统自动生成，不可修改</p>
                 </div>
 
-                {/* Industry and profession - renamed labels */}
+                {/* Industry and profession - multi-select with tags */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="industry">面向行业 <span className="text-red-500">*</span></Label>
-                    <Select value={industryId} onValueChange={setIndustryId}>
-                      <SelectTrigger id="industry">
-                        <SelectValue placeholder="选择行业" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {industries.map((ind) => (
-                          <SelectItem key={ind.id} value={ind.id}>
-                            {ind.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>面向行业 <span className="text-red-500">*</span></Label>
+                    <IndustryProfessionSelector
+                      options={industries.map(i => ({ id: i.id, name: i.name }))}
+                      selectedIds={industryIds}
+                      onChange={setIndustryIds}
+                      placeholder="选择行业"
+                    />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="profession">适用专业</Label>
-                    <Select value={relatedProfessionId} onValueChange={setRelatedProfessionId}>
-                      <SelectTrigger id="profession">
-                        <SelectValue placeholder="选择专业" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {professions.map((prof) => (
-                          <SelectItem key={prof.id} value={prof.id}>
-                            {prof.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>适用专业</Label>
+                    <IndustryProfessionSelector
+                      options={professions.map(p => ({ id: p.id, name: p.name }))}
+                      selectedIds={professionIds}
+                      onChange={setProfessionIds}
+                      placeholder="选择专业"
+                    />
                   </div>
                 </div>
 

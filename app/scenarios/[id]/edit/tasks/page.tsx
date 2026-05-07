@@ -1201,12 +1201,32 @@ function EditCardDialog({
   const [methodDialogViews, setMethodDialogViews] = useState<Record<string, "list" | "edit" | "template">>({})
   const [newPointName, setNewPointName] = useState("")
 
+  // Score rule item type
+  interface ScoreRuleItem {
+    id: string
+    name: string
+    desc: string
+    rule: string
+    weight: number
+  }
+
   // Rubric library — shared across all methods
-  type RubricScheme = { id: string; name: string; types: EvalSubType[]; desc: string; points: EvalPoint[] }
+  type RubricScheme = { id: string; name: string; types: EvalSubType[]; desc: string; points: EvalPoint[]; mode: "rubric" | "score_rule"; scoreRuleItems?: ScoreRuleItem[] }
   const [rubricLibrary, setRubricLibrary] = useState<RubricScheme[]>([
-    { id: "scheme-fe", name: "前端开发能力评价量规", types: ["knowledge_mastery", "operation_standard", "task_completion", "result_quality"], desc: "涵盖前端核心技术能力、操作规范、任务完成度和成果质量", points: [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1], mockDefaultEvalPoints[8], mockDefaultEvalPoints[5]].map((p, i) => ({ ...p, id: `ep-scheme-fe-${i}` })) },
-    { id: "scheme-review", name: "通用评审量规", types: ["knowledge_mastery", "communication", "collaboration", "professionalism", "result_quality"], desc: "适用于项目评审，关注知识掌握、沟通协作与职业素养", points: [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3], mockDefaultEvalPoints[6], mockDefaultEvalPoints[9], mockDefaultEvalPoints[12], mockDefaultEvalPoints[13]].map((p, i) => ({ ...p, id: `ep-scheme-review-${i}` })) },
-    { id: "scheme-innovation", name: "创新实践评价量规", types: ["innovation", "adaptability", "result_quality", "task_completion"], desc: "侧重创新能力、应变能力和成果质量", points: [mockDefaultEvalPoints[10], mockDefaultEvalPoints[11], mockDefaultEvalPoints[5], mockDefaultEvalPoints[4]].map((p, i) => ({ ...p, id: `ep-scheme-innovation-${i}` })) },
+    { id: "scheme-fe", name: "前端开发能力评价量规", types: ["knowledge_mastery", "operation_standard", "task_completion", "result_quality"], desc: "涵盖前端核心技术能力、操作规范、任务完成度和成果质量", points: [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1], mockDefaultEvalPoints[8], mockDefaultEvalPoints[5]].map((p, i) => ({ ...p, id: `ep-scheme-fe-${i}` })), mode: "rubric" },
+    { id: "scheme-review", name: "通用评审量规", types: ["knowledge_mastery", "communication", "collaboration", "professionalism", "result_quality"], desc: "适用于项目评审，关注知识掌握、沟通协作与职业素养", points: [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3], mockDefaultEvalPoints[6], mockDefaultEvalPoints[9], mockDefaultEvalPoints[12], mockDefaultEvalPoints[13]].map((p, i) => ({ ...p, id: `ep-scheme-review-${i}` })), mode: "rubric" },
+    { id: "scheme-innovation", name: "创新实践评价量规", types: ["innovation", "adaptability", "result_quality", "task_completion"], desc: "侧重创新能力、应变能力和成果质量", points: [mockDefaultEvalPoints[10], mockDefaultEvalPoints[11], mockDefaultEvalPoints[5], mockDefaultEvalPoints[4]].map((p, i) => ({ ...p, id: `ep-scheme-innovation-${i}` })), mode: "rubric" },
+    { id: "scheme-score-rule-code", name: "代码规范评分规则", types: ["operation_standard", "result_quality"], desc: "基于代码规范和成果质量进行加减分评价", points: [], mode: "score_rule", scoreRuleItems: [
+      { id: "sr-1", name: "代码注释规范", desc: "代码注释完整、清晰，符合团队规范", rule: "注释完整 +2分，缺失关键注释 -1分", weight: 20 },
+      { id: "sr-2", name: "命名规范", desc: "变量、函数命名具有语义化，符合驼峰/下划线规范", rule: "命名规范 +2分，命名混乱 -1分", weight: 20 },
+      { id: "sr-3", name: "代码复用性", desc: "避免重复代码，合理使用函数和组件封装", rule: "复用性好 +3分，大量重复代码 -2分", weight: 30 },
+      { id: "sr-4", name: "功能完整性", desc: "实现需求文档中全部功能点", rule: "功能完整 +3分，每缺一项 -2分", weight: 30 },
+    ]},
+    { id: "scheme-score-rule-attendance", name: "出勤表现评分规则", types: ["professionalism", "collaboration"], desc: "基于出勤和团队协作表现进行加减分评价", points: [], mode: "score_rule", scoreRuleItems: [
+      { id: "sr-5", name: "出勤率", desc: "按时参加课程/项目活动，无迟到早退", rule: "全勤 +5分，迟到/早退每次 -1分，缺勤每次 -3分", weight: 40 },
+      { id: "sr-6", name: "团队协作", desc: "积极参与团队讨论，主动承担任务", rule: "积极协作 +3分，消极配合 -2分", weight: 30 },
+      { id: "sr-7", name: "任务交付", desc: "按时高质量完成分配的任务", rule: "按时交付 +2分，延期交付 -1分，质量不达标 -2分", weight: 30 },
+    ]},
   ])
   const [editingRubricId, setEditingRubricId] = useState<string | null>(null)
 
@@ -1240,7 +1260,7 @@ function EditCardDialog({
   const [newPaperQuestionCount, setNewPaperQuestionCount] = useState(10)
   const [newPaperTotalScore, setNewPaperTotalScore] = useState(100)
   const [mockResQuestionBank, setMockResQuestionBank] = useState({ questionCount: 10, difficulty: "mixed", totalScore: 100, autoGenerate: false, timeLimit: 90, typeWeights: {} as Record<string, number>, allowRetake: false, retakeCount: 1, shuffleQuestions: true, showResult: true })
-  const [mockResReview, setMockResReview] = useState({ materialType: "project_report", submitFormatDesc: "请提交 PDF 格式的项目报告，包含完整的项目背景、实现方案、测试结果和总结反思。", deadlineDays: 7, allowResubmit: false })
+  const [mockResReview, setMockResReview] = useState({ materialType: "project_report", submitFormatDesc: "请提交 PDF 格式的项目报告，包含完整的项目背景、实现方案、测试结果和总结反思。", deadlineDays: 7, allowResubmit: false, venueResources: "多媒体教室（容纳30人）、投影仪、白板、评委席桌椅、计时器、签到表、评分表及文具。" })
   const [reviewSteps, setReviewSteps] = useState([
     { id: "rs-1", label: "初评", desc: "由指导教师进行第一轮评审", enabled: true, subjectType: "teacher" as string | null, weight: 40 },
     { id: "rs-2", label: "复评", desc: "由专家组进行第二轮复核", enabled: false, subjectType: null as string | null, weight: 30 },
@@ -1252,6 +1272,7 @@ function EditCardDialog({
   const [showAddStep, setShowAddStep] = useState(false)
   const [newStepLabel, setNewStepLabel] = useState("")
   const [newStepDesc, setNewStepDesc] = useState("")
+  const [newStepSubjectType, setNewStepSubjectType] = useState("")
 
   const handleSave = () => {
     if (cardType === "info") {
@@ -2667,7 +2688,7 @@ function EditCardDialog({
           teacher: "教师",
           enterprise_mentor: "企业导师",
           self: "自评",
-          peer: "同伴",
+          peer: "互评",
           ai: "AI 评价",
           service_target: "服务对象",
         }
@@ -2829,7 +2850,7 @@ function EditCardDialog({
               <Badge variant="outline" className={cn("text-[10px]", evalSubTypeColors[ep.subType as EvalSubType])}>{ep.subType ? evalSubTypeLabels[ep.subType as EvalSubType] : "未分类"}</Badge>
               <Select value={ep.scoringMethod || "level"} onValueChange={v => updateEvalPoint(field, ep.id, { scoringMethod: v as "score" | "level" | "rubric" })}>
                 <SelectTrigger className="h-7 text-[10px] w-28">
-                  <SelectValue placeholder="评价方法" />
+                  <SelectValue placeholder="评分方式" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="score" disabled>分值制</SelectItem>
@@ -3390,7 +3411,7 @@ function EditCardDialog({
                     <Info className="h-4 w-4" />
                     <span className="font-medium">评审说明</span>
                   </div>
-                  <p>评审时教师根据学生现场表现或提交的材料进行打分。评价点配置请在「评价方法」卡片中设置。</p>
+                  <p>评审时教师根据学生现场表现或提交的材料进行打分。评价点配置请在「评价标准配置」卡片中设置。</p>
                 </div>
                 <div className="border rounded-xl p-4">
                   <p className="text-sm font-medium mb-3">评审材料要求</p>
@@ -3421,6 +3442,16 @@ function EditCardDialog({
                       value={mockResReview.submitFormatDesc}
                       onChange={e => setMockResReview({ ...mockResReview, submitFormatDesc: e.target.value })}
                       placeholder="请用一句话说明学生需要提交的材料要求..."
+                      rows={2}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <Label className="text-xs text-gray-500 mb-1.5">评审场地/环境资源准备</Label>
+                    <Textarea
+                      value={mockResReview.venueResources}
+                      onChange={e => setMockResReview({ ...mockResReview, venueResources: e.target.value })}
+                      placeholder="请描述评审所需的场地、设备及环境资源准备要求..."
                       rows={2}
                       className="text-sm"
                     />
@@ -3478,18 +3509,22 @@ function EditCardDialog({
                           <div className="space-y-2">
                             <div className="grid grid-cols-2 gap-2">
                               <Input value={editingStepLabel} onChange={e => setEditingStepLabel(e.target.value)} placeholder="步骤名称" className="text-sm h-8" />
-                              <Select value={step.subjectType || "none"} onValueChange={v => setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, subjectType: v === "none" ? null : v } : s))}>
-                                <SelectTrigger className="text-sm h-8"><SelectValue placeholder="绑定测评主体" /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="none">不绑定</SelectItem>
-                                  <SelectItem value="teacher">教师</SelectItem>
-                                  <SelectItem value="enterprise_mentor">企业导师</SelectItem>
-                                  <SelectItem value="peer">同伴</SelectItem>
-                                  <SelectItem value="self">自评</SelectItem>
-                                  <SelectItem value="ai">AI 评价</SelectItem>
-                                  <SelectItem value="service_target">服务对象</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              {(() => {
+                                const usedSubjects = reviewSteps.filter(s => s.enabled && s.id !== step.id && s.subjectType).map(s => s.subjectType)
+                                return (
+                                  <Select value={step.subjectType || ""} onValueChange={v => setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, subjectType: v } : s))}>
+                                    <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="teacher" disabled={usedSubjects.includes("teacher")}>教师</SelectItem>
+                                      <SelectItem value="enterprise_mentor" disabled={usedSubjects.includes("enterprise_mentor")}>企业导师</SelectItem>
+                                      <SelectItem value="peer" disabled={usedSubjects.includes("peer")}>互评</SelectItem>
+                                      <SelectItem value="self" disabled={usedSubjects.includes("self")}>自评</SelectItem>
+                                      <SelectItem value="ai" disabled={usedSubjects.includes("ai")}>AI 评价</SelectItem>
+                                      <SelectItem value="service_target" disabled={usedSubjects.includes("service_target")}>服务对象</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                )
+                              })()}
                             </div>
                             <Input value={editingStepDesc} onChange={e => setEditingStepDesc(e.target.value)} placeholder="步骤描述" className="text-sm h-8" />
                             <div className="flex items-center gap-2">
@@ -3504,15 +3539,21 @@ function EditCardDialog({
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="flex items-center gap-2">
-                                <Switch checked={step.enabled} onCheckedChange={v => setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, enabled: v } : s))} />
+                                <Switch checked={step.enabled} onCheckedChange={v => {
+                                  if (v && !step.subjectType) {
+                                    const used = reviewSteps.filter(s => s.enabled && s.id !== step.id && s.subjectType).map(s => s.subjectType)
+                                    const firstUnused = ["teacher","enterprise_mentor","peer","self","ai","service_target"].find(t => !used.includes(t))
+                                    setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, enabled: v, subjectType: firstUnused || "teacher" } : s))
+                                  } else {
+                                    setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, enabled: v } : s))
+                                  }
+                                }} />
                                 <div>
                                   <p className="text-sm font-medium">{step.label}</p>
                                   <p className="text-xs text-gray-400">{step.desc}</p>
                                 </div>
                               </div>
-                              {step.subjectType && (
-                                <Badge variant="secondary" className="text-[10px]">{subjectLabels[step.subjectType] || step.subjectType}</Badge>
-                              )}
+                              <Badge variant={step.subjectType ? "secondary" : "outline"} className="text-[10px]">{step.subjectType ? (subjectLabels[step.subjectType] || step.subjectType) : "未绑定"}</Badge>
                             </div>
                             <div className="flex items-center gap-2">
                               {step.enabled && (
@@ -3546,20 +3587,34 @@ function EditCardDialog({
                     <div className="mt-2 p-3 rounded-lg border border-dashed border-primary/30 bg-primary/[0.02] space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <Input value={newStepLabel} onChange={e => setNewStepLabel(e.target.value)} placeholder="步骤名称" className="text-sm h-8" />
-                        <Select value="none" onValueChange={() => {}}>
-                          <SelectTrigger className="text-sm h-8" disabled><SelectValue placeholder="绑定测评主体" /></SelectTrigger>
-                        </Select>
+                        {(() => {
+                          const usedSubjects = reviewSteps.filter(s => s.enabled && s.subjectType).map(s => s.subjectType)
+                          return (
+                            <Select value={newStepSubjectType} onValueChange={v => setNewStepSubjectType(v)}>
+                              <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="teacher" disabled={usedSubjects.includes("teacher")}>教师</SelectItem>
+                                <SelectItem value="enterprise_mentor" disabled={usedSubjects.includes("enterprise_mentor")}>企业导师</SelectItem>
+                                <SelectItem value="peer" disabled={usedSubjects.includes("peer")}>互评</SelectItem>
+                                <SelectItem value="self" disabled={usedSubjects.includes("self")}>自评</SelectItem>
+                                <SelectItem value="ai" disabled={usedSubjects.includes("ai")}>AI 评价</SelectItem>
+                                <SelectItem value="service_target" disabled={usedSubjects.includes("service_target")}>服务对象</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )
+                        })()}
                       </div>
                       <Input value={newStepDesc} onChange={e => setNewStepDesc(e.target.value)} placeholder="步骤描述" className="text-sm h-8" />
                       <div className="flex items-center gap-2">
                         <Button size="sm" className="h-7 text-xs" onClick={() => {
-                          if (!newStepLabel.trim()) return
-                          setReviewSteps([...reviewSteps, { id: `rs-${Date.now()}`, label: newStepLabel, desc: newStepDesc, enabled: true, subjectType: null, weight: 0 }])
+                          if (!newStepLabel.trim() || !newStepSubjectType) return
+                          setReviewSteps([...reviewSteps, { id: `rs-${Date.now()}`, label: newStepLabel, desc: newStepDesc, enabled: true, subjectType: newStepSubjectType, weight: 0 }])
                           setShowAddStep(false)
                           setNewStepLabel("")
                           setNewStepDesc("")
+                          setNewStepSubjectType("")
                         }}>添加</Button>
-                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowAddStep(false); setNewStepLabel(""); setNewStepDesc(""); }}>取消</Button>
+                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowAddStep(false); setNewStepLabel(""); setNewStepDesc(""); setNewStepSubjectType(""); }}>取消</Button>
                       </div>
                     </div>
                   )}
@@ -4086,6 +4141,9 @@ function EditCardDialog({
         const MethodDialogContent = ({ methodKey }: { methodKey: string }) => {
           const info = getMethodEvalInfo(methodKey)
           const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+          const [gradeMappingDialogOpen, setGradeMappingDialogOpen] = useState(false)
+          const [editingGradeMappingPointId, setEditingGradeMappingPointId] = useState<string | null>(null)
+          const [localDraft, setLocalDraft] = useState<{ name: string; mode: "rubric" | "score_rule"; types: EvalSubType[]; scoreRuleItems: ScoreRuleItem[] }>({ name: "", mode: "rubric", types: [], scoreRuleItems: [] })
           const rubricIdField = methodKey === "random_draw" ? "randomDrawRubricId" : "reviewRubricId"
           const currentRubricId = (state as any)[rubricIdField] as string | null
           const view = methodDialogViews[methodKey] || "edit"
@@ -4097,7 +4155,12 @@ function EditCardDialog({
             const scheme = rubricLibrary.find(s => s.id === schemeId)
             if (!scheme) return
             updateState({ [rubricIdField]: schemeId } as any)
-            setEvalPoints(info.field, scheme.points.map(p => ({ ...p, id: `ep-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` })))
+            if (scheme.mode === "rubric") {
+              setEvalPoints(info.field, scheme.points.map(p => ({ ...p, id: `ep-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` })))
+            } else {
+              setEvalPoints(info.field, [])
+            }
+            setEditingRubricId(schemeId)
           }
 
           const enterEdit = (schemeId: string | null) => {
@@ -4105,9 +4168,11 @@ function EditCardDialog({
               const scheme = rubricLibrary.find(s => s.id === schemeId)
               if (scheme) {
                 setEvalPoints(info.field, JSON.parse(JSON.stringify(scheme.points)))
+                setLocalDraft({ name: scheme.name, mode: scheme.mode, types: scheme.types, scoreRuleItems: scheme.scoreRuleItems || [] })
               }
             } else {
               setEvalPoints(info.field, [])
+              setLocalDraft({ name: "", mode: "rubric", types: [], scoreRuleItems: [] })
             }
             setEditingRubricId(schemeId)
             setView("edit")
@@ -4122,10 +4187,12 @@ function EditCardDialog({
               const newId = `scheme-${Date.now()}`
               const newScheme: RubricScheme = {
                 id: newId,
-                name: updates.name || "新建量规",
+                name: updates.name || "新建评价标准",
                 types: updates.types || [],
                 desc: updates.desc || "",
                 points: info.points.map(p => ({ ...p, id: `ep-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` })),
+                mode: updates.mode || "rubric",
+                scoreRuleItems: updates.scoreRuleItems || [],
               }
               setRubricLibrary(prev => [...prev, newScheme])
               updateState({ [rubricIdField]: newId } as any)
@@ -4133,106 +4200,104 @@ function EditCardDialog({
           }
 
           const editingScheme = editingRubricId ? rubricLibrary.find(s => s.id === editingRubricId) : null
-          const draftScheme = editingScheme || { name: "", types: [] as EvalSubType[], desc: "" }
+          const draftScheme = editingScheme
+            ? { name: editingScheme.name, types: editingScheme.types, mode: editingScheme.mode, scoreRuleItems: editingScheme.scoreRuleItems || [] }
+            : localDraft
 
           if (view === "edit") {
             return (
               <div className="space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => { setErDialogOpen(null); setEditingRubricId(null); }}>
-                    <ChevronLeft className="h-3.5 w-3.5 mr-1" />返回评价规则
-                  </Button>
+                <div className="flex items-center justify-end mb-2">
                   <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => { setView("template"); setEditingRubricId(null); }}>
-                    <BookOpen className="h-3.5 w-3.5 mr-1" />选择量规模板覆盖
+                    <BookOpen className="h-3.5 w-3.5 mr-1" />选择评价标准模板覆盖
                   </Button>
                 </div>
                 <div className="border rounded-xl p-4 bg-gray-50/50">
-                  <p className="text-sm font-medium mb-3">评价量规信息</p>
+                  <p className="text-sm font-medium mb-3">评价标准信息</p>
                   <div className="space-y-3">
                     <div>
-                      <Label className="text-xs text-gray-500">量规名称</Label>
+                      <Label className="text-xs text-gray-500">评价标准名称</Label>
                       <Input value={draftScheme.name} onChange={e => {
                         if (editingRubricId) {
                           setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, name: e.target.value } : s))
+                        } else {
+                          setLocalDraft(prev => ({ ...prev, name: e.target.value }))
                         }
-                      }} className="mt-1 text-sm" placeholder="输入评价量规名称" />
+                      }} className="mt-1 text-sm" placeholder="输入评价标准名称" />
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-500">量规类型</Label>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {(Object.keys(evalSubTypeLabels) as EvalSubType[]).map(type => {
-                          const selected = draftScheme.types.includes(type)
-                          return (
-                            <button
-                              key={type}
-                              onClick={() => {
-                                if (!editingRubricId) return
-                                const has = draftScheme.types.includes(type)
-                                const newTypes = has ? draftScheme.types.filter(t => t !== type) : [...draftScheme.types, type]
-                                setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, types: newTypes } : s))
-                              }}
-                              className={cn(
-                                "px-2.5 py-1 rounded-full text-xs border transition-all",
-                                selected ? cn(evalSubTypeColors[type], "border-current") : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
-                              )}
-                            >
-                              {evalSubTypeLabels[type]}
-                            </button>
-                          )
-                        })}
+                      <Label className="text-xs text-gray-500">评价标准类型</Label>
+                      <div className="flex gap-3 mt-1">
+                        <button
+                          onClick={() => {
+                            if (editingRubricId) {
+                              setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, mode: "rubric" } : s))
+                            } else {
+                              setLocalDraft(prev => ({ ...prev, mode: "rubric" }))
+                            }
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg text-xs border transition-all flex items-center gap-1.5",
+                            draftScheme.mode === "rubric" ? "bg-primary/10 text-primary border-primary" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                          )}
+                        >
+                          <div className={cn("w-3.5 h-3.5 rounded-full border flex items-center justify-center", draftScheme.mode === "rubric" ? "border-primary" : "border-gray-300")}>
+                            {draftScheme.mode === "rubric" && <div className="w-2 h-2 rounded-full bg-primary" />}
+                          </div>
+                          评价量规
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (editingRubricId) {
+                              setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, mode: "score_rule", scoreRuleItems: s.scoreRuleItems?.length ? s.scoreRuleItems : [{ id: `sr-${Date.now()}`, name: "", desc: "", rule: "", weight: 0 }] } : s))
+                            } else {
+                              setLocalDraft(prev => ({ ...prev, mode: "score_rule", scoreRuleItems: prev.scoreRuleItems?.length ? prev.scoreRuleItems : [{ id: `sr-${Date.now()}`, name: "", desc: "", rule: "", weight: 0 }] }))
+                            }
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg text-xs border transition-all flex items-center gap-1.5",
+                            draftScheme.mode === "score_rule" ? "bg-primary/10 text-primary border-primary" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                          )}
+                        >
+                          <div className={cn("w-3.5 h-3.5 rounded-full border flex items-center justify-center", draftScheme.mode === "score_rule" ? "border-primary" : "border-gray-300")}>
+                            {draftScheme.mode === "score_rule" && <div className="w-2 h-2 rounded-full bg-primary" />}
+                          </div>
+                          评分规则
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="border rounded-xl p-4 overflow-hidden">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium">评价量规配置表</p>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setExpandedRows(prev => {
-                        if (prev.size === info.points.length) return new Set()
-                        return new Set(info.points.map(p => p.id))
-                      })}>
-                        {expandedRows.size === info.points.length ? "收起全部" : "展开全部"}
-                      </Button>
+                {draftScheme.mode === "rubric" ? (
+                  <div className="border rounded-xl p-4 overflow-hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium">评价量规配置表</p>
                       <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })}>
                         <Plus className="h-3.5 w-3.5 mr-1" />添加评价维度
                       </Button>
                     </div>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm border-collapse min-w-[900px]">
-                      <thead>
-                        <tr className="border-b bg-gray-50 text-gray-500 text-xs">
-                          <th className="py-2.5 px-2 text-left w-16">序号</th>
-                          <th className="py-2.5 px-2 text-left min-w-[160px]">评价维度</th>
-                          <th className="py-2.5 px-2 text-left min-w-[180px]">关联知识点</th>
-                          <th className="py-2.5 px-2 text-left min-w-[180px]">关联能力点</th>
-                          <th className="py-2.5 px-2 text-left min-w-[200px]">评分等级（展开查看）</th>
-                          <th className="py-2.5 px-2 text-center w-20">权重(%)</th>
-                          <th className="py-2.5 px-2 text-center w-16">操作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {info.points.map((ep, idx) => {
-                          const isExpanded = expandedRows.has(ep.id)
-                          const gradeCount = ep.gradeMapping?.length || 0
-                          return [
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm border-collapse min-w-[1100px]">
+                        <thead>
+                          <tr className="border-b bg-gray-50 text-gray-500 text-xs">
+                            <th className="py-2.5 px-2 text-left w-12">序号</th>
+                            <th className="py-2.5 px-2 text-left min-w-[140px]">评价维度</th>
+                            <th className="py-2.5 px-2 text-left min-w-[220px]">关联知识点/能力点</th>
+                            <th className="py-2.5 px-2 text-left min-w-[440px]">评分等级</th>
+                            <th className="py-2.5 px-2 text-center w-16">权重(%)</th>
+                            <th className="py-2.5 px-2 text-center w-14">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {info.points.map((ep, idx) => (
                             <tr key={ep.id} className="border-b hover:bg-gray-50/50 transition-colors">
-                              <td className="py-2.5 px-2">
-                                <button onClick={() => setExpandedRows(prev => {
-                                  const next = new Set(prev)
-                                  if (next.has(ep.id)) next.delete(ep.id)
-                                  else next.add(ep.id)
-                                  return next
-                                })} className="mr-1 text-gray-400 hover:text-gray-600 align-middle">
-                                  {isExpanded ? <ChevronDown className="h-3.5 w-3.5 inline" /> : <ChevronRight className="h-3.5 w-3.5 inline" />}
-                                </button>
+                              <td className="py-3 px-2">
                                 <span className="text-gray-600 align-middle">{idx + 1}</span>
                               </td>
-                              <td className="py-2.5 px-2">
+                              <td className="py-3 px-2">
                                 <Input value={ep.name} onChange={e => updateEvalPoint(info.field, ep.id, { name: e.target.value })} className="h-8 text-sm" placeholder="输入评价维度" />
                               </td>
-                              <td className="py-2.5 px-2">
+                              <td className="py-3 px-2">
                                 <div className="flex flex-wrap gap-1 items-center">
                                   {(ep.knowledgePointIds || []).map(kpid => {
                                     const kp = knowledgePoints.find(k => k.id === kpid)
@@ -4243,11 +4308,6 @@ function EditCardDialog({
                                       </Badge>
                                     ) : null
                                   })}
-                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricKpDialog(ep.id, info.field)}>+ 关联</Button>
-                                </div>
-                              </td>
-                              <td className="py-2.5 px-2">
-                                <div className="flex flex-wrap gap-1 items-center">
                                   {(ep.abilityPointIds || []).map(abId => {
                                     const ab = abilityPoints.find(a => a.id === abId)
                                     return ab ? (
@@ -4257,65 +4317,177 @@ function EditCardDialog({
                                       </Badge>
                                     ) : null
                                   })}
-                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricAbDialog(ep.id, info.field)}>+ 关联</Button>
+                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricKpDialog(ep.id, info.field)}>+ 知识点</Button>
+                                  <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-gray-400 hover:text-primary" onClick={() => openRubricAbDialog(ep.id, info.field)}>+ 能力点</Button>
                                 </div>
                               </td>
-                              <td className="py-2.5 px-2">
+                              <td className="py-3 px-2">
                                 <button
-                                  onClick={() => setExpandedRows(prev => {
-                                    const next = new Set(prev)
-                                    if (next.has(ep.id)) next.delete(ep.id)
-                                    else next.add(ep.id)
-                                    return next
-                                  })}
-                                  className="text-xs text-primary hover:underline whitespace-nowrap"
+                                  onClick={() => {
+                                    setEditingGradeMappingPointId(ep.id)
+                                    setGradeMappingDialogOpen(true)
+                                  }}
+                                  className="text-xs text-left text-primary hover:underline w-full block"
                                 >
-                                  {gradeCount} 个等级 {isExpanded ? "▲" : "▼"}
+                                  {ep.gradeMapping?.map(gm => (
+                                    <div key={gm.id} className="truncate leading-relaxed" title={`${gm.grade} (${gm.minScore}-${gm.maxScore}分) ${gm.remark}`}>
+                                      {gm.grade} ({gm.minScore}-{gm.maxScore}分) {gm.remark}
+                                    </div>
+                                  ))}
+                                  {!ep.gradeMapping?.length && "点击配置评分等级"}
                                 </button>
                               </td>
-                              <td className="py-2.5 px-2">
+                              <td className="py-3 px-2">
                                 <Input type="number" value={ep.weight || 0} onChange={e => updateEvalPoint(info.field, ep.id, { weight: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })} className="h-8 text-sm text-center" />
                               </td>
-                              <td className="py-2.5 px-2 text-center">
+                              <td className="py-3 px-2 text-center">
                                 <button className="text-red-500 hover:text-red-600 text-xs" onClick={() => removeEvalPoint(info.field, ep.id)}>删除</button>
                               </td>
-                            </tr>,
-                            isExpanded && ep.gradeMapping ? (
-                              <tr key={`${ep.id}-expanded`} className="border-b">
-                                <td colSpan={7} className="px-4 py-3 bg-gray-50/50">
-                                  <LevelRuleEditor gradeMapping={ep.gradeMapping} onChange={gm => updateEvalPoint(info.field, ep.id, { gradeMapping: gm })} />
-                                </td>
-                              </tr>
-                            ) : null
-                          ].filter(Boolean)
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    <button onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-lg text-sm text-gray-500 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1">
-                      <Plus className="h-4 w-4" />添加评价维度
-                    </button>
-                    {info.points.length > 0 && (
-                      <div className="flex justify-end text-xs items-center gap-1">
-                        <span className="text-gray-500">维度权重合计：</span>
-                        <span className={cn("font-semibold", (info.points.reduce((sum, p) => sum + (p.weight || 0), 0)) === 100 ? "text-green-600" : "text-red-500")}>
-                          {info.points.reduce((sum, p) => sum + (p.weight || 0), 0)}%
-                        </span>
-                        {(info.points.reduce((sum, p) => sum + (p.weight || 0), 0)) !== 100 && (
-                          <span className="text-red-500">⚠️（需等于100%）</span>
-                        )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <button onClick={() => addEvalPoint(info.field, { name: "", types: draftScheme.types.length ? draftScheme.types : undefined })} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-lg text-sm text-gray-500 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1">
+                        <Plus className="h-4 w-4" />添加评价维度
+                      </button>
+                      {info.points.length > 0 && (
+                        <div className="flex justify-end text-xs items-center gap-1">
+                          <span className="text-gray-500">维度权重合计：</span>
+                          <span className={cn("font-semibold", (info.points.reduce((sum, p) => sum + (p.weight || 0), 0)) === 100 ? "text-green-600" : "text-red-500")}>
+                            {info.points.reduce((sum, p) => sum + (p.weight || 0), 0)}%
+                          </span>
+                          {(info.points.reduce((sum, p) => sum + (p.weight || 0), 0)) !== 100 && (
+                            <span className="text-red-500">⚠️（需等于100%）</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {info.points.length === 0 && (
+                      <div className="text-center text-gray-400 py-8">
+                        <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">尚未添加评价点</p>
+                        <p className="text-xs mt-1">点击上方按钮添加第一个评价点</p>
                       </div>
                     )}
                   </div>
-                  {info.points.length === 0 && (
-                    <div className="text-center text-gray-400 py-8">
-                      <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">尚未添加评价点</p>
-                      <p className="text-xs mt-1">点击上方按钮添加第一个评价点</p>
+                ) : (
+                  <div className="border rounded-xl p-4 overflow-hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium">评分规则配置表</p>
+                      <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => {
+                        const newItem: ScoreRuleItem = { id: `sr-${Date.now()}`, name: "", desc: "", rule: "", weight: 0 }
+                        if (editingRubricId) {
+                          setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: [...(s.scoreRuleItems || []), newItem] } : s))
+                        } else {
+                          setLocalDraft(prev => ({ ...prev, scoreRuleItems: [...(prev.scoreRuleItems || []), newItem] }))
+                        }
+                      }}>
+                        <Plus className="h-3.5 w-3.5 mr-1" />添加评价项
+                      </Button>
                     </div>
-                  )}
-                </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm border-collapse min-w-[800px]">
+                        <thead>
+                          <tr className="border-b bg-gray-50 text-gray-500 text-xs">
+                            <th className="py-2.5 px-2 text-left w-16">序号</th>
+                            <th className="py-2.5 px-2 text-left min-w-[160px]">评价项</th>
+                            <th className="py-2.5 px-2 text-left min-w-[200px]">评分标准描述</th>
+                            <th className="py-2.5 px-2 text-left min-w-[200px]">加减分规则</th>
+                            <th className="py-2.5 px-2 text-center w-20">权重(%)</th>
+                            <th className="py-2.5 px-2 text-center w-16">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(draftScheme.scoreRuleItems || []).map((item, idx) => (
+                            <tr key={item.id} className="border-b hover:bg-gray-50/50 transition-colors">
+                              <td className="py-3 px-2">
+                                <span className="text-gray-600 align-middle">{idx + 1}</span>
+                              </td>
+                              <td className="py-3 px-2">
+                                <Input value={item.name} onChange={e => {
+                                  if (editingRubricId) {
+                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, name: e.target.value } : it) } : s))
+                                  } else {
+                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, name: e.target.value } : it) }))
+                                  }
+                                }} className="h-8 text-sm" placeholder="输入评价项" />
+                              </td>
+                              <td className="py-3 px-2">
+                                <Textarea value={item.desc} onChange={e => {
+                                  if (editingRubricId) {
+                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, desc: e.target.value } : it) } : s))
+                                  } else {
+                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, desc: e.target.value } : it) }))
+                                  }
+                                }} className="text-sm min-h-[60px]" placeholder="输入评分标准描述" rows={2} />
+                              </td>
+                              <td className="py-3 px-2">
+                                <Textarea value={item.rule} onChange={e => {
+                                  if (editingRubricId) {
+                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, rule: e.target.value } : it) } : s))
+                                  } else {
+                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, rule: e.target.value } : it) }))
+                                  }
+                                }} className="text-sm min-h-[60px]" placeholder="输入加减分规则" rows={2} />
+                              </td>
+                              <td className="py-3 px-2">
+                                <Input type="number" value={item.weight || 0} onChange={e => {
+                                  const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0))
+                                  if (editingRubricId) {
+                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, weight: val } : it) } : s))
+                                  } else {
+                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).map(it => it.id === item.id ? { ...it, weight: val } : it) }))
+                                  }
+                                }} className="h-8 text-sm text-center" />
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                <button className="text-red-500 hover:text-red-600 text-xs" onClick={() => {
+                                  if (editingRubricId) {
+                                    setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: (s.scoreRuleItems || []).filter(it => it.id !== item.id) } : s))
+                                  } else {
+                                    setLocalDraft(prev => ({ ...prev, scoreRuleItems: (prev.scoreRuleItems || []).filter(it => it.id !== item.id) }))
+                                  }
+                                }}>删除</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <button onClick={() => {
+                        const newItem: ScoreRuleItem = { id: `sr-${Date.now()}`, name: "", desc: "", rule: "", weight: 0 }
+                        if (editingRubricId) {
+                          setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, scoreRuleItems: [...(s.scoreRuleItems || []), newItem] } : s))
+                        } else {
+                          setLocalDraft(prev => ({ ...prev, scoreRuleItems: [...(prev.scoreRuleItems || []), newItem] }))
+                        }
+                      }} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-lg text-sm text-gray-500 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1">
+                        <Plus className="h-4 w-4" />添加评价项
+                      </button>
+                      {(draftScheme.scoreRuleItems || []).length > 0 && (
+                        <div className="flex justify-end text-xs items-center gap-1">
+                          <span className="text-gray-500">权重合计：</span>
+                          <span className={cn("font-semibold", ((draftScheme.scoreRuleItems || []).reduce((sum, it) => sum + (it.weight || 0), 0)) === 100 ? "text-green-600" : "text-red-500")}>
+                            {(draftScheme.scoreRuleItems || []).reduce((sum, it) => sum + (it.weight || 0), 0)}%
+                          </span>
+                          {((draftScheme.scoreRuleItems || []).reduce((sum, it) => sum + (it.weight || 0), 0)) !== 100 && (
+                            <span className="text-red-500">⚠️（需等于100%）</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {(draftScheme.scoreRuleItems || []).length === 0 && (
+                      <div className="text-center text-gray-400 py-8">
+                        <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">尚未添加评价项</p>
+                        <p className="text-xs mt-1">点击上方按钮添加第一个评价项</p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {editingRubricId && (
                   <div className="flex items-center gap-2">
                     <Button size="sm" className="text-xs h-8" onClick={() => {
@@ -4324,21 +4496,80 @@ function EditCardDialog({
                       setView("list")
                       setEditingRubricId(null)
                     }}>
-                      保存量规
+                      保存评价标准
                     </Button>
                   </div>
                 )}
                 {!editingRubricId && (
                   <div className="flex items-center gap-2">
                     <Button size="sm" className="text-xs h-8" onClick={() => {
-                      saveRubricToLibrary(null, { name: draftScheme.name, types: draftScheme.types, desc: "" })
+                      saveRubricToLibrary(null, { name: draftScheme.name || "新建评价标准", types: draftScheme.types, desc: "", mode: draftScheme.mode, scoreRuleItems: draftScheme.scoreRuleItems })
                       setView("list")
                       setEditingRubricId(null)
                     }}>
-                      创建量规
+                      保存评价标准
                     </Button>
                   </div>
                 )}
+                <Dialog open={gradeMappingDialogOpen} onOpenChange={v => !v && setGradeMappingDialogOpen(false)}>
+                  <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>编辑评分等级</DialogTitle>
+                    </DialogHeader>
+                    {(() => {
+                      const ep = info.points.find(p => p.id === editingGradeMappingPointId)
+                      if (!ep || !ep.gradeMapping) return null
+                      const gm = ep.gradeMapping
+                      return (
+                        <div className="space-y-3 py-2">
+                          {gm.map((g, i) => (
+                            <div key={g.id} className="flex items-start gap-2 p-3 rounded-lg border bg-gray-50/50">
+                              <div className="flex-1 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Input value={g.grade} onChange={e => {
+                                    const newGm = gm.map(x => x.id === g.id ? { ...x, grade: e.target.value } : x)
+                                    updateEvalPoint(info.field, ep.id, { gradeMapping: newGm })
+                                  }} className="w-14 h-7 text-center text-xs font-semibold" placeholder="等级" />
+                                  <Input type="number" value={g.minScore} onChange={e => {
+                                    const newGm = gm.map(x => x.id === g.id ? { ...x, minScore: parseInt(e.target.value) || 0 } : x)
+                                    updateEvalPoint(info.field, ep.id, { gradeMapping: newGm })
+                                  }} className="w-16 h-7 text-center text-xs" min={0} max={100} />
+                                  <span className="text-gray-500 text-xs">-</span>
+                                  <Input type="number" value={g.maxScore} onChange={e => {
+                                    const newGm = gm.map(x => x.id === g.id ? { ...x, maxScore: parseInt(e.target.value) || 0 } : x)
+                                    updateEvalPoint(info.field, ep.id, { gradeMapping: newGm })
+                                  }} className="w-16 h-7 text-center text-xs" min={0} max={100} />
+                                  <span className="text-xs text-gray-500">分</span>
+                                </div>
+                                <Input value={g.remark || ""} onChange={e => {
+                                  const newGm = gm.map(x => x.id === g.id ? { ...x, remark: e.target.value } : x)
+                                  updateEvalPoint(info.field, ep.id, { gradeMapping: newGm })
+                                }} className="h-7 text-xs" placeholder="等级描述" />
+                              </div>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400 hover:text-red-500" onClick={() => {
+                                const newGm = gm.filter(x => x.id !== g.id)
+                                updateEvalPoint(info.field, ep.id, { gradeMapping: newGm })
+                              }}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => {
+                            const colors = ["bg-green-500", "bg-blue-500", "bg-yellow-500", "bg-red-500", "bg-purple-500", "bg-orange-500"]
+                            const newId = `grade-${Date.now()}`
+                            const newGm = [...gm, { id: newId, grade: "新等级", minScore: 0, maxScore: 100, color: colors[gm.length % colors.length], remark: "" }]
+                            updateEvalPoint(info.field, ep.id, { gradeMapping: newGm })
+                          }}>
+                            <Plus className="h-3.5 w-3.5 mr-1" />新增等级
+                          </Button>
+                        </div>
+                      )
+                    })()}
+                    <DialogFooter>
+                      <Button variant="outline" size="sm" onClick={() => setGradeMappingDialogOpen(false)}>关闭</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             )
           }
@@ -4348,10 +4579,10 @@ function EditCardDialog({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => setView("edit")}>
-                    <ChevronLeft className="h-3.5 w-3.5 mr-1" />返回量规编辑
+                    <ChevronLeft className="h-3.5 w-3.5 mr-1" />返回评价标准编辑
                   </Button>
                 </div>
-                <p className="text-sm font-medium">选择量规模板进行覆盖</p>
+                <p className="text-sm font-medium">选择评价标准模板进行覆盖</p>
                 <div className="grid grid-cols-1 gap-3">
                   {rubricLibrary.map(scheme => (
                     <div
@@ -4366,6 +4597,9 @@ function EditCardDialog({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1.5">
                             <p className="text-sm font-semibold">{scheme.name}</p>
+                            <Badge variant="outline" className={cn("text-[10px]", scheme.mode === "rubric" ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-blue-50 text-blue-600 border-blue-200")}>
+                              {scheme.mode === "rubric" ? "评价量规" : "评分规则"}
+                            </Badge>
                           </div>
                           <p className="text-xs text-gray-400 mb-2">{scheme.desc}</p>
                           <div className="flex flex-wrap gap-1.5">
@@ -4373,7 +4607,7 @@ function EditCardDialog({
                               <Badge key={type} variant="outline" className={cn("text-[10px]", evalSubTypeColors[type])}>{evalSubTypeLabels[type]}</Badge>
                             ))}
                           </div>
-                          <p className="text-xs text-gray-400 mt-1.5">{scheme.points.length} 个评价点</p>
+                          <p className="text-xs text-gray-400 mt-1.5">{scheme.mode === "rubric" ? `${scheme.points.length} 个评价点` : `${scheme.scoreRuleItems?.length || 0} 个评价项`}</p>
                         </div>
                         <Button size="sm" className="h-7 text-[11px] px-2.5 shrink-0 mt-0.5" onClick={(e) => { e.stopPropagation(); applyScheme(scheme.id); setView("edit"); }}>
                           使用此模板
@@ -4389,10 +4623,15 @@ function EditCardDialog({
           return (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">选择评价量规方案</p>
-                <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => enterEdit(null)}>
-                  <Plus className="h-3.5 w-3.5 mr-1" />添加评价量规
-                </Button>
+                <p className="text-sm font-medium">选择评价标准方案</p>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => { setView("template"); setEditingRubricId(null); }}>
+                    <BookOpen className="h-3.5 w-3.5 mr-1" />选择评价标准模板覆盖
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => enterEdit(null)}>
+                    <Plus className="h-3.5 w-3.5 mr-1" />添加评价标准
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-3">
                 {rubricLibrary.map(scheme => {
@@ -4419,6 +4658,9 @@ function EditCardDialog({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1.5">
                             <p className="text-sm font-semibold">{scheme.name}</p>
+                            <Badge variant="outline" className={cn("text-[10px]", scheme.mode === "rubric" ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-blue-50 text-blue-600 border-blue-200")}>
+                              {scheme.mode === "rubric" ? "评价量规" : "评分规则"}
+                            </Badge>
                             {isSelected && (
                               <div className="flex items-center gap-1 text-primary text-xs font-medium bg-primary/5 px-2 py-0.5 rounded-full">
                                 <CheckCircle2 className="h-3 w-3" />
@@ -4432,7 +4674,7 @@ function EditCardDialog({
                               <Badge key={type} variant="outline" className={cn("text-[10px]", evalSubTypeColors[type])}>{evalSubTypeLabels[type]}</Badge>
                             ))}
                           </div>
-                          <p className="text-xs text-gray-400 mt-1.5">{scheme.points.length} 个评价点</p>
+                          <p className="text-xs text-gray-400 mt-1.5">{scheme.mode === "rubric" ? `${scheme.points.length} 个评价点` : `${scheme.scoreRuleItems?.length || 0} 个评价项`}</p>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
                           <Button
@@ -4463,8 +4705,8 @@ function EditCardDialog({
               {!currentRubricId && (
                 <div className="text-center text-gray-400 py-6">
                   <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">尚未选用评价量规</p>
-                  <p className="text-xs mt-1">请从上方列表中选用一个量规方案</p>
+                  <p className="text-sm">尚未选用评价标准</p>
+                  <p className="text-xs mt-1">请从上方列表中选用一个评价标准方案</p>
                 </div>
               )}
             </div>
@@ -4545,7 +4787,7 @@ function EditCardDialog({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Target className="h-4 w-4 text-gray-400 group-hover:text-primary" />
-                  <span className="text-xs font-medium text-gray-500">评价方法</span>
+                  <span className="text-xs font-medium text-gray-500">评价标准配置</span>
                 </div>
                 {info.points.length > 0 && <Badge variant="outline" className="text-[10px]">{info.points.length} 点</Badge>}
               </div>
@@ -4761,7 +5003,7 @@ function EditCardDialog({
                           <div className="flex-1 min-w-0 p-4 rounded-xl border text-left bg-green-50/50 border-green-100">
                             <div className="flex items-center gap-2 mb-2">
                               <Target className="h-4 w-4 text-green-500" />
-                              <span className="text-xs font-medium text-green-600">评价方法</span>
+                              <span className="text-xs font-medium text-green-600">评价标准配置</span>
                             </div>
                             <p className="text-sm font-semibold text-green-700">自动读取得分</p>
                             <p className="text-xs text-green-500 truncate mt-0.5">系统将自动读取上一步测评资源的得分</p>
@@ -4801,7 +5043,7 @@ function EditCardDialog({
             </Dialog>
 
             <Dialog open={erDialogOpen === "resource"} onOpenChange={v => !v && setErDialogOpen(null)}>
-              <DialogContent className="sm:max-w-[63vw] max-w-[63vw] h-[92vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-[85vw] max-w-[85vw] h-[92vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>测评资源配置</DialogTitle>
                   <DialogDescription>
@@ -4813,9 +5055,9 @@ function EditCardDialog({
             </Dialog>
 
             <Dialog open={erDialogOpen === "method"} onOpenChange={v => !v && setErDialogOpen(null)}>
-              <DialogContent className="sm:max-w-[63vw] max-w-[63vw] h-[92vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-[90vw] max-w-[90vw] h-[92vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>评价方法配置</DialogTitle>
+                  <DialogTitle>评价标准配置</DialogTitle>
                   <DialogDescription>
                     配置 {erDialogMethod ? evaluationMethodOptions.find(o => o.key === erDialogMethod)?.label : ""} 的评价点与评分规则
                   </DialogDescription>

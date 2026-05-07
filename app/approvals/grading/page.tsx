@@ -41,14 +41,18 @@ interface TaskStudent {
   submission: StudentSubmission
 }
 
-interface TaskGroup {
-  taskId: string
-  taskName: string
+interface TaskFormGroup {
   assessmentForm: string
-  taskType: string
   students: TaskStudent[]
   pendingCount: number
   gradedCount: number
+}
+
+interface TaskGroup {
+  taskId: string
+  taskName: string
+  taskType: string
+  forms: TaskFormGroup[]
 }
 
 interface ScenarioGroup {
@@ -143,19 +147,31 @@ export default function GradingPage() {
       }
 
       if (existing) {
-        existing.students.push(taskStudent)
-        existing.pendingCount += sub.status === "pending" ? 1 : 0
-        existing.gradedCount += sub.status === "graded" ? 1 : 0
+        const form = existing.forms.find((f) => f.assessmentForm === sub.assessmentForm)
+        if (form) {
+          form.students.push(taskStudent)
+          form.pendingCount += sub.status === "pending" ? 1 : 0
+          form.gradedCount += sub.status === "graded" ? 1 : 0
+        } else {
+          existing.forms.push({
+            assessmentForm: sub.assessmentForm,
+            students: [taskStudent],
+            pendingCount: sub.status === "pending" ? 1 : 0,
+            gradedCount: sub.status === "graded" ? 1 : 0,
+          })
+        }
       } else {
         const taskInfo = scenario?.tasks.find((t) => t.id === sub.taskId)
         taskMap.set(sub.taskId, {
           taskId: sub.taskId,
           taskName: sub.taskName,
-          assessmentForm: sub.assessmentForm,
           taskType: taskInfo?.taskType === "assessment" ? "考核" : "训练",
-          students: [taskStudent],
-          pendingCount: sub.status === "pending" ? 1 : 0,
-          gradedCount: sub.status === "graded" ? 1 : 0,
+          forms: [{
+            assessmentForm: sub.assessmentForm,
+            students: [taskStudent],
+            pendingCount: sub.status === "pending" ? 1 : 0,
+            gradedCount: sub.status === "graded" ? 1 : 0,
+          }],
         })
       }
     }
@@ -172,10 +188,7 @@ export default function GradingPage() {
     })
   }
 
-  const isTaskActivated = (taskId: string, assessmentForm: string) => {
-    if (assessmentForm !== "试卷") return true
-    return taskActivation[taskId]?.enabled ?? false
-  }
+  const isTaskActivated = () => true
 
   const openActivationDialog = (taskId: string) => {
     const existing = taskActivation[taskId]
@@ -219,6 +232,110 @@ export default function GradingPage() {
     }
     groups.sort((a, b) => b.year - a.year)
     return groups
+  }
+
+  // Task form tabs component
+  function TaskFormTabs({ task }: { task: TaskGroup }) {
+    const [activeForm, setActiveForm] = useState(task.forms[0]?.assessmentForm || "")
+    const activeFormData = task.forms.find((f) => f.assessmentForm === activeForm)
+    const yearGroups = activeFormData ? groupStudents(activeFormData.students) : []
+
+    return (
+      <div className="px-4 pb-4 border-t border-gray-100">
+        {task.forms.length > 1 && (
+          <div className="flex items-center gap-2 pt-3 mb-3">
+            {task.forms.map((form) => (
+              <button
+                key={form.assessmentForm}
+                onClick={() => setActiveForm(form.assessmentForm)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                  activeForm === form.assessmentForm
+                    ? "bg-primary/10 text-primary border border-primary/30"
+                    : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"
+                )}
+              >
+                {form.assessmentForm}
+                <span className="text-[10px] opacity-70">({form.students.length})</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {activeFormData && activeFormData.students.length === 0 ? (
+          <div className="py-6 text-center text-gray-400 text-sm">暂无学生提交记录</div>
+        ) : (
+          <div className="space-y-4">
+            {yearGroups.map((yearGroup) => (
+              <div key={yearGroup.year}>
+                <div className="flex items-center gap-2 mb-2">
+                  <GraduationCap className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-600">{yearGroup.year} 届</span>
+                  <Badge variant="outline" className="text-[10px] font-normal text-gray-400">
+                    {yearGroup.classes.reduce((s, c) => s + c.students.length, 0)} 人
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  {yearGroup.classes.map((classGroup) => (
+                    <div key={classGroup.className}>
+                      <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                        <Users className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-500">{classGroup.className}</span>
+                        <span className="text-[10px] text-gray-400">({classGroup.students.length} 人)</span>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 divide-y divide-slate-100">
+                        {classGroup.students.map((item) => (
+                          <div
+                            key={item.studentId}
+                            className="flex items-center justify-between p-2.5 hover:bg-slate-50/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium">
+                                {item.studentName.charAt(0)}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-800 text-sm">{item.studentName}</span>
+                                  <span className="text-xs text-gray-400">{item.studentNumber}</span>
+                                  <Badge variant="outline" className={cn("text-[10px]", item.submission.status === "pending" ? "bg-amber-50 text-amber-600 border-amber-200" : "bg-green-50 text-green-600 border-green-200")}>
+                                    {item.submission.status === "pending" ? "待评分" : "已评分"}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                                  <Clock className="h-3 w-3" />
+                                  {item.submission.submittedAt}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                                <Link href={`/approvals/grading/${item.submission.id}`}>
+                                  <Eye className="mr-1 h-3 w-3" />查看
+                                </Link>
+                              </Button>
+                              {item.submission.status === "pending" ? (
+                                <Button size="sm" className="h-7 text-xs" asChild>
+                                  <Link href={`/approvals/grading/${item.submission.id}`}>
+                                    <PenLine className="mr-1 h-3 w-3" />评分
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <Button variant="ghost" size="sm" className="h-7 text-xs text-green-600" disabled>
+                                  <CheckCircle2 className="mr-1 h-3 w-3" />已评分
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -330,9 +447,9 @@ export default function GradingPage() {
                 <div className="space-y-3">
                   {taskGroups.map((task) => {
                     const isExpanded = expandedTasks.has(task.taskId)
-                    const isActivated = isTaskActivated(task.taskId, task.assessmentForm)
-                    const isPaper = task.assessmentForm === "试卷"
-                    const yearGroups = isActivated ? groupStudents(task.students) : []
+                    const totalStudents = task.forms.reduce((s, f) => s + f.students.length, 0)
+                    const totalPending = task.forms.reduce((s, f) => s + f.pendingCount, 0)
+                    const totalGraded = task.forms.reduce((s, f) => s + f.gradedCount, 0)
 
                     return (
                       <Collapsible key={task.taskId} open={isExpanded} onOpenChange={() => toggleTask(task.taskId)}>
@@ -346,27 +463,23 @@ export default function GradingPage() {
                                 <div>
                                   <div className="flex items-center gap-2">
                                     <p className="text-sm font-semibold text-gray-800">{task.taskName}</p>
-                                    <Badge variant="outline" className="text-[10px] font-normal">{task.assessmentForm}</Badge>
+                                    {task.forms.map((f) => (
+                                      <Badge key={f.assessmentForm} variant="outline" className="text-[10px] font-normal">{f.assessmentForm}</Badge>
+                                    ))}
                                     <Badge variant="secondary" className="text-[10px] font-normal">{task.taskType}</Badge>
                                   </div>
                                   <div className="flex items-center gap-3 mt-1">
-                                    <span className="text-xs text-gray-500">{task.students.length} 位学生</span>
-                                    {task.pendingCount > 0 && (
-                                      <span className="text-xs text-amber-600 font-medium">待评分 {task.pendingCount}</span>
+                                    <span className="text-xs text-gray-500">{totalStudents} 位学生</span>
+                                    {totalPending > 0 && (
+                                      <span className="text-xs text-amber-600 font-medium">待评分 {totalPending}</span>
                                     )}
-                                    {task.gradedCount > 0 && (
-                                      <span className="text-xs text-green-600 font-medium">已评分 {task.gradedCount}</span>
+                                    {totalGraded > 0 && (
+                                      <span className="text-xs text-green-600 font-medium">已评分 {totalGraded}</span>
                                     )}
                                   </div>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                {isPaper && !isActivated && (
-                                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); openActivationDialog(task.taskId); }}>
-                                    <Settings className="h-3 w-3 mr-1" />
-                                    开启配置
-                                  </Button>
-                                )}
                                 {isExpanded ? (
                                   <ChevronUp className="h-4 w-4 text-gray-400" />
                                 ) : (
@@ -376,89 +489,7 @@ export default function GradingPage() {
                             </div>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
-                            <div className="px-4 pb-4 border-t border-gray-100">
-                              {!isActivated ? (
-                                <div className="py-8 text-center text-gray-400">
-                                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                  <p className="text-sm">该试卷任务尚未开启评分</p>
-                                  <p className="text-xs mt-1">请点击上方「开启配置」进行设置</p>
-                                </div>
-                              ) : yearGroups.length === 0 ? (
-                                <div className="py-6 text-center text-gray-400 text-sm">暂无学生提交记录</div>
-                              ) : (
-                                <div className="space-y-4 pt-3">
-                                  {yearGroups.map((yearGroup) => (
-                                    <div key={yearGroup.year}>
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <GraduationCap className="h-3.5 w-3.5 text-gray-400" />
-                                        <span className="text-xs font-medium text-gray-600">{yearGroup.year} 届</span>
-                                        <Badge variant="outline" className="text-[10px] font-normal text-gray-400">
-                                          {yearGroup.classes.reduce((s, c) => s + c.students.length, 0)} 人
-                                        </Badge>
-                                      </div>
-                                      <div className="space-y-3">
-                                        {yearGroup.classes.map((classGroup) => (
-                                          <div key={classGroup.className}>
-                                            <div className="flex items-center gap-1.5 mb-1.5 px-1">
-                                              <Users className="h-3 w-3 text-gray-400" />
-                                              <span className="text-xs text-gray-500">{classGroup.className}</span>
-                                              <span className="text-[10px] text-gray-400">({classGroup.students.length} 人)</span>
-                                            </div>
-                                            <div className="rounded-lg border border-slate-200 divide-y divide-slate-100">
-                                              {classGroup.students.map((item) => (
-                                                <div
-                                                  key={item.studentId}
-                                                  className="flex items-center justify-between p-2.5 hover:bg-slate-50/50 transition-colors"
-                                                >
-                                                  <div className="flex items-center gap-3">
-                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium">
-                                                      {item.studentName.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                      <div className="flex items-center gap-2">
-                                                        <span className="font-medium text-gray-800 text-sm">{item.studentName}</span>
-                                                        <span className="text-xs text-gray-400">{item.studentNumber}</span>
-                                                        {item.submission.status === "pending" ? (
-                                                          <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-600 border-amber-200">待评分</Badge>
-                                                        ) : (
-                                                          <Badge variant="outline" className="text-[10px] bg-green-50 text-green-600 border-green-200">已评分</Badge>
-                                                        )}
-                                                      </div>
-                                                      <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
-                                                        <Clock className="h-3 w-3" />
-                                                        {item.submission.submittedAt}
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                  <div className="flex items-center gap-2">
-                                                    <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
-                                                      <Link href={`/approvals/grading/${item.submission.id}`}>
-                                                        <Eye className="mr-1 h-3 w-3" />查看
-                                                      </Link>
-                                                    </Button>
-                                                    {item.submission.status === "pending" ? (
-                                                      <Button size="sm" className="h-7 text-xs" asChild>
-                                                        <Link href={`/approvals/grading/${item.submission.id}`}>
-                                                          <PenLine className="mr-1 h-3 w-3" />评分
-                                                        </Link>
-                                                      </Button>
-                                                    ) : (
-                                                      <Button variant="ghost" size="sm" className="h-7 text-xs text-green-600" disabled>
-                                                        <CheckCircle2 className="mr-1 h-3 w-3" />已评分
-                                                      </Button>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                            <TaskFormTabs task={task} />
                           </CollapsibleContent>
                         </Card>
                       </Collapsible>

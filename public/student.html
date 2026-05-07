@@ -4268,25 +4268,38 @@
 
             return `
                 <div>
-                    <!-- 任务基本信息 -->
-                    <div style="background: #fafafa; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--text-secondary);">
-                        <span><i class="far fa-clock" style="color: var(--text-tertiary); margin-right: 4px;"></i>${task.estimatedHours} 课时</span>
-                        <span><i class="fas fa-star" style="color: var(--text-tertiary); margin-right: 4px;"></i>难度 ${'★'.repeat(task.difficulty)}${'☆'.repeat(5-task.difficulty)}</span>
-                        <span><i class="fas fa-tag" style="color: var(--text-tertiary); margin-right: 4px;"></i>${task.taskType === 'assessment' ? '考核任务' : '训练任务'}</span>
-                        <span><i class="fas fa-code" style="color: var(--text-tertiary); margin-right: 4px;"></i>${task.code}</span>
-                    </div>
-
-                    <!-- 知识点和能力点 -->
-                    ${kpTagsHtml}
-                    ${abilityTagsHtml}
-
-                    <!-- 任务说明 -->
-                    <div style="line-height: 1.8; color: var(--text-primary); font-size: 15px;">
-                        ${task.detailedDescription || task.description || '<p style="color: var(--text-tertiary);">暂无任务说明</p>'}
+                    <!-- 任务说明卡片 -->
+                    <div style="background: white; border-radius: 8px; border: 1px solid #e8e8e8; overflow: hidden;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #f0f0f0;">
+                            <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-book-open" style="color: var(--primary-color); margin-right: 8px;"></i>任务说明
+                            </div>
+                            <button onclick="toggleTaskDescFullscreen('${task.id}')" style="background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 14px; padding: 4px;" title="全屏查看">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div style="padding: 16px; line-height: 1.8; color: var(--text-primary); font-size: 15px; max-height: 420px; overflow-y: auto;">
+                            ${task.detailedDescription || task.description || '<p style="color: var(--text-tertiary);">暂无任务说明</p>'}
+                        </div>
                     </div>
 
                     <!-- 交付物 -->
                     ${deliverablesHtml}
+                </div>
+
+                <!-- 全屏任务说明弹窗 -->
+                <div id="taskDescFullscreen-${task.id}" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: center; justify-content: center; padding: 24px;" onclick="closeTaskDescFullscreen('${task.id}')">
+                    <div style="background: white; border-radius: 12px; width: 100%; max-width: 900px; height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-hover); animation: slideUp 0.2s ease;" onclick="event.stopPropagation()">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0;">
+                            <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-book-open" style="color: var(--primary-color); margin-right: 8px;"></i>任务说明
+                            </div>
+                            <button onclick="closeTaskDescFullscreen('${task.id}')" style="background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 18px;"><i class="fas fa-compress"></i></button>
+                        </div>
+                        <div style="padding: 20px; line-height: 1.8; color: var(--text-primary); font-size: 15px; overflow-y: auto; flex: 1;">
+                            ${task.detailedDescription || task.description || '<p style="color: var(--text-tertiary);">暂无任务说明</p>'}
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 弹出卡片遮罩 -->
@@ -4321,6 +4334,15 @@
         function closeKpCard(e) {
             if (e && e.target !== e.currentTarget && e.type === 'click') return;
             document.getElementById('kpPopupOverlay').style.display = 'none';
+        }
+
+        function toggleTaskDescFullscreen(taskId) {
+            const el = document.getElementById('taskDescFullscreen-' + taskId);
+            if (el) el.style.display = 'flex';
+        }
+        function closeTaskDescFullscreen(taskId) {
+            const el = document.getElementById('taskDescFullscreen-' + taskId);
+            if (el) el.style.display = 'none';
         }
 
         function renderOverviewStep(task) {

@@ -116,6 +116,42 @@ const requiredLevelColors: Record<string, string> = {
 // ============================================================================
 // 方案 A：先学后测 - 学习阶段主界面（大卡片任务说明书）
 // ============================================================================
+function TaskDescriptionDialog({
+  task,
+  open,
+  onOpenChange,
+}: {
+  task: SimulatedTask
+  open: boolean
+  onOpenChange: (v: boolean) => void
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent showCloseButton={false} className="sm:max-w-[95vw] sm:max-h-[95vh] h-[95vh] w-[95vw] p-0 flex flex-col gap-0">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50/50 shrink-0">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-blue-500" />
+              <span className="text-base font-medium">任务说明</span>
+              <Badge variant="outline" className="text-xs">{task.scenarioName}</Badge>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onOpenChange(false)} title="退出全屏">
+              <Minimize2 className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto p-6">
+            <div className="max-w-3xl mx-auto">
+              <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                {task.detailedDescription}
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function LearningPhaseView({
   task,
   onStartAssessment,
@@ -123,143 +159,31 @@ function LearningPhaseView({
   task: SimulatedTask
   onStartAssessment: () => void
 }) {
+  const [descOpen, setDescOpen] = useState(false)
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* 任务说明书大卡片 */}
+      {/* 任务说明卡片 */}
       <Card className="border-l-4 border-l-blue-500">
         <CardHeader>
-          <div className="flex items-center gap-2 mb-1">
-            <Target className="h-5 w-5 text-blue-500" />
-            <CardTitle className="text-lg">任务说明书</CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 mb-1">
+              <Target className="h-5 w-5 text-blue-500" />
+              <CardTitle className="text-lg">任务说明</CardTitle>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setDescOpen(true)} title="全屏查看">
+              <Maximize2 className="h-4 w-4" />
+            </Button>
           </div>
           <p className="text-sm text-gray-500">请仔细阅读以下任务说明，理解任务目标和要求</p>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* 任务背景 */}
-          <div className="bg-blue-50/50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <BookOpen className="h-4 w-4 text-blue-500" />
-              <span className="text-sm font-medium text-blue-800">任务背景</span>
-            </div>
-            <p className="text-sm text-gray-700 leading-relaxed">{task.background}</p>
-          </div>
-
-          {/* 任务目标 */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-amber-500" />
-              <span className="text-sm font-medium">任务目标与要求</span>
-            </div>
-            <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed bg-gray-50 rounded-lg p-4">
-              {task.detailedDescription}
-            </div>
-          </div>
-
-          {/* 测评信息 */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {task.assessmentForm === "paper" && task.paperConfig && (
-              <>
-                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                  <ClipboardList className="h-4 w-4 text-green-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">考试时长</div>
-                    <div className="text-sm font-medium">{task.paperConfig.duration} 分钟</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">及格分数</div>
-                    <div className="text-sm font-medium">{task.paperConfig.passScore} 分</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                  <AlertCircle className="h-4 w-4 text-green-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">允许重考</div>
-                    <div className="text-sm font-medium">{task.paperConfig.allowRetake ? "是" : "否"}</div>
-                  </div>
-                </div>
-              </>
-            )}
-            {task.assessmentForm === "question_bank" && task.questionBankConfig && (
-              <>
-                <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg">
-                  <ClipboardList className="h-4 w-4 text-orange-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">答题时长</div>
-                    <div className="text-sm font-medium">{task.questionBankConfig.duration} 分钟</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg">
-                  <Bookmark className="h-4 w-4 text-orange-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">题目数量</div>
-                    <div className="text-sm font-medium">{task.questionBankConfig.questionCount} 题</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg">
-                  <CheckCircle2 className="h-4 w-4 text-orange-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">总分</div>
-                    <div className="text-sm font-medium">{task.questionBankConfig.totalScore} 分</div>
-                  </div>
-                </div>
-              </>
-            )}
-            {task.assessmentForm === "random_draw" && (
-              <>
-                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                  <FileQuestion className="h-4 w-4 text-blue-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">测评形式</div>
-                    <div className="text-sm font-medium">教师现场提问</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                  <GraduationCap className="h-4 w-4 text-blue-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">测评主体</div>
-                    <div className="text-sm font-medium">指导教师</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                  <AlertCircle className="h-4 w-4 text-blue-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">注意事项</div>
-                    <div className="text-sm font-medium">提前预约时间</div>
-                  </div>
-                </div>
-              </>
-            )}
-            {task.assessmentForm === "review" && task.reviewConfig && (
-              <>
-                <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
-                  <Gavel className="h-4 w-4 text-purple-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">评审方式</div>
-                    <div className="text-sm font-medium">多维度评审</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
-                  <Bookmark className="h-4 w-4 text-purple-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">截止时间</div>
-                    <div className="text-sm font-medium">{task.reviewConfig.deadlineDays} 天内</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
-                  <CheckCircle2 className="h-4 w-4 text-purple-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">允许重提交</div>
-                    <div className="text-sm font-medium">{task.reviewConfig.allowResubmit ? "是" : "否"}</div>
-                  </div>
-                </div>
-              </>
-            )}
+        <CardContent>
+          <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+            {task.detailedDescription}
           </div>
         </CardContent>
       </Card>
+
+      <TaskDescriptionDialog task={task} open={descOpen} onOpenChange={setDescOpen} />
 
       {/* 底部开始测评按钮 */}
       <div className="flex justify-center pb-8">
@@ -600,134 +524,32 @@ function IntegratedLayout({
   activeForms: AssessmentForm[]
   assessmentPanels: React.ReactNode
 }) {
+  const [descOpen, setDescOpen] = useState(false)
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 items-start">
-      {/* 左侧：主内容区（任务说明书 + 测评内容上下排列） */}
+      {/* 左侧：主内容区（任务说明 + 测评内容上下排列） */}
       <div className="space-y-4">
-        {/* 任务说明书 */}
+        {/* 任务说明 */}
         <Card className="border-l-4 border-l-emerald-500">
           <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-emerald-500" />
-              <CardTitle className="text-base">任务说明书</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-emerald-500" />
+                <CardTitle className="text-base">任务说明</CardTitle>
+              </div>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setDescOpen(true)} title="全屏查看">
+                <Maximize2 className="h-4 w-4" />
+              </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-emerald-50/50 rounded-lg p-3">
-              <div className="text-xs font-medium text-emerald-700 mb-1">任务背景</div>
-              <p className="text-sm text-gray-700 leading-relaxed">{task.background}</p>
-            </div>
-            <div>
-              <div className="text-xs font-medium text-gray-500 mb-1">任务目标与要求</div>
-              <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed bg-gray-50 rounded-lg p-3 max-h-[400px] overflow-y-auto">
-                {task.detailedDescription}
-              </div>
-            </div>
-            {/* 测评信息 */}
-            <div className="space-y-2">
-              {activeForms.includes("paper") && task.paperConfig && (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-                    <ClipboardList className="h-4 w-4 text-green-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">考试时长</div>
-                      <div className="text-xs font-medium">{task.paperConfig.duration} 分钟</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">及格分数</div>
-                      <div className="text-xs font-medium">{task.paperConfig.passScore} 分</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-                    <AlertCircle className="h-4 w-4 text-green-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">允许重考</div>
-                      <div className="text-xs font-medium">{task.paperConfig.allowRetake ? "是" : "否"}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {activeForms.includes("question_bank") && task.questionBankConfig && (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
-                    <ClipboardList className="h-4 w-4 text-orange-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">答题时长</div>
-                      <div className="text-xs font-medium">{task.questionBankConfig.duration} 分钟</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
-                    <Bookmark className="h-4 w-4 text-orange-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">题目数量</div>
-                      <div className="text-xs font-medium">{task.questionBankConfig.questionCount} 题</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
-                    <CheckCircle2 className="h-4 w-4 text-orange-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">总分</div>
-                      <div className="text-xs font-medium">{task.questionBankConfig.totalScore} 分</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {activeForms.includes("random_draw") && (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                    <FileQuestion className="h-4 w-4 text-blue-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">测评形式</div>
-                      <div className="text-xs font-medium">教师现场提问</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                    <GraduationCap className="h-4 w-4 text-blue-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">测评主体</div>
-                      <div className="text-xs font-medium">指导教师</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                    <AlertCircle className="h-4 w-4 text-blue-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">注意事项</div>
-                      <div className="text-xs font-medium">提前预约时间</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {activeForms.includes("review") && task.reviewConfig && (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-lg">
-                    <Gavel className="h-4 w-4 text-purple-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">评审方式</div>
-                      <div className="text-xs font-medium">多维度评审</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-lg">
-                    <Bookmark className="h-4 w-4 text-purple-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">截止时间</div>
-                      <div className="text-xs font-medium">{task.reviewConfig.deadlineDays} 天内</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-lg">
-                    <CheckCircle2 className="h-4 w-4 text-purple-600" />
-                    <div>
-                      <div className="text-[10px] text-gray-500">允许重提交</div>
-                      <div className="text-xs font-medium">{task.reviewConfig.allowResubmit ? "是" : "否"}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+          <CardContent>
+            <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed bg-gray-50 rounded-lg p-3 max-h-[400px] overflow-y-auto">
+              {task.detailedDescription}
             </div>
           </CardContent>
         </Card>
+
+        <TaskDescriptionDialog task={task} open={descOpen} onOpenChange={setDescOpen} />
 
         {/* 测评内容（放在任务说明下方） */}
         <div>
@@ -924,44 +746,6 @@ function SimulationTaskInner() {
           </div>
           <h1 className="text-xl font-semibold text-gray-800">{task.name}</h1>
           <p className="text-sm text-gray-500 mt-1">{task.description}</p>
-        </div>
-      </div>
-
-      {/* 阶段指示条 */}
-      <div className="flex items-center gap-2">
-        <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-            taskPhase === "learning"
-              ? "bg-blue-50 text-blue-600 border border-blue-200"
-              : "bg-gray-50 text-gray-400 border border-gray-200"
-          }`}
-        >
-          <BookOpen className="h-3.5 w-3.5" />
-          学习阶段
-        </div>
-        <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-        <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-            taskPhase === "assessment"
-              ? "bg-amber-50 text-amber-600 border border-amber-200"
-              : taskPhase === "submitted"
-              ? "bg-gray-50 text-gray-400 border border-gray-200"
-              : "bg-gray-50 text-gray-400 border border-gray-200"
-          }`}
-        >
-          <PenLine className="h-3.5 w-3.5" />
-          测评阶段
-        </div>
-        <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-        <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-            taskPhase === "submitted"
-              ? "bg-green-50 text-green-600 border border-green-200"
-              : "bg-gray-50 text-gray-400 border border-gray-200"
-          }`}
-        >
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          已提交
         </div>
       </div>
 
