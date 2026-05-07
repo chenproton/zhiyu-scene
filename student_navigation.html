@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>课程首页</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+  body { background: #f4f6fb; min-height: 100vh; }
+  
+  /* 顶部导航 */
+  .header {
+    background: #fff;
+    height: 64px;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; color: #1a4cff; }
+  .logo-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, #3b7cff, #6a9bff);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: bold;
+  }
+  .logo-text { color: #1f2937; font-size: 17px; }
+  .logo-text span { color: #3b7cff; font-weight: 600; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .btn-console {
+    background: linear-gradient(135deg, #3b7cff, #5a8eff);
+    color: #fff; border: none; padding: 9px 22px;
+    border-radius: 22px; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .user-info {
+    display: flex; align-items: center; gap: 8px;
+    background: #f5f7fc; padding: 5px 14px 5px 5px;
+    border-radius: 20px; cursor: pointer;
+  }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg,#ffd27a,#ff9b60);
+  }
+  
+  /* 主内容 */
+  .main { padding: 20px 40px 40px; }
+  
+  /* 轮播区 */
+  .banner-row { display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 18px; }
+  .banner-small, .banner-big {
+    background: #fff; border-radius: 10px; height: 280px;
+    display: flex; align-items: center; justify-content: center;
+    color: #bfc5d1; font-size: 14px;
+    background: linear-gradient(135deg,#fff,#f7f9ff);
+  }
+  
+  /* 统计卡片 */
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 18px; }
+  .stat-card {
+    background: #fff; border-radius: 10px; padding: 22px 26px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 6px rgba(30,60,120,0.04);
+  }
+  .stat-label { color: #8a94a6; font-size: 14px; margin-bottom: 10px; }
+  .stat-value { color: #1f2937; font-size: 28px; font-weight: bold; }
+  .stat-icon {
+    width: 56px; height: 56px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    background: linear-gradient(135deg,#e8f0ff,#d6e4ff);
+  }
+  
+  /* 筛选区 */
+  .filter-box { background: #fff; border-radius: 10px; padding: 18px 24px; margin-bottom: 18px; }
+  .filter-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; flex-wrap: nowrap; }
+  .filter-row + .filter-row { border-top: 1px dashed #eef0f5; }
+  .filter-label { color: #8a94a6; font-size: 14px; min-width: 44px; }
+  .filter-tags { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
+  .tag {
+    padding: 6px 16px; border-radius: 16px; font-size: 13px;
+    color: #5a6478; cursor: pointer; transition: all 0.2s;
+  }
+  .tag:hover { background: #eef3ff; color: #3b7cff; }
+  .tag.active { background: linear-gradient(135deg,#3b7cff,#5a8eff); color: #fff; }
+  .expand-btn { color: #3b7cff; font-size: 13px; cursor: pointer; margin-left: auto; }
+  
+  /* 排序+搜索 */
+  .toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .sort-group { display: flex; gap: 16px; align-items: center; }
+  .sort-btn {
+    padding: 8px 22px; border-radius: 18px; font-size: 14px;
+    color: #5a6478; cursor: pointer;
+  }
+  .sort-btn.active {
+    background: linear-gradient(135deg,#3b7cff,#5a8eff); color: #fff;
+  }
+  .search-box {
+    display: flex; align-items: center; background: #fff;
+    border-radius: 20px; padding: 6px 14px; width: 280px;
+    border: 1px solid #e5e9f2;
+  }
+  .search-box input { border: none; outline: none; flex: 1; font-size: 13px; padding: 4px; }
+  .search-box .count { color: #bfc5d1; font-size: 12px; }
+  
+  .result-tip { color: #5a6478; font-size: 13px; margin-bottom: 14px; }
+  .result-tip b { color: #3b7cff; }
+  
+  /* 课程卡片 */
+  .card-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
+  .course-card {
+    background: #fff; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(30,60,120,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(30,60,120,0.12);
+  }
+  .card-cover {
+    height: 150px; position: relative;
+    background: linear-gradient(135deg,#1e3a8a,#3b7cff);
+    display: flex; align-items: flex-end; padding: 14px;
+    color: #fff;
+  }
+  .card-cover.c2 { background: linear-gradient(135deg,#7c2d12,#dc2626); }
+  .card-cover.c3 { background: linear-gradient(135deg,#064e3b,#0891b2); }
+  .card-cover.c4 { background: linear-gradient(135deg,#334155,#64748b); }
+  .tag-v { 
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(255,255,255,0.25); padding: 2px 8px;
+    border-radius: 4px; font-size: 12px;
+  }
+  .tag-date {
+    position: absolute; top: 10px; left: 46px;
+    background: rgba(0,0,0,0.35); padding: 2px 8px;
+    border-radius: 4px; font-size: 12px;
+  }
+  .cover-title { font-size: 15px; font-weight: bold; line-height: 1.5; }
+  .cover-sub { font-size: 11px; opacity: 0.9; margin-top: 4px; line-height: 1.5; }
+  .tag-category {
+    position: absolute; top: 10px; right: 10px;
+    padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    background: rgba(255,255,255,0.25); color: #fff;
+  }
+  .tag-category.cat-system { background: rgba(147,51,234,0.6); }
+  .tag-category.cat-particle { background: rgba(59,130,246,0.6); }
+  .code-bar {
+    background: rgba(0,0,0,0.4); color: #fff; font-size: 11px;
+    padding: 4px 12px; position: absolute; bottom: 0; right: 0;
+    border-top-left-radius: 6px;
+  }
+  
+  .card-body { padding: 16px; }
+  .card-title { font-size: 15px; font-weight: bold; color: #1f2937; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .course-type-tag {
+    padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: normal;
+    display: inline-flex; align-items: center; white-space: nowrap;
+  }
+  .course-type-tag.type-1 { background: #dbeafe; color: #1d4ed8; }
+  .course-type-tag.type-2 { background: #dcfce7; color: #15803d; }
+  .course-type-tag.type-3 { background: #ffedd5; color: #c2410c; }
+  .course-type-tag.type-4 { background: #f3e8ff; color: #7e22ce; }
+  .card-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; 
+    text-align: center; padding: 10px 0; 
+    border-top: 1px solid #f0f2f7; border-bottom: 1px solid #f0f2f7;
+    margin-bottom: 12px;
+  }
+  .card-stats > div + div { border-left: 1px solid #f0f2f7; }
+  .card-stat-num { font-size: 20px; font-weight: bold; color: #1f2937; }
+  .card-stat-label { font-size: 12px; color: #8a94a6; margin-top: 2px; }
+  
+  .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+  .meta-label { color: #8a94a6; min-width: 30px; }
+  .meta-tag {
+    background: #fff4e6; color: #ff9b37; padding: 2px 10px;
+    border-radius: 4px; font-size: 12px;
+  }
+  .meta-tag.purple { background: #f3e8ff; color: #9333ea; }
+  
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 10px; border-top: 1px dashed #eef0f5;
+    font-size: 12px; color: #8a94a6; margin-top: 10px;
+  }
+  .footer-left { display: flex; align-items: center; gap: 8px; }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+ <!--
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">S</div>
+    <div class="logo-text">知与 <span>| 产教融合</span></div>
+  </div>
+  <div class="header-right">
+    <button class="btn-console">🖥 去操作台</button>
+    <div class="user-info">
+      <div class="avatar"></div>
+      <span style="font-size:13px;color:#5a6478;">您好 T01</span>
+      <span style="color:#bfc5d1;">▾</span>
+    </div>
+  </div>
+</div>
+-->
+
+<!-- 顶部导航 -->
+<div class="header-bar h-14 flex items-center justify-between px-6 bg-white">
+  <div class="flex items-center gap-8">
+    <!-- Logo区域 -->
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-md bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white">
+        <i class="fa fa-cubes text-sm"></i>
+      </div>
+      <span class="text-gray-800 font-bold text-base">场景化数智教学服务平台</span>
+    </div>
+    <!-- 导航菜单 -->
+    <div class="flex items-center gap-1">
+      <a class="flex items-center gap-2 px-4 py-2 rounded-md text-blue-600 bg-blue-50 cursor-pointer text-sm font-medium">
+        <i class="fa fa-th"></i>
+        <span>门户首页</span>
+      </a>
+      <a class="flex items-center gap-2 px-4 py-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-50 cursor-pointer text-sm">
+        <i class="fa fa-clipboard"></i>
+        <span>我的服务台</span>
+      </a>
+      <a class="flex items-center gap-2 px-4 py-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-50 cursor-pointer text-sm" onclick="window.location.href='yingyongfuwuzhognxin.html'">
+        <i class="fa fa-home"></i>
+        <span>应用服务中心</span>
+      </a>
+    </div>
+  </div>
+  <div class="flex items-center gap-6">
+    <!-- 日期时间 -->
+    <span id="headerDateTime" class="text-sm text-gray-500">2026年04月29日 星期三 14:11:00</span>
+    <!-- 用户信息 -->
+    <div class="flex items-center gap-2 cursor-pointer">
+      <div class="relative">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-medium">
+          <i class="fa fa-user"></i>
+        </div>
+        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">1</span>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm text-gray-800 font-medium">1</span>
+        <span class="text-xs text-gray-400">教职工·清华大学</span>
+      </div>
+      <i class="fa fa-angle-down text-gray-400 ml-1"></i>
+    </div>
+  </div>
+</div>
+
+<style>
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: #fff;
+    border-bottom: 1px solid #eef0f4;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #5b9cff, #2f6fe6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .logo-text-new {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #5a6478;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .nav-item:hover {
+    color: #2f6fe6;
+    background: #f5f7fa;
+  }
+  .nav-item.active {
+    color: #2f6fe6;
+    background: #e8f1ff;
+    font-weight: 500;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .header-datetime {
+    font-size: 13px;
+    color: #8a93a6;
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .avatar-wrap {
+    position: relative;
+  }
+  .avatar-new {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b9cff, #2f6fe6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .avatar-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
+  }
+  .user-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  .user-name {
+    font-size: 13px;
+    color: #1f2937;
+    font-weight: 500;
+  }
+  .user-role {
+    font-size: 11px;
+    color: #9aa3b5;
+  }
+  .user-arrow {
+    color: #bfc5d1;
+    margin-left: 2px;
+  }
+</style>
+
+<script>
+  function updateHeaderDateTime() {
+    const el = document.getElementById('headerDateTime');
+    if (!el) return;
+    const now = new Date();
+    const weeks = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    el.textContent = `${y}年${m}月${d}日 ${weeks[now.getDay()]} ${hh}:${mm}:${ss}`;
+  }
+  updateHeaderDateTime();
+  setInterval(updateHeaderDateTime, 1000);
+</script>
+
+
+
+
+<div class="main">
+
+  <!-- 轮播区 -->
+  <div class="banner-row">
+    <div class="banner-small">暂无轮播名称</div>
+    <div class="banner-big"></div>
+  </div>
+
+  <!-- 统计卡片（已按调换后顺序：收录课程数 → 节点总数 → 近7日上新 → 总览人数）-->
+  <div class="stats">
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">收录课程数</div>
+        <div class="stat-value">19</div>
+      </div>
+      <div class="stat-icon">📚</div>
+    </div>
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">节点总数</div>
+        <div class="stat-value">19</div>
+      </div>
+      <div class="stat-icon">🔗</div>
+    </div>
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">近7日上新</div>
+        <div class="stat-value">6</div>
+      </div>
+      <div class="stat-icon">🔬</div>
+    </div>
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">总览人数</div>
+        <div class="stat-value">3,011,239</div>
+      </div>
+      <div class="stat-icon">👁</div>
+    </div>
+  </div>
+
+  <!-- 筛选区 -->
+  <div class="filter-box">
+    <div class="filter-row">
+      <span class="filter-label">行业</span>
+      <div class="filter-tags">
+        <span class="tag active">全部</span>
+        <span class="tag">电子信息</span>
+        <span class="tag">软件测试工程师</span>
+        <span class="tag">公共管理与服务</span>
+        <span class="tag">计算机行业</span>
+        <span class="tag">交通运输</span>
+        <span class="tag">公安与司法</span>
+        <span class="tag">教育与体育</span>
+        <span class="tag">新闻传播</span>
+        <span class="tag">文化艺术</span>
+        <span class="tag">旅游</span>
+        <span class="tag">财经商贸</span>
+        <span class="tag">医药卫生</span>
+        <span class="tag">农林牧渔</span>
+        <span class="tag">食品药品与粮食</span>
+      </div>
+      <span class="expand-btn">展开 ▾</span>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">专业</span>
+      <div class="filter-tags">
+        <span class="tag active">全部</span>
+        <span class="tag">教学计划专业00</span>
+        <span class="tag">SkedMajor10</span>
+        <span class="tag">教学计划专业20</span>
+        <span class="tag">软件工程专业</span>
+        <span class="tag">自动化专业</span>
+        <span class="tag">人工智能专业</span>
+        <span class="tag">计算机科学与技术专业</span>
+        <span class="tag">排课测试专业一</span>
+        <span class="tag">排课测试专业二</span>
+        <span class="tag">大数据管理与应用专业</span>
+        <span class="tag">UI自动化测试专业</span>
+      </div>
+      <span class="expand-btn">展开 ▾</span>
+    </div>
+  </div>
+
+  <!-- 排序+搜索 -->
+  <div class="toolbar">
+    <div class="sort-group">
+      <span class="sort-btn active">默认排序</span>
+      <span class="sort-btn">最近收录</span>
+      <span class="sort-btn">最多点击</span>
+    </div>
+    <div class="search-box">
+      <input type="text" placeholder="请输入课程名称">
+      <span class="count">🔍 0 / 100</span>
+    </div>
+  </div>
+
+  <div class="result-tip">当前共展示 <b>19</b> 个课程学习入口</div>
+
+  <!-- 课程卡片 -->
+  <div class="card-grid">
+
+    <!-- 卡片1 -->
+    <div class="course-card">
+      <div class="card-cover">
+        <span class="tag-v">v1</span>
+        <span class="tag-date">2026-04-27</span>
+        <span class="tag-category cat-system">体系课</span>
+        <div>
+          <div class="cover-title"></div>
+          <div class="cover-sub"></div>
+        </div>
+        <div class="code-bar">课程编码：2048580206462566401</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title"><span>SQL注入漏洞检测与利用</span><span class="course-type-tag type-1">公共基础课</span></div>
+        <div class="card-stats">
+          <div>
+            <div class="card-stat-num">15</div>
+            <div class="card-stat-label">涉及节点</div>
+          </div>
+          <div>
+            <div class="card-stat-num">30</div>
+            <div class="card-stat-label">预计课时</div>
+          </div>
+          <div>
+            <div class="card-stat-num">45</div>
+            <div class="card-stat-label">资源数</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">行业</span>
+          <span class="meta-tag">电子信息</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">专业</span>
+          <span class="meta-tag purple">岗位优化测试专业02</span>
+        </div>
+        <div class="card-footer">
+          <div class="footer-left">王老师 · 👁 4952 · 📚 16882</div>
+          <div>2026-04-27 09:49:17</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片2 -->
+    <div class="course-card">
+      <div class="card-cover c2">
+        <span class="tag-v">v1</span>
+        <span class="tag-date">2026-04-23</span>
+        <span class="tag-category cat-particle">颗粒课</span>
+        <div>
+          <div class="cover-title"></div>
+          <div class="cover-sub"></div>
+        </div>
+        <div class="code-bar">课程编码：2047126214624739330</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title"><span>API未授权访问漏洞检测与利用</span><span class="course-type-tag type-2">数智化通识课</span></div>
+        <div class="card-stats">
+          <div>
+            <div class="card-stat-num">1</div>
+            <div class="card-stat-label">涉及节点</div>
+          </div>
+          <div>
+            <div class="card-stat-num">1</div>
+            <div class="card-stat-label">预计课时</div>
+          </div>
+          <div>
+            <div class="card-stat-num">3</div>
+            <div class="card-stat-label">资源数</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">行业</span>
+          <span class="meta-tag">软件测试工程师</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">专业</span>
+          <span class="meta-tag purple">岗位优化测试专业01</span>
+        </div>
+        <div class="card-footer">
+          <div class="footer-left">马老师 · 👁 3166 · 📚 15223</div>
+          <div>2026-04-23 09:31:38</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片3 -->
+    <div class="course-card">
+      <div class="card-cover c3">
+        <span class="tag-v">v1</span>
+        <span class="tag-date">2026-04-27</span>
+        <span class="tag-category cat-system">体系课</span>
+        <div>
+          <div class="cover-title"></div>
+          <div class="cover-sub"></div>
+        </div>
+        <div class="code-bar">课程编码：2048581102063910913</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title"><span>渗透测试实验室搭建</span><span class="course-type-tag type-3">专业基础课</span></div>
+        <div class="card-stats">
+          <div>
+            <div class="card-stat-num">10</div>
+            <div class="card-stat-label">涉及节点</div>
+          </div>
+          <div>
+            <div class="card-stat-num">30</div>
+            <div class="card-stat-label">预计课时</div>
+          </div>
+          <div>
+            <div class="card-stat-num">12</div>
+            <div class="card-stat-label">资源数</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">行业</span>
+          <span class="meta-tag">电子信息</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">专业</span>
+          <span class="meta-tag purple">岗位优化测试专业02</span>
+        </div>
+        <div class="card-footer">
+          <div class="footer-left">李老师 · 👁 2522 · 📚 14132</div>
+          <div>2026-04-27 09:52:50</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片4 -->
+    <div class="course-card">
+      <div class="card-cover c4">
+        <span class="tag-v">v1</span>
+        <span class="tag-date">2026-04-23</span>
+        <span class="tag-category cat-particle">颗粒课</span>
+        <div>
+          <div class="cover-title"></div>
+          <div class="cover-sub"></div>
+        </div>
+        <div class="code-bar">课程编码：2047126930722455554</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title"><span>文件上传漏洞检测与利用</span><span class="course-type-tag type-4">专业核心课</span></div>
+        <div class="card-stats">
+          <div>
+            <div class="card-stat-num">1</div>
+            <div class="card-stat-label">涉及节点</div>
+          </div>
+          <div>
+            <div class="card-stat-num">1</div>
+            <div class="card-stat-label">预计课时</div>
+          </div>
+          <div>
+            <div class="card-stat-num">5</div>
+            <div class="card-stat-label">资源数</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">行业</span>
+          <span class="meta-tag">软件测试工程师</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">专业</span>
+          <span class="meta-tag purple">岗位优化测试专业01</span>
+        </div>
+        <div class="card-footer">
+          <div class="footer-left">张老师 · 👁 1688 · 📚 11320</div>
+          <div>2026-04-23 09:34:29</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // 交互：筛选标签切换
+  document.querySelectorAll('.filter-tags').forEach(group => {
+    group.addEventListener('click', e => {
+      if (e.target.classList.contains('tag')) {
+        group.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+      }
+    });
+  });
+
+  // 交互：排序切换
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // 交互：搜索输入计数
+  const searchInput = document.querySelector('.search-box input');
+  const countSpan = document.querySelector('.search-box .count');
+  searchInput.addEventListener('input', () => {
+    countSpan.textContent = `🔍 ${searchInput.value.length} / 100`;
+  });
+
+  // 交互：展开/收起（演示）
+  document.querySelectorAll('.expand-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.textContent = btn.textContent.includes('展开') ? '收起 ▴' : '展开 ▾';
+    });
+  });
+
+  // 交互：卡片点击
+  document.querySelectorAll('.course-card').forEach(card => {
+    card.addEventListener('click', () => {
+      window.location.href = 'kechengqiantaixiangqing.html';
+    });
+  });
+
+  document.querySelector('.btn-console').addEventListener('click', () => {
+    window.location.href = 'yingyongfuwuzhognxin.html';
+  });
+</script>
+
+<!-- ========== HTML 备注工具 v2.3 开始 ========== -->
+<script type="application/json" id="annotation-tool-data">{"annotations":[],"meta":{}}</script>
+<script data-annotation-tool="true">
+(function () {
+    'use strict';
+    var LOG = '[备注工具]';
+    console.log(LOG, '脚本已加载，版本 v2.3');
+
+    var STORAGE_ID = 'annotation-tool-data';
+    var TOOLBAR_POS_KEY = 'annotation-tool-toolbar-pos';
+    var TOOL_VERSION = '2.3';
+
+    var annotations = [];
+    var metaInfo = {};
+    var enabled = false;
+    var nextId = 1;
+    var dragState = null;
+    var toolbarDrag = null;       // ⭐ 工具栏拖拽状态
+    var suppressNextClick = false;
+    var originalHTMLSnapshot = '';
+    var initDone = false;
+
+    /* ---------- 数据读写 ---------- */
+    function loadData() {
+        var script = document.getElementById(STORAGE_ID);
+        if (!script) return;
+        try {
+            var raw = JSON.parse((script.textContent || '').trim() || '{}');
+            if (Array.isArray(raw)) { annotations = raw; metaInfo = {}; }
+            else { annotations = raw.annotations || []; metaInfo = raw.meta || {}; }
+            if (annotations.length) nextId = Math.max.apply(null, annotations.map(function(a){return a.id;})) + 1;
+        } catch (e) { console.warn(LOG, '解析备注数据失败', e); annotations = []; metaInfo = {}; }
+    }
+
+    function checkViewportDrift() {
+        if (!metaInfo.viewportWidth || !annotations.length) return;
+        var diff = Math.abs(window.innerWidth - metaInfo.viewportWidth) / metaInfo.viewportWidth;
+        if (diff > 0.2) showHint('⚠️ 页面宽度变化 ' + Math.round(diff*100) + '%，备注位置可能不准', 5000);
+    }
+
+    /* ---------- 样式 ---------- */
+    function injectStyle() {
+        if (document.getElementById('annotation-tool-style')) return;
+        var css = [
+            '.ann-toolbar{position:fixed!important;z-index:2147483646!important;background:#fff!important;border-radius:28px!important;box-shadow:0 4px 16px rgba(0,0,0,.18)!important;padding:8px!important;display:flex!important;gap:6px!important;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif!important;align-items:center!important;margin:0!important;user-select:none!important;}',
+            '.ann-toolbar.dragging{opacity:.85!important;box-shadow:0 8px 24px rgba(0,0,0,.3)!important;}',
+            '.ann-drag-handle{width:20px!important;height:28px!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:move!important;color:#9ca3af!important;font-size:14px!important;font-weight:bold!important;letter-spacing:-1px!important;border-radius:14px!important;flex-shrink:0!important;}',
+            '.ann-drag-handle:hover{background:#f3f4f6!important;color:#374151!important;}',
+            '.ann-btn{padding:8px 14px!important;border:none!important;border-radius:20px!important;cursor:pointer!important;font-size:13px!important;background:#f5f7fa!important;color:#374151!important;white-space:nowrap!important;line-height:1!important;height:auto!important;}',
+            '.ann-btn:hover{background:#e5e7eb!important;}',
+            '.ann-btn.active{background:#3b82f6!important;color:#fff!important;}',
+            '.ann-btn.save{background:#10b981!important;color:#fff!important;}',
+            '.ann-btn.save:hover{background:#059669!important;}',
+            '.ann-count{font-size:12px!important;color:#6b7280!important;padding:0 4px!important;}',
+            '.ann-badge{position:absolute!important;min-width:26px!important;height:26px!important;padding:0 4px!important;border-radius:13px!important;background:#ef4444!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:12px!important;font-weight:bold!important;cursor:grab!important;z-index:2147483640!important;box-shadow:0 2px 8px rgba(239,68,68,.45)!important;user-select:none!important;font-family:-apple-system,sans-serif!important;border:2px solid #fff!important;box-sizing:border-box!important;line-height:1!important;}',
+            '.ann-badge:active{cursor:grabbing!important;}',
+            '.ann-badge.dragging{opacity:.6!important;cursor:grabbing!important;}',
+            'body.ann-on{cursor:crosshair!important;}',
+            '.ann-popup{position:absolute!important;background:#fff!important;border-radius:8px!important;box-shadow:0 8px 24px rgba(0,0,0,.18)!important;padding:12px!important;width:320px!important;z-index:2147483645!important;font-family:-apple-system,"PingFang SC",sans-serif!important;font-size:13px!important;box-sizing:border-box!important;}',
+            '.ann-popup textarea{width:100%!important;min-height:90px!important;padding:8px!important;border:1px solid #e5e7eb!important;border-radius:4px!important;font-size:13px!important;box-sizing:border-box!important;resize:vertical!important;font-family:inherit!important;color:#111!important;background:#fff!important;}',
+            '.ann-popup textarea:focus{outline:none!important;border-color:#3b82f6!important;}',
+            '.ann-popup-row{display:flex!important;justify-content:flex-end!important;gap:6px!important;margin-top:8px!important;align-items:center!important;}',
+            '.ann-popup button{padding:5px 14px!important;border:none!important;border-radius:4px!important;cursor:pointer!important;font-size:12px!important;line-height:1!important;}',
+            '.ann-popup .pb-cancel{background:#f3f4f6!important;color:#374151!important;}',
+            '.ann-popup .pb-ok{background:#3b82f6!important;color:#fff!important;}',
+            '.ann-popup .pb-del{background:#fee2e2!important;color:#dc2626!important;margin-right:auto!important;}',
+            '.ann-popup .pb-edit{background:#eef2ff!important;color:#4f46e5!important;}',
+            '.ann-meta{font-size:11px!important;color:#9ca3af!important;margin-bottom:6px!important;}',
+            '.ann-view{white-space:pre-wrap!important;word-break:break-word!important;margin-bottom:8px!important;color:#374151!important;line-height:1.55!important;max-height:220px!important;overflow:auto!important;}',
+            '.ann-hint{position:fixed!important;top:20px!important;left:50%!important;transform:translateX(-50%)!important;background:rgba(17,24,39,.92)!important;color:#fff!important;padding:10px 18px!important;border-radius:20px!important;font-size:13px!important;z-index:2147483647!important;font-family:-apple-system,sans-serif!important;max-width:80vw!important;text-align:center!important;box-shadow:0 4px 16px rgba(0,0,0,.2)!important;}'
+        ].join('\n');
+        var style = document.createElement('style');
+        style.id = 'annotation-tool-style';
+        style.textContent = css;
+        (document.head || document.documentElement).appendChild(style);
+        console.log(LOG, '样式已注入');
+    }
+
+    /* ---------- 工具栏位置 ---------- */
+    function getSavedToolbarPos() {
+        try {
+            var s = localStorage.getItem(TOOLBAR_POS_KEY);
+            if (!s) return null;
+            var p = JSON.parse(s);
+            if (typeof p.left === 'number' && typeof p.top === 'number') return p;
+        } catch (e) {}
+        return null;
+    }
+    function saveToolbarPos(left, top) {
+        try { localStorage.setItem(TOOLBAR_POS_KEY, JSON.stringify({ left: left, top: top })); } catch (e) {}
+    }
+    function clampToolbarPos(bar) {
+        var rect = bar.getBoundingClientRect();
+        var maxLeft = window.innerWidth - rect.width - 4;
+        var maxTop = window.innerHeight - rect.height - 4;
+        var left = parseFloat(bar.style.left);
+        var top = parseFloat(bar.style.top);
+        if (isNaN(left) || isNaN(top)) return;
+        left = Math.max(4, Math.min(left, maxLeft));
+        top = Math.max(4, Math.min(top, maxTop));
+        bar.style.left = left + 'px';
+        bar.style.top = top + 'px';
+    }
+
+    function createToolbar() {
+        if (document.getElementById('ann-toolbar')) return;
+        if (!document.body) { console.warn(LOG, 'body 不存在，延迟创建'); return; }
+        var bar = document.createElement('div');
+        bar.className = 'ann-toolbar';
+        bar.id = 'ann-toolbar';
+        bar.innerHTML =
+            '<div class="ann-drag-handle" id="ann-drag-handle" title="按住拖动工具栏">⋮⋮</div>' +
+            '<button class="ann-btn" id="ann-toggle">🔖 启用备注</button>' +
+            '<span class="ann-count" id="ann-count">0 条</span>' +
+            '<button class="ann-btn save" id="ann-save">💾 保存文件</button>';
+
+        // 初始位置：优先用保存的位置，否则默认右下角
+        var saved = getSavedToolbarPos();
+        if (saved) {
+            bar.style.left = saved.left + 'px';
+            bar.style.top = saved.top + 'px';
+            bar.style.right = 'auto';
+            bar.style.bottom = 'auto';
+        } else {
+            bar.style.right = '20px';
+            bar.style.bottom = '20px';
+        }
+
+        document.body.appendChild(bar);
+
+        // 若用的是默认定位，校正一次以便拖拽使用 left/top
+        if (!saved) {
+            var rect = bar.getBoundingClientRect();
+            bar.style.left = rect.left + 'px';
+            bar.style.top = rect.top + 'px';
+            bar.style.right = 'auto';
+            bar.style.bottom = 'auto';
+        }
+        clampToolbarPos(bar);
+
+        document.getElementById('ann-toggle').addEventListener('click', toggleEnabled);
+        document.getElementById('ann-save').addEventListener('click', saveFile);
+
+        // ⭐ 工具栏拖拽
+        var handle = document.getElementById('ann-drag-handle');
+        handle.addEventListener('mousedown', onToolbarDown);
+
+        console.log(LOG, '工具栏已创建');
+    }
+
+    function onToolbarDown(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var bar = document.getElementById('ann-toolbar');
+        if (!bar) return;
+        var rect = bar.getBoundingClientRect();
+        toolbarDrag = {
+            startX: e.clientX,
+            startY: e.clientY,
+            startLeft: rect.left,
+            startTop: rect.top,
+            moved: false
+        };
+        bar.classList.add('dragging');
+    }
+    function onToolbarMove(e) {
+        if (!toolbarDrag) return;
+        var dx = e.clientX - toolbarDrag.startX;
+        var dy = e.clientY - toolbarDrag.startY;
+        if (!toolbarDrag.moved && Math.hypot(dx, dy) < 3) return;
+        toolbarDrag.moved = true;
+        var bar = document.getElementById('ann-toolbar');
+        if (!bar) return;
+        bar.style.left = (toolbarDrag.startLeft + dx) + 'px';
+        bar.style.top = (toolbarDrag.startTop + dy) + 'px';
+    }
+    function onToolbarUp() {
+        if (!toolbarDrag) return;
+        var bar = document.getElementById('ann-toolbar');
+        if (bar) {
+            bar.classList.remove('dragging');
+            clampToolbarPos(bar);
+            if (toolbarDrag.moved) {
+                saveToolbarPos(parseFloat(bar.style.left), parseFloat(bar.style.top));
+            }
+        }
+        toolbarDrag = null;
+    }
+
+    function updateCount() {
+        var el = document.getElementById('ann-count');
+        if (el) el.textContent = annotations.length + ' 条';
+    }
+
+    function toggleEnabled() {
+        enabled = !enabled;
+        var btn = document.getElementById('ann-toggle');
+        if (enabled) {
+            btn.classList.add('active'); btn.textContent = '🔖 关闭备注';
+            document.body.classList.add('ann-on');
+            showHint('已启用：点击空白处新增备注');
+        } else {
+            btn.classList.remove('active'); btn.textContent = '🔖 启用备注';
+            document.body.classList.remove('ann-on');
+            closePopups();
+        }
+    }
+
+    function showHint(msg, duration) {
+        duration = duration || 2200;
+        var old = document.querySelector('.ann-hint');
+        if (old) old.remove();
+        var el = document.createElement('div');
+        el.className = 'ann-hint';
+        el.textContent = msg;
+        document.body.appendChild(el);
+        setTimeout(function () { if (el.parentNode) el.remove(); }, duration);
+    }
+
+    function renderBadges() {
+        var old = document.querySelectorAll('.ann-badge');
+        for (var i = 0; i < old.length; i++) old[i].remove();
+        var sorted = annotations.slice().sort(function (a, b) { return a.id - b.id; });
+        sorted.forEach(function (ann, idx) {
+            var b = document.createElement('div');
+            b.className = 'ann-badge';
+            b.dataset.id = ann.id;
+            b.style.left = ann.x + 'px';
+            b.style.top = ann.y + 'px';
+            b.textContent = idx + 1;
+            b.title = '备注 #' + (idx + 1) + '（可拖拽移动）';
+            b.addEventListener('mousedown', onBadgeDown);
+            b.addEventListener('click', onBadgeClick);
+            document.body.appendChild(b);
+        });
+        updateCount();
+    }
+
+    function getSeqById(id) {
+        var sorted = annotations.slice().sort(function (a, b) { return a.id - b.id; });
+        for (var i = 0; i < sorted.length; i++) if (sorted[i].id === id) return i + 1;
+        return 0;
+    }
+
+    function onBadgeDown(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var id = parseInt(e.currentTarget.dataset.id);
+        var ann = annotations.find(function (a) { return a.id === id; });
+        if (!ann) return;
+        dragState = { id: id, startX: e.clientX, startY: e.clientY, offX: e.pageX - ann.x, offY: e.pageY - ann.y, moved: false };
+    }
+    function onDocMove(e) {
+        // 工具栏拖拽
+        if (toolbarDrag) { onToolbarMove(e); return; }
+        // 备注拖拽
+        if (!dragState) return;
+        if (Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY) > 5) {
+            dragState.moved = true;
+            var ann = annotations.find(function (a) { return a.id === dragState.id; });
+            ann.x = Math.max(0, e.pageX - dragState.offX);
+            ann.y = Math.max(0, e.pageY - dragState.offY);
+            var b = document.querySelector('.ann-badge[data-id="' + dragState.id + '"]');
+            if (b) { b.style.left = ann.x + 'px'; b.style.top = ann.y + 'px'; b.classList.add('dragging'); }
+        }
+    }
+    function onDocUp(e) {
+        if (toolbarDrag) { onToolbarUp(); return; }
+        if (!dragState) return;
+        var b = document.querySelector('.ann-badge[data-id="' + dragState.id + '"]');
+        if (b) b.classList.remove('dragging');
+        if (dragState.moved) suppressNextClick = true;
+        dragState = null;
+    }
+
+    function onBadgeClick(e) {
+        if (suppressNextClick) { suppressNextClick = false; e.stopPropagation(); return; }
+        e.stopPropagation();
+        var ann = annotations.find(function (a) { return a.id === parseInt(e.currentTarget.dataset.id); });
+        if (ann) showViewPopup(ann, e.currentTarget);
+    }
+    function onDocClick(e) {
+        if (!enabled) return;
+        if (e.target.closest('.ann-toolbar') || e.target.closest('.ann-badge') ||
+            e.target.closest('.ann-popup')) return;
+        showEditPopup(null, e.pageX, e.pageY);
+    }
+    function closePopups() {
+        var ps = document.querySelectorAll('.ann-popup');
+        for (var i = 0; i < ps.length; i++) ps[i].remove();
+    }
+
+    function showEditPopup(ann, x, y) {
+        closePopups();
+        var p = document.createElement('div');
+        p.className = 'ann-popup';
+        p.style.left = Math.min(x, window.pageXOffset + window.innerWidth - 340) + 'px';
+        p.style.top = y + 'px';
+        var seq = ann ? getSeqById(ann.id) : (annotations.length + 1);
+        p.innerHTML =
+            '<div class="ann-meta">' + (ann ? '编辑备注 #' + seq : '新增备注 #' + seq) + '</div>' +
+            '<textarea placeholder="请输入备注内容..."></textarea>' +
+            '<div class="ann-popup-row">' +
+                (ann ? '<button class="pb-del">删除</button>' : '') +
+                '<button class="pb-cancel">取消</button>' +
+                '<button class="pb-ok">' + (ann ? '保存' : '添加') + '</button>' +
+            '</div>';
+        document.body.appendChild(p);
+        var ta = p.querySelector('textarea');
+        ta.value = ann ? ann.content : '';
+        ta.focus();
+        p.querySelector('.pb-cancel').onclick = function () { p.remove(); };
+        p.querySelector('.pb-ok').onclick = function () {
+            var v = ta.value.trim();
+            if (!v) { alert('备注内容不能为空'); return; }
+            var now = new Date().toLocaleString();
+            if (ann) { ann.content = v; ann.updatedAt = now; }
+            else annotations.push({ id: nextId++, x: x, y: y, content: v, createdAt: now });
+            p.remove(); renderBadges();
+        };
+        if (ann) p.querySelector('.pb-del').onclick = function () {
+            if (confirm('确定删除此备注？')) {
+                annotations = annotations.filter(function (a) { return a.id !== ann.id; });
+                p.remove(); renderBadges();
+            }
+        };
+    }
+
+    function showViewPopup(ann, badgeEl) {
+        closePopups();
+        var r = badgeEl.getBoundingClientRect();
+        var seq = getSeqById(ann.id);
+        var p = document.createElement('div');
+        p.className = 'ann-popup';
+        p.style.left = (r.right + window.pageXOffset + 8) + 'px';
+        p.style.top = (r.top + window.pageYOffset) + 'px';
+        p.innerHTML =
+            '<div class="ann-meta">备注 #' + seq + ' · ' + ann.createdAt + (ann.updatedAt ? ' · 修改于 ' + ann.updatedAt : '') + '</div>' +
+            '<div class="ann-view"></div>' +
+            '<div class="ann-popup-row">' +
+                (enabled ? '<button class="pb-del">删除</button><button class="pb-edit">编辑</button>' : '') +
+                '<button class="pb-cancel">关闭</button>' +
+            '</div>';
+        p.querySelector('.ann-view').textContent = ann.content;
+        document.body.appendChild(p);
+        var rect = p.getBoundingClientRect();
+        if (rect.right > window.innerWidth) p.style.left = (r.left + window.pageXOffset - rect.width - 8) + 'px';
+        p.querySelector('.pb-cancel').onclick = function () { p.remove(); };
+        if (enabled) {
+            p.querySelector('.pb-edit').onclick = function () { showEditPopup(ann, ann.x, ann.y); };
+            p.querySelector('.pb-del').onclick = function () {
+                if (confirm('确定删除此备注？')) {
+                    annotations = annotations.filter(function (a) { return a.id !== ann.id; });
+                    p.remove(); renderBadges();
+                }
+            };
+        }
+    }
+
+    function saveFile() {
+        closePopups();
+        var dataObj = {
+            annotations: annotations,
+            meta: { viewportWidth: window.innerWidth, savedAt: new Date().toLocaleString(), toolVersion: TOOL_VERSION }
+        };
+        var dataJSON = JSON.stringify(dataObj, null, 2);
+        var html = originalHTMLSnapshot;
+        var dataRegex = /<script[^>]*id=["']annotation-tool-data["'][^>]*>[\s\S]*?<\/script>/i;
+        var newTag = '<script type="application/json" id="annotation-tool-data">' + dataJSON + '<\/script>';
+        if (dataRegex.test(html)) html = html.replace(dataRegex, newTag);
+        else html = html.replace(/<\/body>/i, newTag + '\n</body>');
+        var full = '<!DOCTYPE html>\n' + html;
+        var blob = new Blob([full], { type: 'text/html;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        var origin = (location.pathname.split('/').pop() || 'page.html').replace(/\.html?$/i, '');
+        a.href = url; a.download = origin + '_带备注.html';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        showHint('✅ 已下载带备注 HTML 文件');
+    }
+
+    function init() {
+        if (initDone) return;
+        initDone = true;
+        try {
+            originalHTMLSnapshot = document.documentElement.outerHTML;
+            loadData();
+            injectStyle();
+            createToolbar();
+            renderBadges();
+            checkViewportDrift();
+            document.addEventListener('mousemove', onDocMove);
+            document.addEventListener('mouseup', onDocUp);
+            document.addEventListener('click', onDocClick, true);
+            // 窗口尺寸变化时校正工具栏位置
+            window.addEventListener('resize', function () {
+                var bar = document.getElementById('ann-toolbar');
+                if (bar) clampToolbarPos(bar);
+            });
+            console.log(LOG, '✅ 初始化完成，共 ' + annotations.length + ' 条备注');
+        } catch (e) {
+            console.error(LOG, '初始化失败', e);
+            alert('备注工具初始化失败：' + e.message + '\n请按 F12 查看 Console 详细报错');
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    window.addEventListener('load', init);
+    setTimeout(function () {
+        if (!initDone && document.body) { console.warn(LOG, '使用超时兜底启动'); init(); }
+    }, 1000);
+})();
+</script>
+<!-- ========== HTML 备注工具 v2.3 结束 ========== -->
+
+</body>
+</html>
