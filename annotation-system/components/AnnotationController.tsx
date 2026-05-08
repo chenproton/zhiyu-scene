@@ -50,6 +50,7 @@ export function AnnotationController({
   const [isDragging, setIsDragging] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(getInitialCollapsed);
   const dragRef = useRef({ startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
+  const dragStartedRef = useRef(false);
 
   const primaryColor = theme?.primary ?? '#ff0000';
   const secondaryColor = theme?.secondary ?? '#3b82f6';
@@ -118,11 +119,19 @@ export function AnnotationController({
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('input')) return;
 
+    dragStartedRef.current = false;
     setIsDragging(true);
     dragRef.current.startX = e.clientX;
     dragRef.current.startY = e.clientY;
     dragRef.current.startPosX = position.x;
     dragRef.current.startPosY = position.y;
+  };
+
+  const handleClick = () => {
+    if (isCollapsed && !dragStartedRef.current) {
+      setIsCollapsed(false);
+    }
+    dragStartedRef.current = false;
   };
 
   useEffect(() => {
@@ -131,6 +140,9 @@ export function AnnotationController({
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - dragRef.current.startX;
       const deltaY = e.clientY - dragRef.current.startY;
+      if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+        dragStartedRef.current = true;
+      }
       const maxX = window.innerWidth - 180;
       const maxY = window.innerHeight - 160;
 
@@ -166,11 +178,7 @@ export function AnnotationController({
         color: theme?.panelText ?? '#374151',
       }}
       onMouseDown={handleMouseDown}
-      onMouseEnter={() => {
-        if (!isDragging && isCollapsed) {
-          setIsCollapsed(false);
-        }
-      }}
+      onClick={handleClick}
     >
       {isCollapsed ? (
         <div className="w-full h-full flex items-center justify-center relative">

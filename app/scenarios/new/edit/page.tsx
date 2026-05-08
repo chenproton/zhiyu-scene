@@ -259,7 +259,7 @@ function NewScenarioEditForm() {
     <div className="fixed inset-0 bg-background z-50 overflow-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={() => router.push("/")}>
               <X className="h-4 w-4 mr-2" />
@@ -282,7 +282,7 @@ function NewScenarioEditForm() {
             </Button>
             <Button 
               onClick={handleProceed}
-              disabled={!scenarioName || industryIds.length === 0}
+              disabled={!scenarioName}
             >
               下一步
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -292,7 +292,7 @@ function NewScenarioEditForm() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-full mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-800">新建实践场景</h1>
           <p className="text-sm text-gray-500 mt-1">填写场景基础信息，完成后进入任务链配置</p>
@@ -303,17 +303,70 @@ function NewScenarioEditForm() {
           <div className="col-span-2 space-y-6">
             <Card>
               <CardContent className="pt-6 space-y-5">
-                {/* Pre-filled info */}
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <Label className="text-gray-500 text-xs">所属岗位</Label>
-                    <p className="font-medium text-gray-800 mt-1">{selectedPosition?.name || initialPosition?.name || "未选择"}</p>
-                    <p className="text-xs text-gray-400">{selectedPosition?.professionName || initialProfession?.name || "-"}</p>
+                {/* Position and Batch selection */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="position">目标岗位</Label>
+                    <div className="relative">
+                      <Select value={positionId} onValueChange={(v) => {
+                        setPositionId(v)
+                        const pos = allPositions.find(p => p.id === v)
+                        if (pos) {
+                          setProfessionIds(prev => prev.includes(pos.professionId) ? prev : [...prev, pos.professionId])
+                        }
+                      }}>
+                        <SelectTrigger id="position" className={positionId ? "pr-8" : ""}>
+                          <SelectValue placeholder="请选择岗位" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {professions.map((prof) => {
+                            const profPositions = allPositions.filter(p => p.professionId === prof.id)
+                            if (profPositions.length === 0) return null
+                            return (
+                              <div key={prof.id}>
+                                <div className="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-50">{prof.name}</div>
+                                {profPositions.map((pos) => (
+                                  <SelectItem key={pos.id} value={pos.id}>{pos.name}</SelectItem>
+                                ))}
+                              </div>
+                            )
+                          })}
+                        </SelectContent>
+                      </Select>
+                      {positionId && (
+                        <button
+                          type="button"
+                          onClick={() => setPositionId("")}
+                          className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-gray-500 text-xs">所属批次</Label>
-                    <p className="font-medium text-gray-800 mt-1">{initialBatch?.name || "未选择"}</p>
-                    <p className="text-xs text-gray-400">{initialBatch?.departmentName || "-"}</p>
+                  <div className="grid gap-2">
+                    <Label htmlFor="batch">所属批次</Label>
+                    <div className="relative">
+                      <Select value={batchId} onValueChange={setBatchId}>
+                        <SelectTrigger id="batch" className={batchId ? "pr-8" : ""}>
+                          <SelectValue placeholder="请选择批次" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {batches.filter(b => b.status === "open").map((b) => (
+                            <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {batchId && (
+                        <button
+                          type="button"
+                          onClick={() => setBatchId("")}
+                          className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -343,7 +396,7 @@ function NewScenarioEditForm() {
                 {/* Industry and profession - multi-select with tags */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label>面向行业 <span className="text-red-500">*</span></Label>
+                    <Label>面向行业</Label>
                     <IndustryProfessionSelector
                       options={industries.map(i => ({ id: i.id, name: i.name }))}
                       selectedIds={industryIds}

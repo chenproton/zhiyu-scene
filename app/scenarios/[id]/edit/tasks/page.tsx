@@ -147,7 +147,6 @@ const resourceTypeIcons: Record<string, React.ReactNode> = {
   audio: <Headphones className="h-4 w-4 text-violet-500" />,
   video: <Video className="h-4 w-4 text-red-500" />,
   archive: <Archive className="h-4 w-4 text-amber-500" />,
-  tool: <Wrench className="h-4 w-4 text-indigo-500" />,
   venue: <MapPin className="h-4 w-4 text-orange-500" />,
   facility: <Building2 className="h-4 w-4 text-rose-500" />,
   software: <Globe className="h-4 w-4 text-purple-500" />,
@@ -163,7 +162,6 @@ const resourceTypeLabels: Record<string, string> = {
   audio: "音频资源",
   video: "视频资源",
   archive: "压缩包资源",
-  tool: "软件工具资源",
   venue: "场地资源",
   facility: "设施设备资源",
   software: "软件资源",
@@ -178,7 +176,6 @@ const resourceTypeColors: Record<string, string> = {
   audio: "bg-violet-50 text-violet-600 border-violet-200",
   video: "bg-red-50 text-red-600 border-red-200",
   archive: "bg-amber-50 text-amber-600 border-amber-200",
-  tool: "bg-indigo-50 text-indigo-600 border-indigo-200",
   venue: "bg-orange-50 text-orange-600 border-orange-200",
   facility: "bg-rose-50 text-rose-600 border-rose-200",
   software: "bg-purple-50 text-purple-600 border-purple-200",
@@ -278,6 +275,7 @@ interface EvalSubjectConfig {
     expertise?: string
     minYears?: number
     companyType?: string
+    jobExperience?: string
     // peer
     peerCount?: number
     peerRule?: string
@@ -590,6 +588,8 @@ export default function TasksEditPage() {
   const [cloneTab, setCloneTab] = useState<"my" | "collab" | "public">("my")
   const [selectedClone, setSelectedClone] = useState<string[]>([])
   const [isWeightConfigOpen, setIsWeightConfigOpen] = useState(false)
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [deleteConfirmTask, setDeleteConfirmTask] = useState<{ id: string; name: string } | null>(null)
 
   const posAbilities = useMemo(() =>
     positionAbilities.filter(a => a.positionId === existingScenario?.positionId),
@@ -727,6 +727,7 @@ export default function TasksEditPage() {
     const newStates = { ...taskStates }
     delete newStates[id]
     setTaskStates(newStates)
+    setDeleteConfirmTask(null)
   }
 
   const distributeWeights = () => {
@@ -750,7 +751,7 @@ export default function TasksEditPage() {
             <Button variant="ghost" size="sm" asChild>
               <NextLink href={`/scenarios/${scenarioId}/edit`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                返回
+                返回上一步
               </NextLink>
             </Button>
             <div className="h-5 w-px bg-gray-200" />
@@ -860,10 +861,33 @@ export default function TasksEditPage() {
           {/* Task Rows */}
           <div className="space-y-3 min-w-max">
             {tasks.map((task, idx) => (
-              <div key={task.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border hover:border-primary/30 transition-colors group">
+              <div
+                key={task.id}
+                draggable
+                onDragStart={() => setDraggedIdx(idx)}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  if (draggedIdx === null || draggedIdx === idx) {
+                    setDraggedIdx(null)
+                    return
+                  }
+                  const newTasks = [...tasks]
+                  const [removed] = newTasks.splice(draggedIdx, 1)
+                  newTasks.splice(idx, 0, removed)
+                  setTasks(newTasks.map((t, i) => ({ ...t, order: i + 1 })))
+                  setDraggedIdx(null)
+                }}
+                className={cn(
+                  "flex items-center gap-3 p-3 bg-white rounded-xl border hover:border-primary/30 transition-colors group",
+                  draggedIdx === idx && "opacity-50 border-dashed border-primary"
+                )}
+              >
                 {/* Order */}
-                <div className="flex items-center gap-1 shrink-0 w-8">
-                  <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
+                <div className="flex items-center gap-1 shrink-0 w-8 cursor-grab">
+                  <GripVertical className="h-4 w-4 text-gray-400" />
                   <span className="text-xs text-gray-400 font-medium">{idx + 1}</span>
                 </div>
 
@@ -914,8 +938,8 @@ export default function TasksEditPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500"
-                  onClick={() => handleDeleteTask(task.id)}
+                  className="h-8 w-8 shrink-0 text-gray-400 hover:text-red-500"
+                  onClick={() => setDeleteConfirmTask({ id: task.id, name: task.name })}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -1080,6 +1104,24 @@ export default function TasksEditPage() {
         taskStates={taskStates}
         updateAnyState={(id, updates) => updateState(id, updates)}
       />
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={!!deleteConfirmTask} onOpenChange={(open) => !open && setDeleteConfirmTask(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              确定要删除任务「{deleteConfirmTask?.name}」吗？删除后不可恢复。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmTask(null)}>取消</Button>
+            <Button variant="destructive" onClick={() => deleteConfirmTask && handleDeleteTask(deleteConfirmTask.id)}>
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -1350,7 +1392,6 @@ function EditCardDialog({
       case "facility":
         extraData = { location: newResLocation.trim(), quantity: newResQuantity.trim(), description: newResDescription.trim() }
         break
-      case "tool":
       case "software":
         extraData = { version: newResVersion.trim(), url: newResUrl.trim(), license: newResLicense.trim(), description: newResDescription.trim() }
         break
@@ -2002,14 +2043,22 @@ function EditCardDialog({
       case "ability": {
         // abilityDetailOpen, selectedAbilityForDetail, expandedDomains, abilitySearch are defined at component top level
 
+        // If no position is associated, show warning instead of ability list
+        if (!positionId) {
+          return (
+            <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 py-16">
+              <AlertCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm font-medium text-gray-600">请先关联岗位后，再选择考察能力点</p>
+            </div>
+          )
+        }
+
         // Build position name map
         const positionNameMap: Record<string, string> = {}
         professions.forEach(p => p.positions.forEach(pos => { positionNameMap[pos.id] = pos.name }))
 
         // Filter abilities related to current position
-        const relatedAbilities = positionId
-          ? abilityPoints.filter(ab => ab.positionIds?.includes(positionId))
-          : abilityPoints
+        const relatedAbilities = abilityPoints.filter(ab => ab.positionIds?.includes(positionId))
 
         const toggleAbility = (abId: string) => {
           const selected = state.abilityPoints.includes(abId)
@@ -2209,7 +2258,7 @@ function EditCardDialog({
       }
 
       case "resources": {
-        const types = ["all", "document", "spreadsheet", "image", "link", "audio", "video", "archive", "tool", "venue", "facility", "software", "other"]
+        const types = ["all", "document", "spreadsheet", "image", "link", "audio", "video", "archive", "venue", "facility", "software", "other"]
         const filteredRes = learningResources.filter(r => {
           const matchType = resType === "all" || r.type === resType
           const matchName = !resSearchName || r.name.includes(resSearchName)
@@ -2461,7 +2510,6 @@ function EditCardDialog({
                           <SelectItem value="audio">音频资源</SelectItem>
                           <SelectItem value="video">视频资源</SelectItem>
                           <SelectItem value="archive">压缩包资源</SelectItem>
-                          <SelectItem value="tool">软件工具资源</SelectItem>
                           <SelectItem value="venue">场地资源</SelectItem>
                           <SelectItem value="facility">设施设备资源</SelectItem>
                           <SelectItem value="software">软件资源</SelectItem>
@@ -2518,7 +2566,7 @@ function EditCardDialog({
                   )}
 
                   {/* Tool / Software type: version, url, license */}
-                  {(newResType === "tool" || newResType === "software") && (
+                  {newResType === "software" && (
                     <>
                       <div>
                         <Label>版本号</Label>
@@ -3524,7 +3572,7 @@ function EditCardDialog({
                             <div className="grid grid-cols-2 gap-2">
                               <Input value={editingStepLabel} onChange={e => setEditingStepLabel(e.target.value)} placeholder="步骤名称" className="text-sm h-8" />
                               <Select value={step.subjectType || ""} onValueChange={v => setReviewSteps(reviewSteps.map(s => s.id === step.id ? { ...s, subjectType: v } : s))}>
-                                <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
+                                <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择评价主体" /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="teacher">教师</SelectItem>
                                   <SelectItem value="enterprise_mentor">企业导师</SelectItem>
@@ -3595,7 +3643,7 @@ function EditCardDialog({
                       <div className="grid grid-cols-2 gap-2">
                         <Input value={newStepLabel} onChange={e => setNewStepLabel(e.target.value)} placeholder="步骤名称" className="text-sm h-8" />
                         <Select value={newStepSubjectType} onValueChange={v => setNewStepSubjectType(v)}>
-                          <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择测评主体" /></SelectTrigger>
+                          <SelectTrigger className="text-sm h-8"><SelectValue placeholder="请选择评价主体" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="teacher">教师</SelectItem>
                             <SelectItem value="enterprise_mentor">企业导师</SelectItem>
@@ -3875,7 +3923,7 @@ function EditCardDialog({
           return (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">配置参与测评的主体及其参数</p>
+                <p className="text-sm text-gray-500">配置参与评价的主体及其参数</p>
                 <Button variant="outline" size="sm" className="text-xs h-8" onClick={handleDistributeWeights}>
                   <Scale className="h-3.5 w-3.5 mr-1" />一键平均权重
                 </Button>
@@ -3995,6 +4043,10 @@ function EditCardDialog({
                                   <Label className="text-xs text-gray-500">评分权重 (%)</Label>
                                   <Input type="number" value={subject.params?.weightPercent || 0} onChange={e => updateMethodEvalSubject(methodKey, idx, { params: { ...subject.params, weightPercent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) } })} className="mt-1 text-sm" min={0} max={100} />
                                 </div>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-500">岗位工作经历</Label>
+                                <Input value={subject.params?.jobExperience || ""} onChange={e => updateMethodEvalSubject(methodKey, idx, { params: { ...subject.params, jobExperience: e.target.value } })} placeholder="请填写岗位工作经历要求" className="mt-1 text-sm" />
                               </div>
                             </>
                           )}
@@ -5045,7 +5097,7 @@ function EditCardDialog({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-gray-400 group-hover:text-primary" />
-                  <span className="text-xs font-medium text-gray-500">测评主体</span>
+                  <span className="text-xs font-medium text-gray-500">评价主体</span>
                 </div>
                 {enabledSubjects.length > 0 && <Badge variant="outline" className="text-[10px]">{enabledSubjects.length} 类</Badge>}
               </div>
@@ -5335,9 +5387,9 @@ function EditCardDialog({
             <Dialog open={erDialogOpen === "subject"} onOpenChange={v => !v && setErDialogOpen(null)}>
               <DialogContent className="sm:max-w-[63vw] max-w-[63vw] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>测评主体配置</DialogTitle>
+                  <DialogTitle>评价主体配置</DialogTitle>
                   <DialogDescription>
-                    配置 {erDialogMethod ? evaluationMethodOptions.find(o => o.key === erDialogMethod)?.label : ""} 的测评主体
+                    配置 {erDialogMethod ? evaluationMethodOptions.find(o => o.key === erDialogMethod)?.label : ""} 的评价主体
                   </DialogDescription>
                 </DialogHeader>
                 {erDialogMethod && <SubjectDialogContent methodKey={erDialogMethod} />}

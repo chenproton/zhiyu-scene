@@ -247,7 +247,7 @@ export default function ScenarioEditPage() {
     <div className="fixed inset-0 bg-background z-50 overflow-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={() => router.push("/")}>
               <X className="h-4 w-4 mr-2" />
@@ -270,7 +270,7 @@ export default function ScenarioEditPage() {
             </Button>
             <Button 
               onClick={handleProceed}
-              disabled={!scenarioName || industryIds.length === 0}
+              disabled={!scenarioName}
             >
               下一步
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -280,7 +280,7 @@ export default function ScenarioEditPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-[1400px] mx-auto px-6 py-8">
+      <div className="max-w-full mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-800">
             {existingScenario ? "编辑实践场景" : "新建实践场景"}
@@ -302,13 +302,28 @@ export default function ScenarioEditPage() {
                       <button
                         type="button"
                         onClick={() => setIsPositionPopoverOpen(!isPositionPopoverOpen)}
-                        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        className={cn(
+                          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+                          positionId && "pr-8"
+                        )}
                       >
                         <span className={selectedPosition ? "text-foreground" : "text-muted-foreground"}>
                           {selectedPosition ? `${selectedPosition.name} (${selectedPosition.professionName})` : "请选择岗位"}
                         </span>
                         <ChevronDown className="h-4 w-4 opacity-50" />
                       </button>
+                      {positionId && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPositionId("")
+                          }}
+                          className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                       
                       {isPositionPopoverOpen && (
                         <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none">
@@ -366,18 +381,29 @@ export default function ScenarioEditPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="batch">所属批次</Label>
-                    <Select value={batchId} onValueChange={setBatchId}>
-                      <SelectTrigger id="batch">
-                        <SelectValue placeholder="请选择批次" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {batches.filter(b => b.status === "open").map((b) => (
-                          <SelectItem key={b.id} value={b.id}>
-                            {b.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="relative">
+                      <Select value={batchId} onValueChange={setBatchId}>
+                        <SelectTrigger id="batch" className={batchId ? "pr-8" : ""}>
+                          <SelectValue placeholder="请选择批次" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {batches.filter(b => b.status === "open").map((b) => (
+                            <SelectItem key={b.id} value={b.id}>
+                              {b.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {batchId && (
+                        <button
+                          type="button"
+                          onClick={() => setBatchId("")}
+                          className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -407,7 +433,7 @@ export default function ScenarioEditPage() {
                 {/* Industry and profession - multi-select with tags */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label>面向行业 <span className="text-red-500">*</span></Label>
+                    <Label>面向行业</Label>
                     <IndustryProfessionSelector
                       options={industries.map(i => ({ id: i.id, name: i.name }))}
                       selectedIds={industryIds}

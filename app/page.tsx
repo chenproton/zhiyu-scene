@@ -86,6 +86,7 @@ export default function SceneHallPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null)
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
 
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [expandedBatches, setExpandedBatches] = useState<string[]>(localBatches.map((b) => b.id))
@@ -136,7 +137,7 @@ export default function SceneHallPage() {
         return scenarios.filter((s) => s.coBuilders.some((c) => c.id === CURRENT_USER_ID))
       case "public":
       default:
-        return scenarios
+        return scenarios.filter((s) => s.status === "published")
     }
   }, [scenarios, activeTab])
 
@@ -147,9 +148,7 @@ export default function SceneHallPage() {
       result = result.filter((s) => {
         const matchName = s.name.toLowerCase().includes(q)
         const matchTask = s.tasks.some((t) => t.name.toLowerCase().includes(q))
-        const matchBatch = s.batchName?.toLowerCase().includes(q)
-        const matchPosition = s.positionName?.toLowerCase().includes(q)
-        return matchName || matchTask || matchBatch || matchPosition
+        return matchName || matchTask
       })
     }
     if (selectedPositionId) {
@@ -158,8 +157,11 @@ export default function SceneHallPage() {
     if (selectedBatchId) {
       result = result.filter((s) => s.batchId === selectedBatchId)
     }
+    if (selectedStatus) {
+      result = result.filter((s) => s.status === selectedStatus)
+    }
     return result
-  }, [tabFilteredScenarios, searchQuery, selectedPositionId, selectedBatchId])
+  }, [tabFilteredScenarios, searchQuery, selectedPositionId, selectedBatchId, selectedStatus])
 
   const stats = useMemo(() => {
     const total = filteredScenarios.length
@@ -181,8 +183,8 @@ export default function SceneHallPage() {
     return groups
   }, [filteredScenarios, viewMode])
 
-  const draftScenarios = useMemo(
-    () => filteredScenarios.filter((s) => !s.batchId),
+  const uncategorizedScenarios = useMemo(
+    () => filteredScenarios.filter((s) => !s.batchId && s.status === "draft"),
     [filteredScenarios]
   )
 
@@ -414,6 +416,7 @@ export default function SceneHallPage() {
     setSearchQuery("")
     setSelectedPositionId(null)
     setSelectedBatchId(null)
+    setSelectedStatus(null)
   }
 
   const hasSelected = selectedIds.length > 0
@@ -579,128 +582,10 @@ export default function SceneHallPage() {
                 导入场景
               </Button>
 
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={handleOpenCreateDialog}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    新建场景
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[450px]" annotationContext="modal-create-scenario">
-                  <DialogHeader>
-                    <DialogTitle>新建实践场景</DialogTitle>
-                    <DialogDescription>
-                      选择目标岗位和所属批次（可选），然后进入场景编辑页面。
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="position">目标岗位</Label>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          id="position"
-                          onClick={() => setIsCreatePositionPopoverOpen(!isCreatePositionPopoverOpen)}
-                          className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <span className={selectedPositionForCreate ? "text-foreground" : "text-muted-foreground"}>
-                            {selectedPositionForCreate
-                              ? `${selectedPositionForCreate.name} (${selectedPositionForCreate.professionName})`
-                              : "请选择岗位（可选）"}
-                          </span>
-                          <ChevronDown className="h-4 w-4 opacity-50" />
-                        </button>
-
-                        {isCreatePositionPopoverOpen && (
-                          <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none">
-                            <div className="p-2">
-                              <Tabs value={createPositionTab} onValueChange={(v) => setCreatePositionTab(v as TabType)}>
-                                <TabsList className="grid w-full grid-cols-3">
-                                  <TabsTrigger value="my">我的</TabsTrigger>
-                                  <TabsTrigger value="collab">共建</TabsTrigger>
-                                  <TabsTrigger value="public">公共库</TabsTrigger>
-                                </TabsList>
-                              </Tabs>
-                              <div className="mt-2 relative">
-                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                                <Input
-                                  placeholder="搜索岗位名称..."
-                                  value={createPositionSearch}
-                                  onChange={(e) => setCreatePositionSearch(e.target.value)}
-                                  className="h-8 pl-7 text-sm"
-                                />
-                              </div>
-                              <div className="mt-2 max-h-[200px] overflow-y-auto">
-                                {professions.map((prof) => {
-                                  const profPositions = filteredPositions.filter((p) => p.professionId === prof.id)
-                                  if (profPositions.length === 0) return null
-                                  return (
-                                    <div key={prof.id}>
-                                      <div className="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-50">
-                                        {prof.name}
-                                      </div>
-                                      {profPositions.map((pos) => (
-                                        <div
-                                          key={pos.id}
-                                          onClick={() => handleSelectPositionForCreate(pos.id)}
-                                          className={cn(
-                                            "px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between",
-                                            createPositionId === pos.id && "bg-primary/5 text-primary"
-                                          )}
-                                        >
-                                          <span>{pos.name}</span>
-                                          {createPositionId === pos.id && (
-                                            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="batch">所属批次分组</Label>
-                      <Select value={createBatchId} onValueChange={setCreateBatchId}>
-                        <SelectTrigger id="batch">
-                          <SelectValue placeholder="请选择批次分组（可选）" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {openBatches.length > 0 ? (
-                            openBatches.map((batch) => (
-                              <SelectItem key={batch.id} value={batch.id}>
-                                <span className="flex items-center gap-2">
-                                  {batch.name}
-                                  <span className="text-xs text-gray-400">({batch.code})</span>
-                                </span>
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <div className="px-2 py-4 text-sm text-gray-500 text-center">
-                              暂无开放中的批次
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      {createPositionId && (
-                        <p className="text-xs text-gray-500">
-                          所选岗位所属专业：{getPositionProfession(createPositionId)?.name || "-"}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>取消</Button>
-                    <Button onClick={handleProceedToEditor}>下一步</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => router.push('/scenarios/new/edit')}>
+                <Plus className="mr-2 h-4 w-4" />
+                新建场景
+              </Button>
             </div>
           </div>
 
@@ -809,7 +694,7 @@ export default function SceneHallPage() {
             <div className="flex items-center gap-2 flex-1 min-w-[200px]">
               <Search className="h-4 w-4 text-slate-400" />
               <Input
-                placeholder="搜索场景名称 / 任务名称 / 批次名称 / 岗位名称"
+                placeholder="搜索场景名称 / 任务名称"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-9 text-sm flex-1"
@@ -846,6 +731,19 @@ export default function SceneHallPage() {
                       </span>
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedStatus || "__all__"} onValueChange={(v) => setSelectedStatus(v === "__all__" ? null : v)}>
+                <SelectTrigger className="h-9 text-sm w-36">
+                  <SelectValue placeholder="按状态筛选" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">全部状态</SelectItem>
+                  <SelectItem value="draft">草稿</SelectItem>
+                  <SelectItem value="pending">审批中</SelectItem>
+                  <SelectItem value="approved">已通过</SelectItem>
+                  <SelectItem value="rejected">已驳回</SelectItem>
+                  <SelectItem value="published">已发布</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -971,19 +869,19 @@ export default function SceneHallPage() {
               </Collapsible>
             )
           })}
-          {draftScenarios.length > 0 && (
+          {uncategorizedScenarios.length > 0 && (
             <div className="overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50/80">
                 <div className="flex items-center gap-3">
-                  <span className="font-medium text-gray-800">草稿场景</span>
+                  <span className="font-medium text-gray-800">未分类</span>
                   <Badge variant="secondary" className="text-xs">
-                    {draftScenarios.length} 个场景
+                    {uncategorizedScenarios.length} 个场景
                   </Badge>
                 </div>
               </div>
               <div className="p-4 pt-0">
                 <ScenarioList
-                  scenarios={draftScenarios}
+                  scenarios={uncategorizedScenarios}
                   selectedIds={selectedIds}
                   onSelectId={handleSelectId}
                   onSelectAll={handleSelectAll}

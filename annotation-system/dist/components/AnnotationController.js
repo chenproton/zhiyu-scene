@@ -33,6 +33,7 @@ function AnnotationController({ mode, setMode, user, setUser, annotationCount, z
     const [isDragging, setIsDragging] = (0, react_1.useState)(false);
     const [isCollapsed, setIsCollapsed] = (0, react_1.useState)(getInitialCollapsed);
     const dragRef = (0, react_1.useRef)({ startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
+    const dragStartedRef = (0, react_1.useRef)(false);
     const primaryColor = theme?.primary ?? '#ff0000';
     const secondaryColor = theme?.secondary ?? '#3b82f6';
     (0, react_1.useEffect)(() => {
@@ -94,11 +95,18 @@ function AnnotationController({ mode, setMode, user, setUser, annotationCount, z
         const target = e.target;
         if (target.closest('button') || target.closest('input'))
             return;
+        dragStartedRef.current = false;
         setIsDragging(true);
         dragRef.current.startX = e.clientX;
         dragRef.current.startY = e.clientY;
         dragRef.current.startPosX = position.x;
         dragRef.current.startPosY = position.y;
+    };
+    const handleClick = () => {
+        if (isCollapsed && !dragStartedRef.current) {
+            setIsCollapsed(false);
+        }
+        dragStartedRef.current = false;
     };
     (0, react_1.useEffect)(() => {
         if (!isDragging)
@@ -106,6 +114,9 @@ function AnnotationController({ mode, setMode, user, setUser, annotationCount, z
         const handleMouseMove = (e) => {
             const deltaX = e.clientX - dragRef.current.startX;
             const deltaY = e.clientY - dragRef.current.startY;
+            if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+                dragStartedRef.current = true;
+            }
             const maxX = window.innerWidth - 180;
             const maxY = window.innerHeight - 160;
             setPosition({
@@ -129,11 +140,7 @@ function AnnotationController({ mode, setMode, user, setUser, annotationCount, z
             zIndex: zIndex + 400,
             backgroundColor: isCollapsed ? (theme?.panelBg ?? '#ffffff') : (theme?.panelBg ?? '#ffffff'),
             color: theme?.panelText ?? '#374151',
-        }, onMouseDown: handleMouseDown, onMouseEnter: () => {
-            if (!isDragging && isCollapsed) {
-                setIsCollapsed(false);
-            }
-        }, children: isCollapsed ? ((0, jsx_runtime_1.jsxs)("div", { className: "w-full h-full flex items-center justify-center relative", children: [(0, jsx_runtime_1.jsx)("div", { className: "w-4 h-4 rounded-full", style: {
+        }, onMouseDown: handleMouseDown, onClick: handleClick, children: isCollapsed ? ((0, jsx_runtime_1.jsxs)("div", { className: "w-full h-full flex items-center justify-center relative", children: [(0, jsx_runtime_1.jsx)("div", { className: "w-4 h-4 rounded-full", style: {
                         backgroundColor: mode === 'off' ? '#9ca3af' : mode === 'view' ? secondaryColor : primaryColor,
                         boxShadow: `0 0 0 2px rgba(255,255,255,0.9), 0 0 8px ${mode === 'off' ? '#9ca3af' : mode === 'view' ? secondaryColor : primaryColor}`,
                     } }), annotationCount > 0 && ((0, jsx_runtime_1.jsx)("span", { className: "absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm", children: annotationCount }))] })) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsxs)("div", { className: "flex items-center gap-2 mb-3", children: [(0, jsx_runtime_1.jsx)(lucide_react_1.GripVertical, { className: "w-4 h-4 text-gray-400" }), (0, jsx_runtime_1.jsx)("div", { className: "w-3 h-3 rounded-full", style: {
