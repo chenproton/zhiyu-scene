@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { PlatformShellWrapper } from '@/components/layout/platform-shell-wrapper'
-import { AnnotationClient } from '@/components/annotation-client'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -44,7 +43,6 @@ export default function RootLayout({
         }} />
         <PlatformShellWrapper>{children}</PlatformShellWrapper>
         {process.env.NODE_ENV === 'production' && <Analytics />}
-        <AnnotationClient />
       </body>
     </html>
   )

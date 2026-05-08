@@ -3,7 +3,6 @@
 import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
-import { AnnotationSystem } from '@my-app/annotation-system'
 
 import { cn } from '@/lib/utils'
 
@@ -51,11 +50,9 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
-  annotationContext,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
-  annotationContext?: string
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
@@ -77,14 +74,6 @@ function DialogContent({
             <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
-        )}
-        {annotationContext && (
-          <AnnotationSystem
-            context={annotationContext}
-            zIndex={100}
-            defaultMode="view"
-            hideController
-          />
         )}
       </DialogPrimitive.Content>
     </DialogPortal>

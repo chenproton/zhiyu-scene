@@ -109,10 +109,6 @@ ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" \
   pnpm install
 
   # 构建子项目
-  if [ -d "annotation-system" ]; then
-    echo "构建 annotation-system..."
-    cd annotation-system && npm run build && cd ..
-  fi
   if [ -d "platform-navigation-shell" ]; then
     echo "构建 platform-navigation-shell..."
     cd platform-navigation-shell && npm run build && cd ..
