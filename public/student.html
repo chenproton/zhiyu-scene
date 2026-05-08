@@ -1608,6 +1608,734 @@
             color: white;
         }
 
+        /* ==================== 任务学习视图 ==================== */
+        #taskLearningView { display: none; }
+        #taskLearningView.active { display: block; }
+
+        .tl-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 992px) {
+            .tl-layout { grid-template-columns: 1fr; }
+            .tl-right { order: -1; }
+        }
+
+        .tl-left { min-width: 0; }
+        .tl-right { position: sticky; top: 88px; }
+
+        .tl-side-panel {
+            background: var(--bg-white);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.02);
+            overflow: hidden;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        .tl-side-body {
+            flex: 1;
+        }
+        .tl-side-tabs {
+            display: flex;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .tl-side-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            white-space: nowrap;
+        }
+        .tl-side-tab:hover { color: var(--primary-color); background: rgba(22,119,255,0.02); }
+        .tl-side-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 500;
+        }
+        .tl-side-tab i { margin-right: 4px; }
+        .tl-side-body {
+            padding: 16px;
+            min-height: 200px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+        .tl-side-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+        .tl-side-empty i { font-size: 32px; margin-bottom: 10px; display: block; color: #d9d9d9; }
+        .tl-side-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .tl-side-item:hover { background: #f0f7ff; color: var(--primary-color); }
+        .tl-side-item i { width: 18px; text-align: center; color: var(--text-tertiary); }
+        .tl-side-item:hover i { color: var(--primary-color); }
+        .tl-side-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tl-side-tag.knowledge { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+        .tl-side-tag.knowledge:hover { background: #faad14; color: white; }
+        .tl-side-tag.ability { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+        .tl-side-tag.ability:hover { background: #52c41a; color: white; }
+        .tl-side-resource-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .tl-side-resource-item:hover { border-color: var(--primary-color); }
+        .tl-side-resource-icon {
+            width: 32px; height: 32px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+        }
+        .tl-side-resource-name { font-size: 13px; color: var(--text-primary); flex: 1; }
+        .tl-side-resource-meta { font-size: 11px; color: var(--text-tertiary); }
+
+        .tl-header {
+            background: var(--bg-white);
+            border-bottom: 1px solid #f0f0f0;
+            padding: 20px 24px;
+            margin: 0 -24px 24px;
+        }
+        .tl-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-white);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+        .tl-back-btn:hover { color: var(--primary-color); border-color: var(--primary-color); }
+        .tl-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .tl-task-name {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .tl-task-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .tl-task-meta span { display: flex; align-items: center; gap: 4px; }
+        .tl-type-badge {
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .tl-type-badge.assessment { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
+        .tl-type-badge.training { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+
+        .tl-main { max-width: 1000px; }
+        .tl-panel {
+            background: var(--bg-white);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .tl-panel-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .tl-panel-header i { color: var(--primary-color); }
+        .tl-panel-body { padding: 20px; }
+
+        .tl-section { margin-bottom: 20px; }
+        .tl-section:last-child { margin-bottom: 0; }
+        .tl-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        .tl-section-title i { color: var(--primary-color); margin-right: 6px; }
+        .tl-fullscreen-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #fafafa;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .tl-fullscreen-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: var(--primary-light); }
+
+        .tl-task-desc {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .tl-task-desc h1, .tl-task-desc h2, .tl-task-desc h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 12px 0 8px; }
+        .tl-task-desc p { margin-bottom: 8px; }
+        .tl-task-desc ul { padding-left: 20px; margin-bottom: 8px; }
+        .tl-task-desc li { margin-bottom: 4px; }
+        .tl-task-desc strong { color: var(--text-primary); }
+
+        .tl-tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tl-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .tl-tag.knowledge { background: #fff7e6; color: #d46b08; border-color: #ffd591; }
+        .tl-tag.knowledge:hover { background: #faad14; color: white; }
+        .tl-tag.ability { background: #f6ffed; color: #389e0d; border-color: #b7eb8f; }
+        .tl-tag.ability:hover { background: #52c41a; color: white; }
+
+        .tl-deliverable-list { display: flex; flex-direction: column; gap: 10px; }
+        .tl-deliverable-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .tl-deliverable-num {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--primary-color); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 600; flex-shrink: 0;
+        }
+        .tl-deliverable-info { flex: 1; }
+        .tl-deliverable-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+        .tl-deliverable-desc { font-size: 12px; color: var(--text-secondary); }
+
+        /* 测评面板 */
+        .tl-assessment-panel { border-left: 3px solid var(--primary-color); }
+        .tl-assessment-status {
+            margin-left: auto;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .tl-assessment-status.done { background: var(--success-light); color: var(--success-color); }
+        .tl-assessment-status.pending { background: var(--warning-light); color: var(--warning-color); }
+
+        .tl-quiz-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #f0f0f0;
+        }
+        .tl-quiz-info { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-secondary); }
+        .tl-quiz-tag {
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .tl-quiz-tag.paper { background: #e6f4ff; color: #1677ff; }
+        .tl-quiz-tag.question_bank { background: #f6ffed; color: #389e0d; }
+        .tl-quiz-tag.random_draw { background: #fff7e6; color: #d46b08; }
+        .tl-quiz-tag.review { background: #f9f0ff; color: #722ed1; }
+
+        .tl-question-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #fafafa;
+        }
+        .tl-question-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .tl-question-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 26px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .tl-question-score { font-size: 12px; color: var(--text-tertiary); margin-left: auto; white-space: nowrap; }
+        .tl-options { display: flex; flex-direction: column; gap: 8px; }
+        .tl-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 14px;
+        }
+        .tl-option:hover { border-color: var(--primary-color); background: #f0f7ff; }
+        .tl-option.selected { border-color: var(--primary-color); background: #e6f4ff; }
+        .tl-option.correct { border-color: var(--success-color); background: var(--success-light); }
+        .tl-option.wrong { border-color: var(--error-color); background: var(--error-light); }
+        .tl-option-check {
+            width: 20px; height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 10px; color: white;
+        }
+        .tl-option.selected .tl-option-check { border-color: var(--primary-color); background: var(--primary-color); }
+        .tl-option.correct .tl-option-check { border-color: var(--success-color); background: var(--success-color); }
+        .tl-option.wrong .tl-option-check { border-color: var(--error-color); background: var(--error-color); }
+
+        .tl-quiz-feedback {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .tl-quiz-feedback.correct { background: var(--success-light); border: 1px solid #b7eb8f; color: var(--success-color); }
+        .tl-quiz-feedback.wrong { background: var(--error-light); border: 1px solid #ffccc7; color: var(--error-color); }
+
+        .tl-onsite-notice {
+            background: var(--warning-light);
+            border: 1px solid #ffd591;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .tl-onsite-notice i { color: var(--warning-color); font-size: 24px; margin-top: 2px; }
+        .tl-onsite-title { font-weight: 600; margin-bottom: 6px; font-size: 15px; }
+        .tl-onsite-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+        .tl-review-notice {
+            background: #f9f0ff;
+            border: 1px solid #d3adf7;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .tl-review-title { font-weight: 600; margin-bottom: 8px; color: #722ed1; font-size: 15px; }
+        .tl-review-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+        .tl-review-steps { display: flex; flex-direction: column; gap: 8px; }
+        .tl-review-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .tl-review-step-num {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: #722ed1; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 600; flex-shrink: 0;
+        }
+
+        .tl-mixed-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .tl-assessment-section {
+            background: var(--bg-white);
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s;
+        }
+        .tl-assessment-section:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .tl-assessment-section:last-child { margin-bottom: 0; }
+        .tl-section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 18px;
+            background: linear-gradient(to right, #fafafa, #f5f8ff);
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        .tl-section-header i { font-size: 18px; }
+        .tl-section-body { padding: 18px; }
+        .tl-quiz-collapsed {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        .tl-quiz-collapsed-info { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .tl-quiz-collapsed-info span { font-size: 13px; color: var(--text-secondary); }
+        .tl-quiz-collapsed-info .tl-quiz-tag { font-size: 12px; }
+        .tl-expand-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tl-expand-btn:hover { background: #0958d9; }
+        .tl-quiz-content { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        .tl-draw-pool { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+        .tl-draw-chip {
+            background: #f5f5f5;
+            border: 1px solid #e8e8e8;
+            border-radius: 16px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .tl-draw-chip.drawn { background: var(--primary-light); border-color: var(--primary-color); color: var(--primary-color); font-weight: 500; }
+        .tl-draw-result {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .tl-draw-result-title { font-weight: 600; color: #389e0d; margin-bottom: 8px; }
+        .tl-upload-zone {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+        .tl-upload-zone:hover { border-color: var(--primary-color); background: #f0f7ff; }
+        .tl-upload-zone i { font-size: 32px; color: #bfbfbf; margin-bottom: 8px; }
+        .tl-upload-zone-text { font-size: 13px; color: var(--text-secondary); }
+        .tl-file-list { margin-top: 12px; }
+        .tl-file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .tl-file-item i { color: #52c41a; }
+        .tl-rubric-preview {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        .tl-rubric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+        .tl-rubric-item:last-child { border-bottom: none; }
+        .tl-mixed-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .tl-mixed-card:hover { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(22,119,255,0.1); transform: translateY(-2px); }
+        .tl-mixed-icon { font-size: 32px; margin-bottom: 10px; }
+        .tl-mixed-name { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+        .tl-mixed-desc { font-size: 12px; color: var(--text-secondary); }
+
+        /* 底部提交栏 */
+        .tl-submission-bar {
+            background: var(--bg-white);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.02);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .tl-submission-check {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .tl-check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #fafafa;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .tl-check-item.done { color: var(--success-color); }
+        .tl-check-item.pending { color: var(--text-secondary); }
+        .tl-check-icon { width: 20px; text-align: center; }
+        .tl-check-label { flex: 1; }
+        .tl-check-status { font-size: 12px; }
+
+        .tl-progress-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .tl-progress-bar-wrap {
+            flex: 1;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+        .tl-progress-bar-fill {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .tl-warning-box {
+            background: var(--warning-light);
+            border: 1px solid #ffd591;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #d46b08;
+            margin-bottom: 16px;
+        }
+
+        .tl-submit-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 28px;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(22,119,255,0.25);
+        }
+        .tl-submit-btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,119,255,0.35); }
+        .tl-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .tl-submitted-state {
+            text-align: center;
+            padding: 24px;
+        }
+        .tl-submitted-state i { font-size: 40px; color: var(--success-color); margin-bottom: 12px; }
+        .tl-submitted-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+        .tl-submitted-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+        .tl-submitted-summary {
+            text-align: left;
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 16px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .tl-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #f0f0f0;
+            font-size: 13px;
+        }
+        .tl-summary-item:last-child { border-bottom: none; }
+
+        /* 全局资源侧边栏 */
+        .tl-float-sidebar { position: fixed; right: 0; top: 64px; bottom: 0; z-index: 100; pointer-events: none; }
+        .tl-float-sidebar * { pointer-events: auto; }
+        .tl-sidebar-panel {
+            position: absolute;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100%;
+            background: var(--bg-white);
+            box-shadow: -4px 0 16px rgba(0,0,0,0.08);
+            border-left: 1px solid #f0f0f0;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .tl-sidebar-panel.open { right: 0; }
+        .tl-sidebar-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .tl-sidebar-close {
+            width: 28px; height: 28px; border-radius: 6px;
+            border: none; background: transparent; color: var(--text-tertiary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+        }
+        .tl-sidebar-close:hover { background: #f5f5f5; color: var(--text-primary); }
+        .tl-sidebar-body { flex: 1; overflow-y: auto; padding: 12px; }
+
+        .tl-float-tabs {
+            position: absolute;
+            right: 20px;
+            bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tl-float-tab {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(22,119,255,0.3);
+            transition: all 0.2s;
+        }
+        .tl-float-tab:hover { transform: scale(1.1); background: var(--primary-hover); }
+
+        /* 学测模式选择 */
+        .tl-mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .tl-mode-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .tl-mode-card:hover { border-color: var(--primary-color); box-shadow: 0 4px 16px rgba(22,119,255,0.1); transform: translateY(-2px); }
+        .tl-mode-icon { font-size: 28px; color: var(--primary-color); margin-bottom: 10px; }
+        .tl-mode-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+        .tl-mode-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+        /* 模拟页面容器 */
+        #tlSimulationContainer {
+            position: fixed;
+            top: 64px; left: 0; right: 0; bottom: 0;
+            background: white;
+            z-index: 90;
+            display: none;
+        }
+        #tlSimulationContainer.active { display: block; }
+        #tlSimulationContainer iframe { width: 100%; height: 100%; border: none; }
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
@@ -1852,7 +2580,142 @@
             </div>
         </div>
 
+        <!-- ==================== 任务学习视图 ==================== -->
+        <div id="taskLearningView" style="display:none;">
+            <!-- 顶部任务信息栏 -->
+            <div class="tl-header">
+                <button class="tl-back-btn" onclick="backToScenario()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回场景
+                </button>
+                <div class="tl-title-row">
+                    <h2 class="tl-task-name" id="tlTaskName">任务名称</h2>
+                    <div class="tl-task-meta" id="tlTaskMeta">
+                        <span><i class="far fa-clock"></i> <span id="tlTaskHours">0</span> 课时</span>
+                        <span><i class="fas fa-star"></i> 难度 <span id="tlTaskDifficulty"></span></span>
+                        <span class="tl-type-badge" id="tlTaskType">训练任务</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="tl-layout">
+                <!-- 左侧列 -->
+                <div class="tl-left">
+                    <!-- 学习面板 -->
+                    <div class="tl-panel" id="learningPanel">
+                        <div class="tl-panel-header">
+                            <i class="fas fa-book-open"></i>
+                            <span>任务学习</span>
+                        </div>
+                        <div class="tl-panel-body">
+                            <div class="tl-section">
+                                <div class="tl-section-title">
+                                    <span>任务说明</span>
+                                    <button class="tl-fullscreen-btn" onclick="openTaskDescFullscreen()">
+                                        <i class="fas fa-expand"></i> 全屏查看
+                                    </button>
+                                </div>
+                                <div class="tl-task-desc" id="tlTaskDesc"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 测评面板 -->
+                    <div class="tl-panel tl-assessment-panel" id="assessmentPanel" style="display:none;">
+                        <div class="tl-panel-header">
+                            <i class="fas fa-edit"></i>
+                            <span>任务测评</span>
+                            <span class="tl-assessment-status" id="tlAssessmentStatus"></span>
+                        </div>
+                        <div class="tl-panel-body" id="tlAssessmentBody"></div>
+                    </div>
+
+                    <!-- 底部提交栏 -->
+                    <div class="tl-submission-bar" id="submissionBar">
+                        <div class="tl-submission-content" id="tlSubmissionContent"></div>
+                    </div>
+                </div>
+
+                <!-- 右侧列 -->
+                <div class="tl-right">
+                    <div class="tl-side-panel">
+                        <div class="tl-side-tabs">
+                            <div class="tl-side-tab active" data-side-tab="knowledge" onclick="switchSideTab('knowledge')">
+                                <i class="fas fa-lightbulb"></i> 关联知识点
+                            </div>
+                            <div class="tl-side-tab" data-side-tab="ability" onclick="switchSideTab('ability')">
+                                <i class="fas fa-star"></i> 关联能力点
+                            </div>
+                            <div class="tl-side-tab" data-side-tab="resource" onclick="switchSideTab('resource')">
+                                <i class="fas fa-folder-open"></i> 配套资源
+                            </div>
+                        </div>
+                        <div class="tl-side-body" id="tlSideBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全局资源侧边栏 -->
+        <div class="tl-float-sidebar" id="tlFloatSidebar">
+            <div class="tl-sidebar-panel" id="tlSidebarPanel">
+                <div class="tl-sidebar-header">
+                    <span id="tlSidebarTitle">配套资源</span>
+                    <button class="tl-sidebar-close" onclick="closeFloatSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="tl-sidebar-body" id="tlSidebarBody"></div>
+            </div>
+            <div class="tl-float-tabs">
+                <button class="tl-float-tab" onclick="openFloatSidebar('resources')" title="配套资源"><i class="fas fa-book"></i></button>
+                <button class="tl-float-tab" onclick="openFloatSidebar('knowledge')" title="知识点"><i class="fas fa-lightbulb"></i></button>
+                <button class="tl-float-tab" onclick="openFloatSidebar('tasks')" title="任务列表"><i class="fas fa-tasks"></i></button>
+            </div>
+        </div>
+
     </main>
+
+    <!-- 学测模式选择弹窗 -->
+    <div class="preview-modal-overlay" id="modeSelectOverlay" onclick="if(event.target===this)closeModeSelect()">
+        <div class="preview-modal-box" style="width:520px;">
+            <div class="preview-modal-header">
+                <div class="preview-modal-title">选择学习模式</div>
+                <button class="preview-modal-close" onclick="closeModeSelect()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-modal-body">
+                <div class="tl-mode-grid">
+                    <div class="tl-mode-card" onclick="confirmModeSelect('integrated')">
+                        <div class="tl-mode-icon"><i class="fas fa-layer-group"></i></div>
+                        <div class="tl-mode-name">学测一体</div>
+                        <div class="tl-mode-desc">先学习任务内容，完成后直接进入测评</div>
+                    </div>
+                    <div class="tl-mode-card" onclick="confirmModeSelect('learn')">
+                        <div class="tl-mode-icon"><i class="fas fa-book-reader"></i></div>
+                        <div class="tl-mode-name">仅学习</div>
+                        <div class="tl-mode-desc">只浏览任务说明和资源，暂不参与测评</div>
+                    </div>
+                    <div class="tl-mode-card" onclick="confirmModeSelect('assess')">
+                        <div class="tl-mode-icon"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="tl-mode-name">仅测评</div>
+                        <div class="tl-mode-desc">跳过学习环节，直接进入测评答题</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 任务说明全屏弹窗 -->
+    <div class="preview-modal-overlay" id="taskDescFullscreenOverlay" onclick="if(event.target===this)closeTaskDescFullscreen()">
+        <div class="preview-modal-box" style="width:900px;max-width:95vw;height:90vh;">
+            <div class="preview-modal-header">
+                <div class="preview-modal-title">任务说明</div>
+                <button class="preview-modal-close" onclick="closeTaskDescFullscreen()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-modal-body" style="overflow-y:auto;">
+                <div id="taskDescFullscreenContent"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // ==================== Mock 数据 ====================
@@ -2883,45 +3746,709 @@
         // ==================== 学习视图 ====================
 
 
+        // ==================== 任务学习视图 ====================
+        let currentLearningTask = null;
+        let currentLearningMode = 'integrated'; // 'integrated' | 'learn' | 'assess'
+
         function enterTaskLearning(taskId) {
             const task = getTaskById(taskId);
             if (!task) return;
-            window.location.href = '/approvals/grading/simulation/' + encodeURIComponent(taskId) + '?mode=integrated&name=' + encodeURIComponent(task.name);
+            currentLearningTask = task;
+            showTaskLearningView(taskId, 'integrated');
         }
+
+        function showTaskLearningView(taskId, mode) {
+            currentLearningMode = mode || 'integrated';
+            const task = getTaskById(taskId);
+            if (!task) return;
+            currentLearningTask = task;
+            currentTaskId = taskId;
+
+            // 隐藏场景详情，显示任务学习
+            document.getElementById('scenarioDetailView').style.display = 'none';
+            const tlView = document.getElementById('taskLearningView');
+            tlView.style.display = 'block';
+            tlView.classList.add('active');
+
+            // 更新顶部信息
+            document.getElementById('tlTaskName').textContent = task.name;
+            document.getElementById('tlTaskHours').textContent = task.estimatedHours || 0;
+            const diffEl = document.getElementById('tlTaskDifficulty');
+            diffEl.innerHTML = '★'.repeat(task.difficulty || 1) + '☆'.repeat(5 - (task.difficulty || 1));
+            const typeBadge = document.getElementById('tlTaskType');
+            typeBadge.textContent = task.taskType === 'assessment' ? '考核任务' : '训练任务';
+            typeBadge.className = 'tl-type-badge ' + (task.taskType || 'training');
+
+            // 渲染学习面板
+            renderLearningPanel(task);
+
+            // 渲染右侧关联面板
+            renderSidePanel(task);
+
+            // 渲染测评面板（仅学习和学测一体模式显示）
+            if (currentLearningMode !== 'learn') {
+                renderAssessmentPanel(task);
+            }
+
+            // 渲染提交栏
+            renderSubmissionBar(task);
+
+            // 滚动到顶部
+            window.scrollTo(0, 0);
+        }
+
+        function backToScenario() {
+            document.getElementById('taskLearningView').style.display = 'none';
+            document.getElementById('taskLearningView').classList.remove('active');
+            document.getElementById('scenarioDetailView').style.display = 'block';
+            currentLearningTask = null;
+            currentTaskId = null;
+            closeFloatSidebar();
+            window.scrollTo(0, 0);
+        }
+
+        // 渲染学习面板
+        function renderLearningPanel(task) {
+            const descEl = document.getElementById('tlTaskDesc');
+            descEl.innerHTML = task.detailedDescription || task.description || '暂无任务说明';
+        }
+
+        // 渲染右侧关联面板
+        function renderSidePanel(task) {
+            // 默认切换到知识点 Tab
+            switchSideTab('knowledge');
+        }
+
+        function switchSideTab(tab) {
+            document.querySelectorAll('.tl-side-tab').forEach(t => t.classList.remove('active'));
+            const activeTab = document.querySelector(`.tl-side-tab[data-side-tab="${tab}"]`);
+            if (activeTab) activeTab.classList.add('active');
+
+            const body = document.getElementById('tlSideBody');
+            const task = currentLearningTask;
+            if (!task) { body.innerHTML = ''; return; }
+
+            if (tab === 'knowledge') {
+                const kps = getTaskKnowledgePoints(task);
+                if (kps.length === 0) {
+                    body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联知识点</div>';
+                } else {
+                    body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + kps.map(kp =>
+                        `<span class="tl-side-tag knowledge" onclick="showKgDetailModal({name:'${kp.name}',type:'knowledge',id:'${kp.id}'})">${kp.name}</span>`
+                    ).join('') + '</div>';
+                }
+            } else if (tab === 'ability') {
+                const aps = (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean);
+                if (aps.length === 0) {
+                    body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联能力点</div>';
+                } else {
+                    body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + aps.map(ap =>
+                        `<span class="tl-side-tag ability" onclick="showKgDetailModal({name:'${ap.name}',type:'ability',id:'${ap.id}'})">${ap.name}</span>`
+                    ).join('') + '</div>';
+                }
+            } else if (tab === 'resource') {
+                const resources = getTaskResources(task);
+                if (resources.length === 0) {
+                    body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无配套资源</div>';
+                } else {
+                    body.innerHTML = resources.map(r => `
+                        <div class="tl-side-resource-item" onclick="${r.type === 'link' || r.type === 'software' ? `alert('打开外部链接')` : `openPreviewModal('${r.name}', '${r.type}')`}">
+                            <div class="tl-side-resource-icon ${getResourceIconClass(r.type)}" style="background:${r.type==='video'?'#fff2f0':r.type==='document'?'#e6f4ff':'#f5f5f5'};color:${r.type==='video'?'#ff4d4f':r.type==='document'?'#1677ff':'#666'}">
+                                <i class="fas ${getResourceIcon(r.type)}"></i>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div class="tl-side-resource-name">${r.name}</div>
+                                <div class="tl-side-resource-meta">${r.size || '在线资源'}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        // 任务说明全屏弹窗
+        function openTaskDescFullscreen() {
+            const task = currentLearningTask;
+            if (!task) return;
+            document.getElementById('taskDescFullscreenContent').innerHTML = task.detailedDescription || task.description || '暂无任务说明';
+            document.getElementById('taskDescFullscreenOverlay').classList.add('active');
+        }
+        function closeTaskDescFullscreen() {
+            document.getElementById('taskDescFullscreenOverlay').classList.remove('active');
+        }
+
+        // 渲染测评面板
+        function renderAssessmentPanel(task) {
+            const panel = document.getElementById('assessmentPanel');
+            const body = document.getElementById('tlAssessmentBody');
+            const statusEl = document.getElementById('tlAssessmentStatus');
+
+            const evalMethods = task.evaluationMethods || [];
+            const hasAssessment = evalMethods.length > 0 || task.assessment;
+            if (!hasAssessment || currentLearningMode === 'learn') {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.style.display = 'block';
+
+            const isSubmitted = quizSubmitted[task.id];
+            if (isSubmitted) {
+                statusEl.textContent = '已作答';
+                statusEl.className = 'tl-assessment-status done';
+            } else {
+                statusEl.textContent = '未作答';
+                statusEl.className = 'tl-assessment-status pending';
+            }
+
+            // 根据配置直接展示每种测评方式的具体内容
+            const methodLabels = { paper: '试卷测评', question_bank: '题库测评', random_draw: '现场问答', review: '教师评审' };
+            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-gavel' };
+            const methodColors = { paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1' };
+
+            if (evalMethods.length >= 1) {
+                body.innerHTML = '';
+                evalMethods.forEach((method, idx) => {
+                    const sectionId = `assess-section-${task.id}-${method}-${idx}`;
+                    const bodyId = `assess-body-${task.id}-${method}-${idx}`;
+                    const html = `
+                        <div class="tl-assessment-section" id="${sectionId}">
+                            <div class="tl-section-header">
+                                <i class="fas ${methodIcons[method] || 'fa-check'}" style="color:${methodColors[method] || '#666'}"></i>
+                                ${methodLabels[method] || method}
+                            </div>
+                            <div class="tl-section-body" id="${bodyId}"></div>
+                        </div>
+                    `;
+                    body.insertAdjacentHTML('beforeend', html);
+
+                    const sectionBody = document.getElementById(bodyId);
+                    if (method === 'paper' || method === 'question_bank') {
+                        renderQuizAssessment(task, sectionBody, method, isSubmitted);
+                    } else if (method === 'random_draw') {
+                        renderOnsiteInteractive(task, sectionBody);
+                    } else if (method === 'review') {
+                        renderReviewInteractive(task, sectionBody);
+                    }
+                });
+            } else if (task.assessment) {
+                renderQuizAssessment(task, body, task.assessment.type, isSubmitted);
+            }
+        }
+
+        const quizExpanded = {};
+
+        function renderQuizAssessment(task, container, method, isSubmitted) {
+            const assessment = task.assessment;
+            if (!assessment) { container.innerHTML = '<div class="empty-state"><p>暂无测评内容</p></div>'; return; }
+
+            const objConfig = assessment.objectiveConfig;
+            const questions = objConfig ? objConfig.questions : [];
+            const totalScore = objConfig ? objConfig.totalScore : 0;
+            const isExpanded = quizExpanded[`${task.id}-${method}`] || isSubmitted;
+            const answeredCount = Object.keys(quizAnswers[task.id] || {}).length;
+
+            const methodLabels = { paper: '试卷测评', question_bank: '题库测评', objective: '客观测评', mixed: '混合测评' };
+            const methodClasses = { paper: 'paper', question_bank: 'question_bank', objective: 'paper', mixed: 'paper' };
+
+            let html = '';
+
+            if (!isExpanded) {
+                // 折叠状态：只显示概要 + 开始答题按钮
+                html = `
+                    <div class="tl-quiz-collapsed">
+                        <div class="tl-quiz-collapsed-info">
+                            <span><i class="fas fa-list-ol" style="margin-right:4px;"></i>共 ${questions.length} 道题目</span>
+                            <span><i class="fas fa-star" style="margin-right:4px;"></i>总分 ${totalScore} 分</span>
+                            <span class="tl-quiz-tag ${methodClasses[method] || 'paper'}">${methodLabels[method] || '测评'}</span>
+                        </div>
+                        <button class="tl-expand-btn" onclick="expandQuiz('${task.id}', '${method}')">
+                            <i class="fas fa-play"></i> 开始答题
+                        </button>
+                    </div>
+                `;
+            } else {
+                // 展开状态：显示完整题目
+                html = `
+                    <div class="tl-quiz-header">
+                        <div class="tl-quiz-info">
+                            <span>共 ${questions.length} 道题目</span>
+                            <span>总分 ${totalScore} 分</span>
+                            <span class="tl-quiz-tag ${methodClasses[method] || 'paper'}">${methodLabels[method] || '测评'}</span>
+                            ${!isSubmitted ? `<span style="color:var(--text-tertiary);">已答 ${answeredCount}/${questions.length}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                if (questions.length === 0) {
+                    html += '<div class="empty-state"><p>暂无题目</p></div>';
+                } else {
+                    html += '<div class="tl-quiz-content">';
+                    html += '<div class="tl-questions">';
+                    questions.forEach((q, idx) => {
+                        const qAnswers = quizAnswers[task.id] || {};
+                        const userAnswer = qAnswers[q.id];
+                        const isAnswered = userAnswer !== undefined;
+                        const isCorrect = isSubmitted && String(userAnswer) === String(q.answer);
+                        const isWrong = isSubmitted && isAnswered && !isCorrect;
+
+                        html += `<div class="tl-question-card" id="q-${q.id}">`;
+                        html += `<div class="tl-question-title">`;
+                        html += `<span class="tl-question-num">${idx + 1}</span>`;
+                        html += `<span>${q.content}</span>`;
+                        html += `<span class="tl-question-score">${q.score}分</span>`;
+                        html += `</div>`;
+
+                        html += `<div class="tl-options">`;
+                        if (q.type === 'single' || q.type === 'multiple' || q.type === 'judgment') {
+                            const opts = q.options || (q.type === 'judgment' ? ['正确', '错误'] : []);
+                            opts.forEach((opt, oi) => {
+                                let cls = '';
+                                let check = '';
+                                const optValue = q.type === 'judgment' ? (opt === '正确' ? 'true' : 'false') : opt;
+                                const isSelected = q.type === 'multiple'
+                                    ? (Array.isArray(userAnswer) && userAnswer.includes(optValue))
+                                    : String(userAnswer) === String(optValue);
+
+                                if (isSubmitted) {
+                                    const isCorrectOpt = String(optValue) === String(q.answer) || (q.type === 'multiple' && Array.isArray(q.answer) && q.answer.includes(optValue));
+                                    if (isCorrectOpt) { cls = 'correct'; check = '<i class="fas fa-check"></i>'; }
+                                    else if (isSelected && !isCorrectOpt) { cls = 'wrong'; check = '<i class="fas fa-times"></i>'; }
+                                } else if (isSelected) {
+                                    cls = 'selected';
+                                    check = '<i class="fas fa-check"></i>';
+                                }
+
+                                if (!isSubmitted) {
+                                    html += `<div class="tl-option ${cls}" onclick="selectAnswer('${task.id}', '${q.id}', '${optValue.replace(/'/g, "\\'")}', '${q.type}')">`;
+                                } else {
+                                    html += `<div class="tl-option ${cls}">`;
+                                }
+                                html += `<div class="tl-option-check">${check}</div>`;
+                                html += `<span>${opt}</span>`;
+                                html += `</div>`;
+                            });
+                        }
+                        html += `</div>`;
+
+                        // 反馈
+                        if (isSubmitted) {
+                            if (isCorrect) {
+                                html += `<div class="tl-quiz-feedback correct"><i class="fas fa-check-circle"></i> 回答正确！${q.explanation || ''}</div>`;
+                            } else if (isWrong) {
+                                html += `<div class="tl-quiz-feedback wrong"><i class="fas fa-times-circle"></i> 回答错误。正确答案是：${Array.isArray(q.answer) ? q.answer.join('、') : q.answer}</div>`;
+                            }
+                        }
+                        html += `</div>`;
+                    });
+                    html += '</div>';
+
+                    if (!isSubmitted) {
+                        html += `<div style="text-align:center;margin-top:20px;"><button class="tl-submit-btn" onclick="submitQuiz('${task.id}')"><i class="fas fa-check"></i> 确认答案</button></div>`;
+                    }
+                    html += '</div>';
+                }
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderMixedAssessment(task, container, isSubmitted) {
+            const methodLabels = { paper: '试卷测评', question_bank: '题库测评', random_draw: '现场问答', review: '教师评审' };
+            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-gavel' };
+            const methodColors = { paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1' };
+            const methodDesc = {
+                paper: '固定试卷，含单选/多选/判断题',
+                question_bank: '从题库随机抽题作答',
+                random_draw: '教师现场抽题提问',
+                review: '提交材料，教师按量规评审'
+            };
+
+            let html = '<div class="tl-mixed-grid">';
+            (task.evaluationMethods || []).forEach(m => {
+                html += `
+                    <div class="tl-mixed-card" onclick="alert('进入${methodLabels[m] || m}')">
+                        <div class="tl-mixed-icon" style="color:${methodColors[m] || '#666'}"><i class="fas ${methodIcons[m] || 'fa-check'}"></i></div>
+                        <div class="tl-mixed-name">${methodLabels[m] || m}</div>
+                        <div class="tl-mixed-desc">${methodDesc[m] || ''}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderOnsiteInteractive(task, container) {
+            const drawPool = task.evalPoints?.randomDraw || [];
+            const drawnId = `drawn-${task.id}`;
+            const hasDrawn = sessionStorage.getItem(drawnId);
+
+            let poolHtml = '';
+            if (drawPool.length > 0) {
+                poolHtml = `<div class="tl-draw-pool">` +
+                    drawPool.map((p, i) => `<span class="tl-draw-chip ${hasDrawn === String(i) ? 'drawn' : ''}" id="chip-${task.id}-${i}">${p.name}</span>`).join('') +
+                    `</div>`;
+            }
+
+            if (hasDrawn !== null) {
+                const point = drawPool[parseInt(hasDrawn)];
+                container.innerHTML = `
+                    <div class="tl-onsite-notice">
+                        <i class="fas fa-comments"></i>
+                        <div>
+                            <div class="tl-onsite-title">现场问答测评</div>
+                            <div class="tl-onsite-desc">
+                                <p>教师将在现场随机抽取题目进行提问，请提前做好准备。</p>
+                                <p style="margin-top:8px;color:var(--text-tertiary);">具体预约时间和地点请关注教师通知。</p>
+                            </div>
+                        </div>
+                    </div>
+                    ${poolHtml}
+                    <div class="tl-draw-result">
+                        <div class="tl-draw-result-title"><i class="fas fa-dice"></i> 已抽中题目</div>
+                        <div style="font-weight:500;margin-bottom:6px;">${point ? point.name : '随机题目'}</div>
+                        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">${point ? point.desc : '请根据抽中题目准备回答思路'}</div>
+                        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:12px;">
+                            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;"><i class="fas fa-edit"></i> 作答草稿区（模拟）</div>
+                            <textarea id="onsite-answer-${task.id}" placeholder="在此输入你的作答思路..." style="width:100%;min-height:80px;border:1px solid #d9d9d9;border-radius:6px;padding:10px;font-size:13px;resize:vertical;"></textarea>
+                            <div style="text-align:right;margin-top:8px;">
+                                <button class="btn btn-primary" onclick="saveOnsiteDraft('${task.id}')" style="font-size:12px;"><i class="fas fa-save"></i> 保存草稿</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="tl-onsite-notice">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <div class="tl-onsite-title">现场问答测评</div>
+                            <div class="tl-onsite-desc">
+                                <p>本任务包含「现场问答」测评形式，需要按照预约时间参加。</p>
+                                <p>教师将在现场从以下评价点中随机抽取题目进行提问，请提前做好准备。</p>
+                            </div>
+                        </div>
+                    </div>
+                    ${poolHtml}
+                    <div style="text-align:center;margin-top:16px;">
+                        <button class="tl-submit-btn" onclick="simulateDrawQuestion('${task.id}')" style="background:var(--warning-color);border-color:var(--warning-color);">
+                            <i class="fas fa-dice"></i> 模拟抽题
+                        </button>
+                        <p style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">点击模拟抽题，体验现场问答流程</p>
+                    </div>
+                `;
+            }
+        }
+
+        function simulateDrawQuestion(taskId) {
+            const task = getTaskById(taskId);
+            const drawPool = task?.evalPoints?.randomDraw || [];
+            const idx = drawPool.length > 0 ? Math.floor(Math.random() * drawPool.length) : 0;
+            sessionStorage.setItem(`drawn-${taskId}`, String(idx));
+            renderAssessmentPanel(task);
+        }
+
+        function saveOnsiteDraft(taskId) {
+            const textarea = document.getElementById(`onsite-answer-${taskId}`);
+            if (textarea) {
+                sessionStorage.setItem(`onsite-draft-${taskId}`, textarea.value);
+                alert('草稿已保存');
+            }
+        }
+
+        function renderReviewNotice(task, container) {
+            const steps = task.reviewSteps || [
+                { label: '初评', desc: '由指导教师进行材料审查' },
+                { label: '复评', desc: '由企业导师进行专业评审' }
+            ];
+            container.innerHTML = `
+                <div class="tl-review-notice">
+                    <div class="tl-review-title"><i class="fas fa-user-check"></i> 教师评审测评</div>
+                    <div class="tl-review-desc">
+                        <p>本任务采用「教师评审」方式评分。请在完成学习后，按照交付要求准备并上传成果材料。</p>
+                        <p>教师将按照评审量规的多维度评价点进行打分。</p>
+                    </div>
+                    <div class="tl-review-steps">
+                        ${steps.map((s, i) => `
+                            <div class="tl-review-step">
+                                <div class="tl-review-step-num">${i + 1}</div>
+                                <div>
+                                    <div style="font-weight:500;">${s.label}</div>
+                                    <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">${s.desc}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderReviewInteractive(task, container) {
+            const steps = task.reviewSteps || [
+                { label: '初评', desc: '由指导教师进行材料审查' },
+                { label: '复评', desc: '由企业导师进行专业评审' }
+            ];
+            const rubric = task.evalPoints?.review || [];
+            const uploadedFiles = JSON.parse(sessionStorage.getItem(`review-files-${task.id}`) || '[]');
+
+            let rubricHtml = '';
+            if (rubric.length > 0) {
+                rubricHtml = `
+                    <div class="tl-rubric-preview">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:8px;"><i class="fas fa-list-check"></i> 评审量规</div>
+                        ${rubric.map(r => `
+                            <div class="tl-rubric-item">
+                                <span>${r.name} <span style="color:var(--text-tertiary);font-size:12px;">(${r.weight}%)</span></span>
+                                <span style="color:var(--primary-color);font-weight:500;">${r.maxScore}分</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            let fileListHtml = '';
+            if (uploadedFiles.length > 0) {
+                fileListHtml = `<div class="tl-file-list">` +
+                    uploadedFiles.map((f, i) => `
+                        <div class="tl-file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f}</span>
+                            <i class="fas fa-times" style="cursor:pointer;color:#999;" onclick="removeReviewFile('${task.id}', ${i})"></i>
+                        </div>
+                    `).join('') +
+                    `</div>`;
+            }
+
+            container.innerHTML = `
+                <div class="tl-review-notice">
+                    <div class="tl-review-title"><i class="fas fa-user-check"></i> 教师评审测评</div>
+                    <div class="tl-review-desc">
+                        <p>本任务采用「教师评审」方式评分。请在完成学习后，按照交付要求准备并上传成果材料。</p>
+                        <p>教师将按照评审量规的多维度评价点进行打分。</p>
+                    </div>
+                    <div class="tl-review-steps">
+                        ${steps.map((s, i) => `
+                            <div class="tl-review-step">
+                                <div class="tl-review-step-num">${i + 1}</div>
+                                <div>
+                                    <div style="font-weight:500;">${s.label}</div>
+                                    <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">${s.desc}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${rubricHtml}
+                </div>
+                <div style="margin-top:16px;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:10px;"><i class="fas fa-cloud-upload-alt"></i> 成果材料上传</div>
+                    <div class="tl-upload-zone" onclick="simulateUploadReviewFile('${task.id}')">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="tl-upload-zone-text">点击上传成果材料（模拟）</div>
+                        <div style="font-size:12px;color:#bfbfbf;margin-top:4px;">支持 PDF、DOCX、ZIP 等格式</div>
+                    </div>
+                    ${fileListHtml}
+                </div>
+            `;
+        }
+
+        function simulateUploadReviewFile(taskId) {
+            const files = JSON.parse(sessionStorage.getItem(`review-files-${taskId}`) || '[]');
+            const mockNames = ['需求分析文档.pdf', '架构设计说明书.docx', '数据库设计ER图.png', '接口文档.md', '项目源码.zip'];
+            const name = mockNames[Math.floor(Math.random() * mockNames.length)];
+            files.push(`${name} (${new Date().toLocaleString('zh-CN')})`);
+            sessionStorage.setItem(`review-files-${taskId}`, JSON.stringify(files));
+            const task = getTaskById(taskId);
+            renderAssessmentPanel(task);
+        }
+
+        function removeReviewFile(taskId, index) {
+            const files = JSON.parse(sessionStorage.getItem(`review-files-${taskId}`) || '[]');
+            files.splice(index, 1);
+            sessionStorage.setItem(`review-files-${taskId}`, JSON.stringify(files));
+            const task = getTaskById(taskId);
+            renderAssessmentPanel(task);
+        }
+
+        // 答题交互
+        function expandQuiz(taskId, method) {
+            quizExpanded[`${taskId}-${method}`] = true;
+            renderAssessmentPanel(getTaskById(taskId));
+        }
+
+        function selectAnswer(taskId, questionId, answer, type) {
+            if (!quizAnswers[taskId]) quizAnswers[taskId] = {};
+            if (type === 'multiple') {
+                const current = quizAnswers[taskId][questionId] || [];
+                const idx = current.indexOf(answer);
+                if (idx > -1) current.splice(idx, 1);
+                else current.push(answer);
+                quizAnswers[taskId][questionId] = current;
+            } else {
+                quizAnswers[taskId][questionId] = answer;
+            }
+            // 重新渲染该题
+            renderAssessmentPanel(getTaskById(taskId));
+        }
+
+        function submitQuiz(taskId) {
+            const task = getTaskById(taskId);
+            if (!task) return;
+            const answers = quizAnswers[taskId] || {};
+            const questions = task.assessment?.objectiveConfig?.questions || [];
+            if (questions.length > 0 && Object.keys(answers).length === 0) {
+                alert('请至少作答一道题目');
+                return;
+            }
+            quizSubmitted[taskId] = true;
+            renderAssessmentPanel(task);
+            renderSubmissionBar(task);
+        }
+
+        // 渲染底部提交栏
+        function renderSubmissionBar(task) {
+            const bar = document.getElementById('tlSubmissionContent');
+            const isSubmitted = taskSubmissionStatus[task.id] === 'submitted' || taskSubmissionStatus[task.id] === 'graded';
+
+            if (isSubmitted) {
+                const submittedAt = taskSubmissions[task.id]?.submittedAt || '刚刚';
+                bar.innerHTML = `
+                    <div class="tl-submitted-state">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="tl-submitted-title">已提交给教师评分</div>
+                        <div class="tl-submitted-desc">你的任务成果已转交教师评分，可在学习记录中查看评分状态</div>
+                        <div class="tl-submitted-summary">
+                            <div class="tl-summary-item"><span>提交时间</span><span>${submittedAt}</span></div>
+                            <div class="tl-summary-item"><span>测评状态</span><span>${quizSubmitted[task.id] ? '已作答' : '未作答'}</span></div>
+                            <div class="tl-summary-item"><span>材料状态</span><span>已上传</span></div>
+                            <div class="tl-summary-item"><span>当前状态</span><span style="color:var(--warning-color)">待评分</span></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                bar.innerHTML = '';
+            }
+        }
+
+        function submitTask(taskId) {
+            if (!confirm('确认提交？提交后将无法修改。')) return;
+            taskSubmissionStatus[taskId] = 'submitted';
+            taskSubmissions[taskId] = {
+                answers: quizAnswers[taskId] || {},
+                attachments: [],
+                comment: '',
+                submittedAt: new Date().toLocaleString('zh-CN')
+            };
+            const task = getTaskById(taskId);
+            renderSubmissionBar(task);
+            renderAssessmentPanel(task);
+            // 更新任务列表中的按钮状态
+            renderTaskList();
+        }
+
+        // 全局资源侧边栏
+        function openFloatSidebar(type) {
+            const panel = document.getElementById('tlSidebarPanel');
+            const body = document.getElementById('tlSidebarBody');
+            const title = document.getElementById('tlSidebarTitle');
+            panel.classList.add('open');
+
+            if (type === 'resources') {
+                title.textContent = '配套资源';
+                const task = currentLearningTask;
+                const resources = task ? getTaskResources(task) : [];
+                if (resources.length === 0) {
+                    body.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-inbox"></i><p>暂无资源</p></div>';
+                } else {
+                    body.innerHTML = resources.map(r => `
+                        <div class="split-resource-item" onclick="${r.type === 'link' || r.type === 'software' ? `alert('打开外部链接')` : `openPreviewModal('${r.name}', '${r.type}')`}">
+                            <i class="fas ${getResourceIcon(r.type)}"></i>
+                            <span>${r.name}</span>
+                        </div>
+                    `).join('');
+                }
+            } else if (type === 'knowledge') {
+                title.textContent = '知识点';
+                const task = currentLearningTask;
+                const kps = task ? getTaskKnowledgePoints(task) : [];
+                if (kps.length === 0) {
+                    body.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-inbox"></i><p>暂无知识点</p></div>';
+                } else {
+                    body.innerHTML = kps.map(kp => `
+                        <div class="split-resource-item" onclick="showKgDetailModal({name:'${kp.name}',type:'knowledge',id:'${kp.id}'})">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>${kp.name}</span>
+                        </div>
+                    `).join('');
+                }
+            } else if (type === 'tasks') {
+                title.textContent = '任务列表';
+                body.innerHTML = SCENARIO.tasks.map(t => `
+                    <div class="split-resource-item" onclick="showTaskLearningView('${t.id}','integrated')" style="${currentLearningTask && currentLearningTask.id === t.id ? 'background:#f0f7ff;color:var(--primary-color);' : ''}">
+                        <i class="fas ${t.taskType === 'assessment' ? 'fa-file-alt' : 'fa-book'}"></i>
+                        <span>${t.name}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function closeFloatSidebar() {
+            document.getElementById('tlSidebarPanel').classList.remove('open');
+        }
+
+        let kgInitialized = false, kgSimulation, kgSvgSel, kgZoomBehavior, kgContainer;
+
         function initKnowledgeGraph() {
             if (kgInitialized) return;
             kgInitialized = true;
 
             const area = document.getElementById('kgCanvasArea');
-            const W = area.clientWidth || 1000, H = area.clientHeight || 680;
+            if (!area) { console.error('kgCanvasArea not found'); return; }
+            const rect = area.getBoundingClientRect();
+            const W = rect.width || 1000, H = rect.height || 680;
+            if (W === 0 || H === 0) { console.warn('kgCanvasArea has zero size, using fallback'); }
+            console.log('initKnowledgeGraph', W, H);
+
             const svg = d3.select('#kgSvg').attr('width', W).attr('height', H);
+            if (svg.empty()) { console.error('kgSvg not found'); return; }
             kgSvgSel = svg;
 
-            kgZoomBehavior = d3.zoom().scaleExtent([0.2, 4]).on('zoom', ev => kgContainer.attr('transform', ev.transform));
+            kgZoomBehavior = d3.zoom().scaleExtent([0.2, 4]).on('zoom', ev => {
+                if (kgContainer) kgContainer.attr('transform', ev.transform);
+            });
             svg.call(kgZoomBehavior);
             kgContainer = svg.append('g');
 
-            // 构造 3 层数据结构 (场景名称 -> 任务 -> 知识点)
-            const nodes = [{ id:'core', name:SCENARIO.name || '场景', type:'core' }];
+            // 构造 3 层数据结构 (岗位 -> 能力点 -> 知识点)
+            const nodes = [{ id:'core', name:SCENARIO.name || '前端开发工程师', type:'core' }];
             const links = [];
             
-            // 任务
-            const abilitySet = Array.from(new Set(SCENARIO.tasks.flatMap(t => t.abilityPoints || [])));
-            abilitySet.forEach((abId, idx) => {
-                const ab = getAbilityPointById(abId);
-                const name = ab ? ab.name : abId;
-                nodes.push({ id:abId, name:name, type:'ability' });
+            // 能力点
+            const abilitySet = ['a01','a02','a03','a05','a06','a08','a09','a10','a11','a12','a13','a14']; 
+            const abNames = {
+                a01:'HTML5语义化', a02:'CSS3高级布局', a03:'响应式设计', a05:'JS核心原理', 
+                a06:'网络与HTTP', a08:'DOM与事件', a09:'组件化开发', a10:'状态管理', 
+                a11:'性能优化', a12:'工程化构建', a13:'前端安全', a14:'自动化测试'
+            };
+            
+            abilitySet.forEach(abId => {
+                nodes.push({ id:abId, name:abNames[abId], type:'ability' });
                 links.push({ source:'core', target:abId });
             });
 
             // 知识点挂接
-            const kMap = {};
-            KNOWLEDGE_POINTS.forEach(kp => {
-                // 简单分配：按 category 分配到已有任务
-                const targetAbility = abilitySet[Math.floor(Math.random() * abilitySet.length)];
-                if (!kMap[targetAbility]) kMap[targetAbility] = [];
-                kMap[targetAbility].push(kp.name);
-            });
+            const kMap = {
+                a01:['SEO最佳实践','ARIA属性','文档流'], 
+                a02:['Flexbox','Grid','媒体查询','CSS变量'],
+                a03:['移动端适配','vw/vh','流式布局'],
+                a05:['闭包与作用域','事件循环','原型链','ES6+语法'],
+                a06:['TCP/IP','跨域方案','缓存策略'],
+                a08:['事件委托','BOM操作','IntersectionObserver'],
+                a09:['虚拟DOM','生命周期','Hooks原理','跨组件通信'],
+                a10:['Vuex/Pinia','Redux','状态持久化'],
+                a11:['懒加载','TreeShaking','Web Vitals','防抖节流'],
+                a12:['Vite/Webpack','CI/CD流程','模块化规范'],
+                a13:['XSS防御','CSRF防御','CSP策略'],
+                a14:['Jest','Cypress','单元测试']
+            };
 
             let kId = 1;
             Object.entries(kMap).forEach(([abId, kns]) => {
@@ -3117,7 +4644,11 @@
                 item.classList.add('active');
                 const target = document.getElementById(tabId);
                 if (target) target.classList.add('active');
-                if (tabId === 'knowledge') setTimeout(() => initKnowledgeGraph(), 80);
+                if (tabId === 'knowledge') {
+                    requestAnimationFrame(() => {
+                        setTimeout(() => initKnowledgeGraph(), 50);
+                    });
+                }
             });
         });
 
@@ -3146,6 +4677,40 @@
         }
         function closePreviewModal() {
             document.getElementById('previewModalOverlay').classList.remove('active');
+        }
+
+        // 知识图谱详情弹窗
+        function showKgDetailModal(data) {
+            const overlay = document.getElementById('kgModalOverlay');
+            const title = document.getElementById('kgModalTitle');
+            const badgeContainer = document.getElementById('kgModalBadgeContainer');
+            const body = document.getElementById('kgModalBody');
+
+            const isAbility = data.type === 'ability';
+            const item = isAbility ? getAbilityPointById(data.id) : KNOWLEDGE_POINTS.find(k => k.id === data.id || k.name === data.name);
+
+            title.innerHTML = `<span>${data.name}</span>` + (isAbility
+                ? '<span class="kg-modal-badge badge-ability" style="margin-left:8px;"><i class="fas fa-star"></i> 能力点</span>'
+                : '<span class="kg-modal-badge badge-knowledge" style="margin-left:8px;"><i class="fas fa-lightbulb"></i> 知识点</span>');
+
+            let html = '';
+            if (item) {
+                html += `<p style="margin-bottom:12px;"><strong>描述：</strong>${item.description || '暂无描述'}</p>`;
+                if (item.category) html += `<p style="margin-bottom:12px;"><strong>分类：</strong>${item.category}</p>`;
+                if (isAbility && item.category) html += `<p style="margin-bottom:12px;"><strong>所属领域：</strong>${item.category}</p>`;
+            } else {
+                html += `<p>${data.name}</p>`;
+            }
+            body.innerHTML = html;
+
+            overlay.classList.add('show');
+            overlay.style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            const overlay = document.getElementById('kgModalOverlay');
+            overlay.classList.remove('show');
+            setTimeout(() => { overlay.style.display = 'none'; }, 300);
         }
 
         function init() {
