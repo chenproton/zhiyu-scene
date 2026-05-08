@@ -40,6 +40,8 @@ import {
 } from "@/components/ui/table"
 import { batches, approvalWorkflows } from "@/lib/mock-data"
 import type { Batch } from "@/lib/mock-data"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 
 export default function BatchesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -71,23 +73,31 @@ export default function BatchesPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-800">批次分组管理</h1>
-          <p className="text-sm text-gray-500 mt-1">管理场景建设批次分组，关联审批流程</p>
-        </div>
+        <PrdAnnotation data={getAnnotation("batches-title")}>
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800">批次分组管理</h1>
+            <p className="text-sm text-gray-500 mt-1">管理场景建设批次分组，关联审批流程</p>
+          </div>
+        </PrdAnnotation>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              新增批次
-            </Button>
+            <PrdAnnotation data={getAnnotation("batches-create")}>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                新增批次
+              </Button>
+            </PrdAnnotation>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>新增批次</DialogTitle>
-              <DialogDescription>
-                创建新的场景建设批次分组，并关联审批流程。
-              </DialogDescription>
+              <PrdAnnotation data={getAnnotation("dialog-batch-form")}>
+                <div>
+                  <DialogTitle>新增批次</DialogTitle>
+                  <DialogDescription>
+                    创建新的场景建设批次分组，并关联审批流程。
+                  </DialogDescription>
+                </div>
+              </PrdAnnotation>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">

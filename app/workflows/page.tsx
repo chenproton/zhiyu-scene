@@ -34,6 +34,8 @@ import {
 } from "@/components/ui/table"
 import { approvalWorkflows as initialWorkflows } from "@/lib/mock-data"
 import type { ApprovalWorkflow, ApprovalStep } from "@/lib/mock-data"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 
 export default function WorkflowsPage() {
   const [workflows, setWorkflows] = useState<ApprovalWorkflow[]>(initialWorkflows)
@@ -185,23 +187,31 @@ export default function WorkflowsPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-800">审批流程管理</h1>
-          <p className="text-sm text-gray-500 mt-1">预设校内审批流模板，供批次关联使用</p>
-        </div>
+        <PrdAnnotation data={getAnnotation("workflows-title")}>
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800">审批流程管理</h1>
+            <p className="text-sm text-gray-500 mt-1">预设校内审批流模板，供批次关联使用</p>
+          </div>
+        </PrdAnnotation>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openCreateDialog}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增审批流程
-            </Button>
+            <PrdAnnotation data={getAnnotation("workflows-create")}>
+              <Button onClick={openCreateDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                新增审批流程
+              </Button>
+            </PrdAnnotation>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>新增审批流程</DialogTitle>
-              <DialogDescription>
-                创建新的审批流程模板，定义审批步骤和角色。
-              </DialogDescription>
+              <PrdAnnotation data={getAnnotation("dialog-workflow-form")}>
+                <div>
+                  <DialogTitle>新增审批流程</DialogTitle>
+                  <DialogDescription>
+                    创建新的审批流程模板，定义审批步骤和角色。
+                  </DialogDescription>
+                </div>
+              </PrdAnnotation>
             </DialogHeader>
             {renderForm(false)}
             <DialogFooter>
@@ -218,10 +228,14 @@ export default function WorkflowsPage() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>编辑审批流程</DialogTitle>
-            <DialogDescription>
-              修改审批流程的名称、说明和审批步骤。
-            </DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-workflow-form")}>
+              <div>
+                <DialogTitle>编辑审批流程</DialogTitle>
+                <DialogDescription>
+                  修改审批流程的名称、说明和审批步骤。
+                </DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           {renderForm(true)}
           <DialogFooter>

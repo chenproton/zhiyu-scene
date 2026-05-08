@@ -30,6 +30,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { studentSubmissions, students, scenarios } from "@/lib/mock-data"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 import type { StudentSubmission } from "@/lib/mock-data"
 
 interface TaskStudent {
@@ -243,23 +245,25 @@ export default function GradingPage() {
     return (
       <div className="px-4 pb-4 border-t border-gray-100">
         {task.forms.length > 1 && (
-          <div className="flex items-center gap-2 pt-3 mb-3">
-            {task.forms.map((form) => (
-              <button
-                key={form.assessmentForm}
-                onClick={() => setActiveForm(form.assessmentForm)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-                  activeForm === form.assessmentForm
-                    ? "bg-primary/10 text-primary border border-primary/30"
-                    : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"
-                )}
-              >
-                {form.assessmentForm}
-                <span className="text-[10px] opacity-70">({form.students.length})</span>
-              </button>
-            ))}
-          </div>
+          <PrdAnnotation data={getAnnotation("grading-task-form-tabs")}>
+            <div className="flex items-center gap-2 pt-3 mb-3">
+              {task.forms.map((form) => (
+                <button
+                  key={form.assessmentForm}
+                  onClick={() => setActiveForm(form.assessmentForm)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                    activeForm === form.assessmentForm
+                      ? "bg-primary/10 text-primary border border-primary/30"
+                      : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"
+                  )}
+                >
+                  {form.assessmentForm}
+                  <span className="text-[10px] opacity-70">({form.students.length})</span>
+                </button>
+              ))}
+            </div>
+          </PrdAnnotation>
         )}
         {activeFormData && activeFormData.students.length === 0 ? (
           <div className="py-6 text-center text-gray-400 text-sm">暂无学生提交记录</div>
@@ -307,17 +311,21 @@ export default function GradingPage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
-                                <Link href={`/approvals/grading/${item.submission.id}`}>
-                                  <Eye className="mr-1 h-3 w-3" />查看
-                                </Link>
-                              </Button>
-                              {item.submission.status === "pending" ? (
-                                <Button size="sm" className="h-7 text-xs" asChild>
+                              <PrdAnnotation data={getAnnotation("grading-action-view")}>
+                                <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
                                   <Link href={`/approvals/grading/${item.submission.id}`}>
-                                    <PenLine className="mr-1 h-3 w-3" />评分
+                                    <Eye className="mr-1 h-3 w-3" />查看
                                   </Link>
                                 </Button>
+                              </PrdAnnotation>
+                              {item.submission.status === "pending" ? (
+                                <PrdAnnotation data={getAnnotation("grading-action-grade")}>
+                                  <Button size="sm" className="h-7 text-xs" asChild>
+                                    <Link href={`/approvals/grading/${item.submission.id}`}>
+                                      <PenLine className="mr-1 h-3 w-3" />评分
+                                    </Link>
+                                  </Button>
+                                </PrdAnnotation>
                               ) : (
                                 <Button variant="ghost" size="sm" className="h-7 text-xs text-green-600" disabled>
                                   <CheckCircle2 className="mr-1 h-3 w-3" />已评分
@@ -343,10 +351,12 @@ export default function GradingPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shrink-0">
         <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-800">场景任务评价</h1>
-            <p className="text-sm text-gray-500 mt-0.5">选择场景与任务，查看学生提交并进行评分</p>
-          </div>
+          <PrdAnnotation data={getAnnotation("grading-title")}>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-800">场景任务评价</h1>
+              <p className="text-sm text-gray-500 mt-0.5">选择场景与任务，查看学生提交并进行评分</p>
+            </div>
+          </PrdAnnotation>
         </div>
       </div>
 
@@ -355,36 +365,40 @@ export default function GradingPage() {
         {/* Left sidebar — Scenario tree */}
         <div className="w-72 shrink-0 bg-white border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-100">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="搜索场景..."
-                className="pl-9 text-sm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <PrdAnnotation data={getAnnotation("grading-sidebar-search")} className="block w-full">
+              <div className="relative w-full">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="搜索场景..."
+                  className="pl-9 text-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </PrdAnnotation>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-4">
             {filteredGroups.map((group) => (
               <div key={group.positionName}>
-                <div className="flex items-center gap-1.5 px-2 mb-2">
-                  <Layers className="h-3.5 w-3.5 text-gray-400" />
-                  <span className="text-xs font-semibold text-gray-600">{group.positionName}</span>
-                  <span className="text-[10px] text-gray-400">({group.scenarios.length})</span>
-                </div>
+                <PrdAnnotation data={getAnnotation("grading-sidebar-position")}>
+                  <div className="flex items-center gap-1.5 px-2 mb-2">
+                    <Layers className="h-3.5 w-3.5 text-gray-400" />
+                    <span className="text-xs font-semibold text-gray-600">{group.positionName}</span>
+                    <span className="text-[10px] text-gray-400">({group.scenarios.length})</span>
+                  </div>
+                </PrdAnnotation>
                 <div className="space-y-1">
                   {group.scenarios.map((scenario) => (
-                    <button
-                      key={scenario.scenarioId}
-                      onClick={() => setSelectedScenarioId(scenario.scenarioId)}
-                      className={cn(
-                        "w-full text-left rounded-lg p-2.5 transition-all border",
-                        selectedScenarioId === scenario.scenarioId
-                          ? "bg-primary/[0.04] border-primary/30 shadow-sm"
-                          : "bg-white border-transparent hover:bg-gray-50 hover:border-gray-200"
-                      )}
-                    >
+                    <PrdAnnotation key={scenario.scenarioId} data={getAnnotation("grading-sidebar-scenario")}>
+                      <button
+                        onClick={() => setSelectedScenarioId(scenario.scenarioId)}
+                        className={cn(
+                          "w-full text-left rounded-lg p-2.5 transition-all border",
+                          selectedScenarioId === scenario.scenarioId
+                            ? "bg-primary/[0.04] border-primary/30 shadow-sm"
+                            : "bg-white border-transparent hover:bg-gray-50 hover:border-gray-200"
+                        )}
+                      >
                       <div className="flex items-start gap-2">
                         <BookOpen className={cn("h-4 w-4 mt-0.5 shrink-0", selectedScenarioId === scenario.scenarioId ? "text-primary" : "text-gray-400")} />
                         <div className="flex-1 min-w-0">
@@ -407,6 +421,7 @@ export default function GradingPage() {
                         </div>
                       </div>
                     </button>
+                  </PrdAnnotation>
                   ))}
                 </div>
               </div>
@@ -446,47 +461,51 @@ export default function GradingPage() {
                     const totalGraded = task.forms.reduce((s, f) => s + f.gradedCount, 0)
 
                     return (
-                      <Collapsible key={task.taskId} open={isExpanded} onOpenChange={() => toggleTask(task.taskId)}>
-                        <Card className="overflow-hidden">
-                          <CollapsibleTrigger asChild>
-                            <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors">
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                                  <FileText className="h-4 w-4 text-primary" />
+                      <PrdAnnotation key={task.taskId} data={getAnnotation("grading-task-header")} className="block w-full">
+                        <Collapsible open={isExpanded} onOpenChange={() => toggleTask(task.taskId)}>
+                          <Card className="overflow-hidden">
+                            <CollapsibleTrigger asChild>
+                              <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                                    <FileText className="h-4 w-4 text-primary" />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-sm font-semibold text-gray-800">{task.taskName}</p>
+                                      {task.forms.map((f) => (
+                                        <Badge key={f.assessmentForm} variant="outline" className="text-[10px] font-normal">{f.assessmentForm}</Badge>
+                                      ))}
+                                      <Badge variant="secondary" className="text-[10px] font-normal">{task.taskType}</Badge>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1">
+                                      <span className="text-xs text-gray-500">{totalStudents} 位学生</span>
+                                      {totalPending > 0 && (
+                                        <span className="text-xs text-amber-600 font-medium">待评分 {totalPending}</span>
+                                      )}
+                                      {totalGraded > 0 && (
+                                        <span className="text-xs text-green-600 font-medium">已评分 {totalGraded}</span>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-sm font-semibold text-gray-800">{task.taskName}</p>
-                                    {task.forms.map((f) => (
-                                      <Badge key={f.assessmentForm} variant="outline" className="text-[10px] font-normal">{f.assessmentForm}</Badge>
-                                    ))}
-                                    <Badge variant="secondary" className="text-[10px] font-normal">{task.taskType}</Badge>
-                                  </div>
-                                  <div className="flex items-center gap-3 mt-1">
-                                    <span className="text-xs text-gray-500">{totalStudents} 位学生</span>
-                                    {totalPending > 0 && (
-                                      <span className="text-xs text-amber-600 font-medium">待评分 {totalPending}</span>
-                                    )}
-                                    {totalGraded > 0 && (
-                                      <span className="text-xs text-green-600 font-medium">已评分 {totalGraded}</span>
-                                    )}
-                                  </div>
+                                <div className="flex items-center gap-2">
+                                  {isExpanded ? (
+                                    <ChevronUp className="h-4 w-4 text-gray-400" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                                  )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                {isExpanded ? (
-                                  <ChevronUp className="h-4 w-4 text-gray-400" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4 text-gray-400" />
-                                )}
-                              </div>
-                            </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <TaskFormTabs task={task} />
-                          </CollapsibleContent>
-                        </Card>
-                      </Collapsible>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <PrdAnnotation data={getAnnotation("grading-task-expand")}>
+                                <TaskFormTabs task={task} />
+                              </PrdAnnotation>
+                            </CollapsibleContent>
+                          </Card>
+                        </Collapsible>
+                      </PrdAnnotation>
                     )
                   })}
                 </div>
@@ -505,7 +524,9 @@ export default function GradingPage() {
       <Dialog open={!!activatingTaskId} onOpenChange={(v) => !v && setActivatingTaskId(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>试卷任务开启配置</DialogTitle>
+            <PrdAnnotation data={getAnnotation("dialog-approve-confirm")}>
+              <DialogTitle>试卷任务开启配置</DialogTitle>
+            </PrdAnnotation>
             <DialogDescription>配置该试卷任务的评分开启方式</DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">

@@ -1,6 +1,8 @@
 "use client"
 
 import { ArrowRight, ChevronDown, ChevronRight, Eye, ImagePlus, List, ListOrdered, Save, Search, Star, X, UserPlus } from "lucide-react"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useMemo, useRef, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
@@ -296,7 +298,9 @@ export default function ScenarioEditPage() {
                 {/* Position and Batch selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="position">目标岗位</Label>
+                    <PrdAnnotation data={getAnnotation("editor-field-position")} className="block">
+                      <Label htmlFor="position">目标岗位</Label>
+                    </PrdAnnotation>
                     {/* Custom position selector with tabs and search */}
                     <div className="relative">
                       <button
@@ -380,7 +384,9 @@ export default function ScenarioEditPage() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="batch">所属批次</Label>
+                    <PrdAnnotation data={getAnnotation("editor-field-batch")} className="block">
+                      <Label htmlFor="batch">所属批次</Label>
+                    </PrdAnnotation>
                     <div className="relative">
                       <Select value={batchId} onValueChange={setBatchId}>
                         <SelectTrigger id="batch" className={batchId ? "pr-8" : ""}>
@@ -409,7 +415,9 @@ export default function ScenarioEditPage() {
 
                 {/* Scenario name */}
                 <div className="grid gap-2">
-                  <Label htmlFor="name">场景名称 <span className="text-red-500">*</span></Label>
+                  <PrdAnnotation data={getAnnotation("editor-field-name")} className="block">
+                    <Label htmlFor="name">场景名称 <span className="text-red-500">*</span></Label>
+                  </PrdAnnotation>
                   <Input
                     id="name"
                     value={scenarioName}
@@ -420,7 +428,9 @@ export default function ScenarioEditPage() {
 
                 {/* Scenario code (auto-generated) */}
                 <div className="grid gap-2">
-                  <Label htmlFor="code">场景编码</Label>
+                  <PrdAnnotation data={getAnnotation("editor-field-code")} className="block">
+                    <Label htmlFor="code">场景编码</Label>
+                  </PrdAnnotation>
                   <Input
                     id="code"
                     value={scenarioCode}
@@ -485,7 +495,9 @@ export default function ScenarioEditPage() {
 
                 {/* Background */}
                 <div className="grid gap-2">
-                  <Label htmlFor="background">场景介绍</Label>
+                  <PrdAnnotation data={getAnnotation("editor-field-intro")} className="block">
+                    <Label htmlFor="background">场景介绍</Label>
+                  </PrdAnnotation>
                   <div className="border rounded-lg">
                     <div className="bg-gray-50 border-b px-3 py-2 flex gap-1 items-center">
                       <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold">B</Button>
@@ -517,7 +529,9 @@ export default function ScenarioEditPage() {
             {/* Cover image */}
             <Card>
               <CardContent className="pt-6">
-                <Label className="mb-3 block">场景封面</Label>
+                <PrdAnnotation data={getAnnotation("editor-sidebar-cover")} className="block">
+                  <Label className="mb-3 block">场景封面</Label>
+                </PrdAnnotation>
                 <div 
                   className="aspect-video bg-gray-100 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
                 >
@@ -532,12 +546,16 @@ export default function ScenarioEditPage() {
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <div>
-                  <Label className="text-gray-500 text-xs">创建人</Label>
+                  <PrdAnnotation data={getAnnotation("editor-sidebar-creator")} className="block">
+                    <Label className="text-gray-500 text-xs">创建人</Label>
+                  </PrdAnnotation>
                   <p className="font-medium text-gray-800 mt-1">{creatorName}</p>
                 </div>
 
                 <div>
-                  <Label className="mb-2 block">共建人/共建部门</Label>
+                  <PrdAnnotation data={getAnnotation("editor-sidebar-cobuilders")} className="block">
+                    <Label className="mb-2 block">共建人/共建部门</Label>
+                  </PrdAnnotation>
                   
                   {/* Selected co-builders compact view */}
                   <div 
@@ -574,7 +592,9 @@ export default function ScenarioEditPage() {
                 </div>
 
                 <div className="pt-3 border-t border-gray-100">
-                  <Label className="text-gray-500 text-xs">当前版本号</Label>
+                  <PrdAnnotation data={getAnnotation("editor-sidebar-version")} className="block">
+                    <Label className="text-gray-500 text-xs">当前版本号</Label>
+                  </PrdAnnotation>
                   <p className="font-medium text-gray-800 mt-1">{version}</p>
                 </div>
               </CardContent>
@@ -584,10 +604,14 @@ export default function ScenarioEditPage() {
             <Dialog open={isCoBuilderDialogOpen} onOpenChange={setIsCoBuilderDialogOpen}>
               <DialogContent className="sm:max-w-[640px] max-h-[80vh] overflow-hidden flex flex-col">
                 <DialogHeader>
-                  <DialogTitle>选择共建人/共建部门</DialogTitle>
-                  <DialogDescription>
-                    从组织架构中选择共建人，选中的用户将参与该场景的建设
-                  </DialogDescription>
+                  <PrdAnnotation data={getAnnotation("dialog-cobuilder-select")}>
+                    <div>
+                      <DialogTitle>选择共建人/共建部门</DialogTitle>
+                      <DialogDescription>
+                        从组织架构中选择共建人，选中的用户将参与该场景的建设
+                      </DialogDescription>
+                    </div>
+                  </PrdAnnotation>
                 </DialogHeader>
                 <div className="flex-1 overflow-hidden py-4">
                   {/* Shuttle Box */}

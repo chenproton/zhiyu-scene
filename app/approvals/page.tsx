@@ -26,6 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { approvalItems } from "@/lib/mock-data"
 import type { ApprovalItem } from "@/lib/mock-data"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 
 const statusConfig = {
   pending: { label: "待审批", className: "bg-yellow-50 text-yellow-600" },
@@ -132,27 +134,33 @@ export default function ApprovalsPage() {
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap sticky right-0 bg-white z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/scenarios/${item.scenarioId}/edit`}>
-                            <Eye className="mr-1 h-3 w-3" />
-                            查看
-                          </Link>
-                        </Button>
+                        <PrdAnnotation data={getAnnotation("approvals-action-view")}>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/scenarios/${item.scenarioId}/edit`}>
+                              <Eye className="mr-1 h-3 w-3" />
+                              查看
+                            </Link>
+                          </Button>
+                        </PrdAnnotation>
                         {item.status === "pending" && (
                           <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                              onClick={() => handleRejectClick(item)}
-                            >
-                              <X className="mr-1 h-3 w-3" />
-                              驳回
-                            </Button>
-                            <Button size="sm" onClick={() => handleApproveClick(item)}>
-                              <Check className="mr-1 h-3 w-3" />
-                              通过
-                            </Button>
+                            <PrdAnnotation data={getAnnotation("approvals-action-reject")}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                onClick={() => handleRejectClick(item)}
+                              >
+                                <X className="mr-1 h-3 w-3" />
+                                驳回
+                              </Button>
+                            </PrdAnnotation>
+                            <PrdAnnotation data={getAnnotation("approvals-action-pass")}>
+                              <Button size="sm" onClick={() => handleApproveClick(item)}>
+                                <Check className="mr-1 h-3 w-3" />
+                                通过
+                              </Button>
+                            </PrdAnnotation>
                           </>
                         )}
                       </div>
@@ -170,22 +178,28 @@ export default function ApprovalsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-800">资源审批管理</h1>
-        <p className="text-sm text-gray-500 mt-1">审核场景提交申请，管理审批流程</p>
-      </div>
+      <PrdAnnotation data={getAnnotation("approvals-title")}>
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-800">资源审批管理</h1>
+          <p className="text-sm text-gray-500 mt-1">审核场景提交申请，管理审批流程</p>
+        </div>
+      </PrdAnnotation>
 
       <Tabs defaultValue="pending">
         <TabsList>
-          <TabsTrigger value="pending" className="gap-2">
-            待审批
-            {pendingItems.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-yellow-100 text-yellow-700">
-                {pendingItems.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="processed">已审批</TabsTrigger>
+          <PrdAnnotation data={getAnnotation("approvals-tab-pending")} className="flex-1">
+            <TabsTrigger value="pending" className="gap-2 w-full">
+              待审批
+              {pendingItems.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-yellow-100 text-yellow-700">
+                  {pendingItems.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </PrdAnnotation>
+          <PrdAnnotation data={getAnnotation("approvals-tab-approved")} className="flex-1">
+            <TabsTrigger value="processed" className="w-full">已审批</TabsTrigger>
+          </PrdAnnotation>
         </TabsList>
 
         <TabsContent value="pending" className="mt-6">
@@ -220,10 +234,14 @@ export default function ApprovalsPage() {
       <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>通过审批</DialogTitle>
-            <DialogDescription>
-              请填写审批备注（可选），确认通过该场景审批。
-            </DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-approve-confirm")}>
+              <div>
+                <DialogTitle>通过审批</DialogTitle>
+                <DialogDescription>
+                  请填写审批备注（可选），确认通过该场景审批。
+                </DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="py-4">
             <Textarea
@@ -248,10 +266,14 @@ export default function ApprovalsPage() {
       <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>驳回场景</DialogTitle>
-            <DialogDescription>
-              请填写驳回原因，建设者将收到修改通知。
-            </DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-reject-confirm")}>
+              <div>
+                <DialogTitle>驳回场景</DialogTitle>
+                <DialogDescription>
+                  请填写驳回原因，建设者将收到修改通知。
+                </DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="py-4">
             <Textarea

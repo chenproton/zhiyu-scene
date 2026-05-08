@@ -5,6 +5,8 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 import { cn } from "@/lib/utils"
 import type { Scenario } from "@/lib/mock-data"
 
@@ -57,14 +59,30 @@ export function ScenarioList({
             aria-label="全选"
           />
         </div>
-        <div className="col-span-2">场景名称</div>
-        <div className="col-span-1">场景编码</div>
-        <div className="col-span-1 text-center">版本</div>
-        <div className="col-span-1">所属岗位</div>
-        <div className="col-span-2">所属批次分组</div>
-        <div className="col-span-1">创建人</div>
-        <div className="col-span-1">发布时间</div>
-        <div className="col-span-1 text-center">场景任务数量</div>
+        <PrdAnnotation data={getAnnotation("list-header-name")} className="col-span-2 block">
+          <div>场景名称</div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("list-header-code")} className="col-span-1 block">
+          <div>场景编码</div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("list-header-version")} className="col-span-1 block text-center">
+          <div>版本</div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("list-header-position")} className="col-span-1 block">
+          <div>所属岗位</div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("list-header-batch")} className="col-span-2 block">
+          <div>所属批次分组</div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("list-header-creator")} className="col-span-1 block">
+          <div>创建人</div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("list-header-publish-time")} className="col-span-1 block">
+          <div>发布时间</div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("list-header-task-count")} className="col-span-1 block text-center">
+          <div>场景任务数量</div>
+        </PrdAnnotation>
         <div className="col-span-1 text-right">操作</div>
       </div>
 
@@ -90,9 +108,11 @@ export function ScenarioList({
                 />
               </div>
               <div className="col-span-2">
-                <Link href={`/scenarios/${scenario.id}/edit`} className="block">
-                  <p className="text-sm font-medium text-slate-900 line-clamp-1 hover:text-primary">{scenario.name}</p>
-                </Link>
+                <PrdAnnotation data={getAnnotation("list-link-name")} className="block">
+                  <Link href={`/scenarios/${scenario.id}/edit`} className="block">
+                    <p className="text-sm font-medium text-slate-900 line-clamp-1 hover:text-primary">{scenario.name}</p>
+                  </Link>
+                </PrdAnnotation>
                 <Badge variant="secondary" className={cn("text-xs mt-1", status.className)}>
                   {status.label}
                 </Badge>
@@ -104,100 +124,118 @@ export function ScenarioList({
               <div className="col-span-1 text-xs text-slate-500 truncate">{scenario.creatorName}</div>
               <div className="col-span-1 text-xs text-slate-500 truncate">{scenario.publishTime || "-"}</div>
               <div className="col-span-1 text-center">
-                <Link
-                  href={`/scenarios/${scenario.id}/edit/tasks`}
-                  className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                >
-                  {scenario.tasks.length}
-                </Link>
+                <PrdAnnotation data={getAnnotation("list-link-tasks")}>
+                  <Link
+                    href={`/scenarios/${scenario.id}/edit/tasks`}
+                    className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                  >
+                    {scenario.tasks.length}
+                  </Link>
+                </PrdAnnotation>
               </div>
               <div className="col-span-1 text-right relative">
                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm z-10 px-2 py-1 rounded-lg shadow-sm border border-slate-100">
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-                    <Link href={`/scenarios/${scenario.id}/edit`}>
-                      <Eye className="mr-1 h-3 w-3" />
-                      查看详情
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-                    <Link href={`/scenarios/${scenario.id}/edit`}>
-                      <Pencil className="mr-1 h-3 w-3" />
-                      编辑
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-                    <Link href={`/scenarios/${scenario.id}/edit/tasks`}>
-                      <GitBranch className="mr-1 h-3 w-3" />
-                      编排任务
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onClone?.(scenario)
-                    }}
-                  >
-                    <Copy className="mr-1 h-3 w-3" />
-                    克隆场景
-                  </Button>
-                  {scenario.status === "draft" && onSubmitApproval && (
+                  <PrdAnnotation data={getAnnotation("row-action-view")}>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+                      <Link href={`/scenarios/${scenario.id}/edit`}>
+                        <Eye className="mr-1 h-3 w-3" />
+                        查看详情
+                      </Link>
+                    </Button>
+                  </PrdAnnotation>
+                  <PrdAnnotation data={getAnnotation("row-action-edit")}>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+                      <Link href={`/scenarios/${scenario.id}/edit`}>
+                        <Pencil className="mr-1 h-3 w-3" />
+                        编辑
+                      </Link>
+                    </Button>
+                  </PrdAnnotation>
+                  <PrdAnnotation data={getAnnotation("row-action-tasks")}>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+                      <Link href={`/scenarios/${scenario.id}/edit/tasks`}>
+                        <GitBranch className="mr-1 h-3 w-3" />
+                        编排任务
+                      </Link>
+                    </Button>
+                  </PrdAnnotation>
+                  <PrdAnnotation data={getAnnotation("row-action-clone")}>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
+                      className="h-7 px-2 text-xs"
                       onClick={(e) => {
                         e.stopPropagation()
-                        onSubmitApproval(scenario)
+                        onClone?.(scenario)
                       }}
                     >
-                      <Send className="mr-1 h-3 w-3" />
-                      提交审批
+                      <Copy className="mr-1 h-3 w-3" />
+                      克隆场景
                     </Button>
+                  </PrdAnnotation>
+                  {scenario.status === "draft" && onSubmitApproval && (
+                    <PrdAnnotation data={getAnnotation("row-action-submit")}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSubmitApproval(scenario)
+                        }}
+                      >
+                        <Send className="mr-1 h-3 w-3" />
+                        提交审批
+                      </Button>
+                    </PrdAnnotation>
                   )}
                   {scenario.status === "pending" && onWithdrawApproval && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-amber-600 hover:text-amber-700"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onWithdrawApproval(scenario)
-                      }}
-                    >
-                      <Undo2 className="mr-1 h-3 w-3" />
-                      撤回审批
-                    </Button>
+                    <PrdAnnotation data={getAnnotation("row-action-withdraw")}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-amber-600 hover:text-amber-700"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onWithdrawApproval(scenario)
+                        }}
+                      >
+                        <Undo2 className="mr-1 h-3 w-3" />
+                        撤回审批
+                      </Button>
+                    </PrdAnnotation>
                   )}
                   {scenario.status === "rejected" && onViewRejectReason && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onViewRejectReason(scenario)
-                      }}
-                    >
-                      <MessageSquare className="mr-1 h-3 w-3" />
-                      查看驳回原因
-                    </Button>
+                    <PrdAnnotation data={getAnnotation("row-action-reject-reason")}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onViewRejectReason(scenario)
+                        }}
+                      >
+                        <MessageSquare className="mr-1 h-3 w-3" />
+                        查看驳回原因
+                      </Button>
+                    </PrdAnnotation>
                   )}
                   {onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDelete(scenario)
-                      }}
-                    >
-                      <Trash2 className="mr-1 h-3 w-3" />
-                      删除
-                    </Button>
+                    <PrdAnnotation data={getAnnotation("row-action-delete")}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(scenario)
+                        }}
+                      >
+                        <Trash2 className="mr-1 h-3 w-3" />
+                        删除
+                      </Button>
+                    </PrdAnnotation>
                   )}
                 </div>
               </div>

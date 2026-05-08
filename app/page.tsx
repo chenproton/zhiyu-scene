@@ -25,6 +25,8 @@ import {
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 import { ScenarioList } from "@/components/scenarios/scenario-list"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -441,30 +443,40 @@ export default function SceneHallPage() {
       <Card className="border-slate-200 shadow-sm">
         <CardContent className="p-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-semibold text-slate-900">场景管理</h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                维护场景信息、任务信息等场景资源管理功能
-              </p>
-            </div>
+            <PrdAnnotation data={getAnnotation("scene-management-title")}>
+              <div>
+                <h1 className="text-xl font-semibold text-slate-900">场景管理</h1>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  维护场景信息、任务信息等场景资源管理功能
+                </p>
+              </div>
+            </PrdAnnotation>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsApprovalWorkflowDialogOpen(true)}>
-                <GitBranch className="mr-2 h-4 w-4" />
-                配置审批流程
-              </Button>
+              <PrdAnnotation data={getAnnotation("config-approval-workflow")}>
+                <Button variant="outline" size="sm" onClick={() => setIsApprovalWorkflowDialogOpen(true)}>
+                  <GitBranch className="mr-2 h-4 w-4" />
+                  配置审批流程
+                </Button>
+              </PrdAnnotation>
 
               <Dialog open={isBatchDialogOpen} onOpenChange={setIsBatchDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <FolderKanban className="mr-2 h-4 w-4" />
-                    配置批次分组
-                  </Button>
+                  <PrdAnnotation data={getAnnotation("config-batch-group")}>
+                    <Button variant="outline" size="sm">
+                      <FolderKanban className="mr-2 h-4 w-4" />
+                      配置批次分组
+                    </Button>
+                  </PrdAnnotation>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
                   <DialogHeader>
-                    <DialogTitle>批次分组管理</DialogTitle>
-                    <DialogDescription>管理场景建设批次分组，关联审批流程</DialogDescription>
+                    <PrdAnnotation data={getAnnotation("dialog-batch-management")}>
+                      <div>
+                        <DialogTitle>批次分组管理</DialogTitle>
+                        <DialogDescription>管理场景建设批次分组，关联审批流程</DialogDescription>
+                      </div>
+                    </PrdAnnotation>
                   </DialogHeader>
                   <div className="flex-1 overflow-y-auto py-4 space-y-4">
                     <div className="flex justify-end">
@@ -477,8 +489,12 @@ export default function SceneHallPage() {
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
-                          <DialogTitle>新增批次</DialogTitle>
-                          <DialogDescription>创建新的场景建设批次分组，并关联审批流程。</DialogDescription>
+                          <PrdAnnotation data={getAnnotation("dialog-batch-create")}>
+                            <div>
+                              <DialogTitle>新增批次</DialogTitle>
+                              <DialogDescription>创建新的场景建设批次分组，并关联审批流程。</DialogDescription>
+                            </div>
+                          </PrdAnnotation>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                           <div className="grid gap-2">
@@ -572,81 +588,97 @@ export default function SceneHallPage() {
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline" size="sm" onClick={() => setIsResourceImportDialogOpen(true)}>
-                <Upload className="mr-2 h-4 w-4" />
-                导入资源包
-              </Button>
+              <PrdAnnotation data={getAnnotation("import-resource-package")}>
+                <Button variant="outline" size="sm" onClick={() => setIsResourceImportDialogOpen(true)}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  导入资源包
+                </Button>
+              </PrdAnnotation>
 
-              <Button variant="outline" size="sm" onClick={() => setIsImportDialogOpen(true)}>
-                <Upload className="mr-2 h-4 w-4" />
-                导入场景
-              </Button>
+              <PrdAnnotation data={getAnnotation("import-scenario")}>
+                <Button variant="outline" size="sm" onClick={() => setIsImportDialogOpen(true)}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  导入场景
+                </Button>
+              </PrdAnnotation>
 
-              <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => router.push('/scenarios/new/edit')}>
-                <Plus className="mr-2 h-4 w-4" />
-                新建场景
-              </Button>
+              <PrdAnnotation data={getAnnotation("create-scenario")}>
+                <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => router.push('/scenarios/new/edit')}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  新建场景
+                </Button>
+              </PrdAnnotation>
             </div>
           </div>
 
           {/* Stats dashboard - hidden in public tab */}
           {activeTab !== "public" && (
             <div className="grid grid-cols-5 gap-3 mt-3">
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="px-3 py-[3px] flex items-center justify-between">
-                  <div className="leading-none">
-                    <p className="text-xs text-slate-500 leading-none">场景总数</p>
-                    <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.total}</p>
-                  </div>
-                  <div className="h-6 w-6 rounded-full bg-blue-50 flex items-center justify-center">
-                    <SlidersHorizontal className="h-3 w-3 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="px-3 py-[3px] flex items-center justify-between">
-                  <div className="leading-none">
-                    <p className="text-xs text-slate-500 leading-none">未提交</p>
-                    <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.draft}</p>
-                  </div>
-                  <div className="h-6 w-6 rounded-full bg-gray-50 flex items-center justify-center">
-                    <RotateCcw className="h-3 w-3 text-gray-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="px-3 py-[3px] flex items-center justify-between">
-                  <div className="leading-none">
-                    <p className="text-xs text-slate-500 leading-none">审批中</p>
-                    <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.pending}</p>
-                  </div>
-                  <div className="h-6 w-6 rounded-full bg-yellow-50 flex items-center justify-center">
-                    <GitBranch className="h-3 w-3 text-yellow-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="px-3 py-[3px] flex items-center justify-between">
-                  <div className="leading-none">
-                    <p className="text-xs text-slate-500 leading-none">已驳回</p>
-                    <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.rejected}</p>
-                  </div>
-                  <div className="h-6 w-6 rounded-full bg-red-50 flex items-center justify-center">
-                    <X className="h-3 w-3 text-red-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="px-3 py-[3px] flex items-center justify-between">
-                  <div className="leading-none">
-                    <p className="text-xs text-slate-500 leading-none">已发布</p>
-                    <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.published}</p>
-                  </div>
-                  <div className="h-6 w-6 rounded-full bg-green-50 flex items-center justify-center">
-                    <ArrowUpFromLine className="h-3 w-3 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
+              <PrdAnnotation data={getAnnotation("stat-total")}>
+                <Card className="border-slate-200 shadow-sm w-full">
+                  <CardContent className="px-3 py-[3px] flex items-center justify-between">
+                    <div className="leading-none">
+                      <p className="text-xs text-slate-500 leading-none">场景总数</p>
+                      <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.total}</p>
+                    </div>
+                    <div className="h-6 w-6 rounded-full bg-blue-50 flex items-center justify-center">
+                      <SlidersHorizontal className="h-3 w-3 text-blue-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </PrdAnnotation>
+              <PrdAnnotation data={getAnnotation("stat-draft")}>
+                <Card className="border-slate-200 shadow-sm w-full">
+                  <CardContent className="px-3 py-[3px] flex items-center justify-between">
+                    <div className="leading-none">
+                      <p className="text-xs text-slate-500 leading-none">未提交</p>
+                      <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.draft}</p>
+                    </div>
+                    <div className="h-6 w-6 rounded-full bg-gray-50 flex items-center justify-center">
+                      <RotateCcw className="h-3 w-3 text-gray-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </PrdAnnotation>
+              <PrdAnnotation data={getAnnotation("stat-pending")}>
+                <Card className="border-slate-200 shadow-sm w-full">
+                  <CardContent className="px-3 py-[3px] flex items-center justify-between">
+                    <div className="leading-none">
+                      <p className="text-xs text-slate-500 leading-none">审批中</p>
+                      <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.pending}</p>
+                    </div>
+                    <div className="h-6 w-6 rounded-full bg-yellow-50 flex items-center justify-center">
+                      <GitBranch className="h-3 w-3 text-yellow-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </PrdAnnotation>
+              <PrdAnnotation data={getAnnotation("stat-rejected")}>
+                <Card className="border-slate-200 shadow-sm w-full">
+                  <CardContent className="px-3 py-[3px] flex items-center justify-between">
+                    <div className="leading-none">
+                      <p className="text-xs text-slate-500 leading-none">已驳回</p>
+                      <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.rejected}</p>
+                    </div>
+                    <div className="h-6 w-6 rounded-full bg-red-50 flex items-center justify-center">
+                      <X className="h-3 w-3 text-red-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </PrdAnnotation>
+              <PrdAnnotation data={getAnnotation("stat-published")}>
+                <Card className="border-slate-200 shadow-sm w-full">
+                  <CardContent className="px-3 py-[3px] flex items-center justify-between">
+                    <div className="leading-none">
+                      <p className="text-xs text-slate-500 leading-none">已发布</p>
+                      <p className="text-xl font-bold text-slate-900 leading-none mt-[3px]">{stats.published}</p>
+                    </div>
+                    <div className="h-6 w-6 rounded-full bg-green-50 flex items-center justify-center">
+                      <ArrowUpFromLine className="h-3 w-3 text-green-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </PrdAnnotation>
             </div>
           )}
         </CardContent>
@@ -656,33 +688,43 @@ export default function SceneHallPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabType); setSelectedIds([]); setSelectedPositionId(null); setSelectedBatchId(null) }}>
           <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="my">我的场景</TabsTrigger>
-            <TabsTrigger value="collab">共建场景</TabsTrigger>
-            <TabsTrigger value="public">公共场景</TabsTrigger>
+            <PrdAnnotation data={getAnnotation("tab-my")} className="flex-1">
+              <TabsTrigger value="my" className="w-full">我的场景</TabsTrigger>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("tab-collab")} className="flex-1">
+              <TabsTrigger value="collab" className="w-full">共建场景</TabsTrigger>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("tab-public")} className="flex-1">
+              <TabsTrigger value="public" className="w-full">公共场景</TabsTrigger>
+            </PrdAnnotation>
           </TabsList>
         </Tabs>
 
         <div className="flex items-center border rounded-md overflow-hidden">
-          <button
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium flex items-center gap-1 transition-colors",
-              viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-white text-slate-600 hover:bg-slate-50"
-            )}
-          >
-            <LayoutList className="h-3.5 w-3.5" />
-            资源列表
-          </button>
-          <button
-            onClick={() => setViewMode("group")}
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium flex items-center gap-1 transition-colors",
-              viewMode === "group" ? "bg-primary text-primary-foreground" : "bg-white text-slate-600 hover:bg-slate-50"
-            )}
-          >
-            <ListFilter className="h-3.5 w-3.5" />
-            批次分组
-          </button>
+          <PrdAnnotation data={getAnnotation("view-list")}>
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium flex items-center gap-1 transition-colors",
+                viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-white text-slate-600 hover:bg-slate-50"
+              )}
+            >
+              <LayoutList className="h-3.5 w-3.5" />
+              资源列表
+            </button>
+          </PrdAnnotation>
+          <PrdAnnotation data={getAnnotation("view-group")}>
+            <button
+              onClick={() => setViewMode("group")}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium flex items-center gap-1 transition-colors",
+                viewMode === "group" ? "bg-primary text-primary-foreground" : "bg-white text-slate-600 hover:bg-slate-50"
+              )}
+            >
+              <ListFilter className="h-3.5 w-3.5" />
+              批次分组
+            </button>
+          </PrdAnnotation>
         </div>
       </div>
 
@@ -691,105 +733,133 @@ export default function SceneHallPage() {
         <CardContent className="flex flex-col gap-4 p-5">
           {/* Search + Filter row */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-              <Search className="h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="搜索场景名称 / 任务名称"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 text-sm flex-1"
-              />
-            </div>
+            <PrdAnnotation data={getAnnotation("search-box")} className="flex-1 min-w-[200px]">
+              <div className="flex items-center gap-2 w-full">
+                <Search className="h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="搜索场景名称 / 任务名称"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-9 text-sm flex-1"
+                />
+              </div>
+            </PrdAnnotation>
             <div className="flex items-center gap-2">
-              <Select value={selectedPositionId || "__all__"} onValueChange={(v) => setSelectedPositionId(v === "__all__" ? null : v)}>
-                <SelectTrigger className="h-9 text-sm w-44">
-                  <SelectValue placeholder="按岗位筛选" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">全部岗位</SelectItem>
-                  {professions.map((prof) => (
-                    <div key={prof.id}>
-                      <div className="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-50">{prof.name}</div>
-                      {prof.positions.map((pos) => (
-                        <SelectItem key={pos.id} value={pos.id}>{pos.name}</SelectItem>
-                      ))}
-                    </div>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedBatchId || "__all__"} onValueChange={(v) => setSelectedBatchId(v === "__all__" ? null : v)}>
-                <SelectTrigger className="h-9 text-sm w-44">
-                  <SelectValue placeholder="按批次分组筛选" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">全部批次</SelectItem>
-                  {localBatches.map((batch) => (
-                    <SelectItem key={batch.id} value={batch.id}>
-                      <span className="flex items-center gap-2">
-                        {batch.name}
-                        <span className="text-xs text-gray-400">({batch.code})</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStatus || "__all__"} onValueChange={(v) => setSelectedStatus(v === "__all__" ? null : v)}>
-                <SelectTrigger className="h-9 text-sm w-36">
-                  <SelectValue placeholder="按状态筛选" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">全部状态</SelectItem>
-                  <SelectItem value="draft">草稿</SelectItem>
-                  <SelectItem value="pending">审批中</SelectItem>
-                  <SelectItem value="approved">已通过</SelectItem>
-                  <SelectItem value="rejected">已驳回</SelectItem>
-                  <SelectItem value="published">已发布</SelectItem>
-                </SelectContent>
-              </Select>
+              <PrdAnnotation data={getAnnotation("filter-position")}>
+                <Select value={selectedPositionId || "__all__"} onValueChange={(v) => setSelectedPositionId(v === "__all__" ? null : v)}>
+                  <SelectTrigger className="h-9 text-sm w-44">
+                    <SelectValue placeholder="按岗位筛选" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">全部岗位</SelectItem>
+                    {professions.map((prof) => (
+                      <div key={prof.id}>
+                        <div className="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-50">{prof.name}</div>
+                        {prof.positions.map((pos) => (
+                          <SelectItem key={pos.id} value={pos.id}>{pos.name}</SelectItem>
+                        ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </PrdAnnotation>
+              <PrdAnnotation data={getAnnotation("filter-batch")}>
+                <Select value={selectedBatchId || "__all__"} onValueChange={(v) => setSelectedBatchId(v === "__all__" ? null : v)}>
+                  <SelectTrigger className="h-9 text-sm w-44">
+                    <SelectValue placeholder="按批次分组筛选" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">全部批次</SelectItem>
+                    {localBatches.map((batch) => (
+                      <SelectItem key={batch.id} value={batch.id}>
+                        <span className="flex items-center gap-2">
+                          {batch.name}
+                          <span className="text-xs text-gray-400">({batch.code})</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </PrdAnnotation>
+              <PrdAnnotation data={getAnnotation("filter-status")}>
+                <Select value={selectedStatus || "__all__"} onValueChange={(v) => setSelectedStatus(v === "__all__" ? null : v)}>
+                  <SelectTrigger className="h-9 text-sm w-36">
+                    <SelectValue placeholder="按状态筛选" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">全部状态</SelectItem>
+                    <SelectItem value="draft">草稿</SelectItem>
+                    <SelectItem value="pending">审批中</SelectItem>
+                    <SelectItem value="approved">已通过</SelectItem>
+                    <SelectItem value="rejected">已驳回</SelectItem>
+                    <SelectItem value="published">已发布</SelectItem>
+                  </SelectContent>
+                </Select>
+              </PrdAnnotation>
             </div>
-            <Button variant="outline" size="sm" className="h-9" onClick={handleResetFilters}>
-              <RotateCcw className="mr-1 h-3.5 w-3.5" />
-              重置
-            </Button>
+            <PrdAnnotation data={getAnnotation("filter-reset")}>
+              <Button variant="outline" size="sm" className="h-9" onClick={handleResetFilters}>
+                <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                重置
+              </Button>
+            </PrdAnnotation>
           </div>
 
           {/* Quick actions - linked with checkboxes */}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-            <span className={cn("text-xs mr-1", hasSelected ? "text-slate-700 font-medium" : "text-slate-400")}>
-              {hasSelected ? `已选择 ${selectedIds.length} 项：` : "请选择场景："}
-            </span>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchSubmit} onClick={handleBatchSubmitApproval}>
-              <Send className="mr-1 h-3 w-3" />
-              提交审批
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchWithdraw} onClick={handleBatchWithdrawApproval}>
-              <Undo2 className="mr-1 h-3 w-3" />
-              撤回审批
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchPublish} onClick={handleBatchPublish}>
-              <ArrowUpFromLine className="mr-1 h-3 w-3" />
-              发布
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchUnpublish} onClick={handleBatchUnpublish}>
-              <ArrowDownFromLine className="mr-1 h-3 w-3" />
-              取消发布
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchDelete} onClick={handleBatchDelete}>
-              <Trash2 className="mr-1 h-3 w-3" />
-              删除
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected} onClick={handleBatchClone}>
-              <Copy className="mr-1 h-3 w-3" />
-              克隆
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected} onClick={handleBatchMove}>
-              <FolderKanban className="mr-1 h-3 w-3" />
-              调整批次分组
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected} onClick={handleBatchExport}>
-              <Download className="mr-1 h-3 w-3" />
-              导出
-            </Button>
+            <PrdAnnotation data={getAnnotation("batch-selection-hint")}>
+              <span className={cn("text-xs mr-1", hasSelected ? "text-slate-700 font-medium" : "text-slate-400")}>
+                {hasSelected ? `已选择 ${selectedIds.length} 项：` : "请选择场景："}
+              </span>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-submit")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchSubmit} onClick={handleBatchSubmitApproval}>
+                <Send className="mr-1 h-3 w-3" />
+                提交审批
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-withdraw")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchWithdraw} onClick={handleBatchWithdrawApproval}>
+                <Undo2 className="mr-1 h-3 w-3" />
+                撤回审批
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-publish")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchPublish} onClick={handleBatchPublish}>
+                <ArrowUpFromLine className="mr-1 h-3 w-3" />
+                发布
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-unpublish")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchUnpublish} onClick={handleBatchUnpublish}>
+                <ArrowDownFromLine className="mr-1 h-3 w-3" />
+                取消发布
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-delete")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected || !canBatchDelete} onClick={handleBatchDelete}>
+                <Trash2 className="mr-1 h-3 w-3" />
+                删除
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-clone")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected} onClick={handleBatchClone}>
+                <Copy className="mr-1 h-3 w-3" />
+                克隆
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-move")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected} onClick={handleBatchMove}>
+                <FolderKanban className="mr-1 h-3 w-3" />
+                调整批次分组
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("batch-export")}>
+              <Button variant="outline" size="sm" className="h-8 text-xs" disabled={!hasSelected} onClick={handleBatchExport}>
+                <Download className="mr-1 h-3 w-3" />
+                导出
+              </Button>
+            </PrdAnnotation>
           </div>
         </CardContent>
 
@@ -915,10 +985,14 @@ export default function SceneHallPage() {
       <Dialog open={isApprovalDialogOpen} onOpenChange={setIsApprovalDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>选择审批流程</DialogTitle>
-            <DialogDescription>
-              当前场景未关联批次，请手动选择一个审批流程。
-            </DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-approval-select")}>
+              <div>
+                <DialogTitle>选择审批流程</DialogTitle>
+                <DialogDescription>
+                  当前场景未关联批次，请手动选择一个审批流程。
+                </DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -957,8 +1031,12 @@ export default function SceneHallPage() {
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>导入场景</DialogTitle>
-            <DialogDescription>上传 Excel 或 JSON 文件批量导入场景数据</DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-import")}>
+              <div>
+                <DialogTitle>导入场景</DialogTitle>
+                <DialogDescription>上传 Excel 或 JSON 文件批量导入场景数据</DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="py-6">
             <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 flex flex-col items-center justify-center text-center">
@@ -978,8 +1056,12 @@ export default function SceneHallPage() {
       <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>批量导出场景</DialogTitle>
-            <DialogDescription>已选择 {selectedIds.length} 个场景，请选择导出格式</DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-export")}>
+              <div>
+                <DialogTitle>批量导出场景</DialogTitle>
+                <DialogDescription>已选择 {selectedIds.length} 个场景，请选择导出格式</DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="py-4 space-y-3">
             <div className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
@@ -1033,8 +1115,12 @@ export default function SceneHallPage() {
       <Dialog open={isBatchMoveDialogOpen} onOpenChange={setIsBatchMoveDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>调整批次分组</DialogTitle>
-            <DialogDescription>将已选择的 {selectedIds.length} 个场景移动到其他批次分组</DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-batch-move")}>
+              <div>
+                <DialogTitle>调整批次分组</DialogTitle>
+                <DialogDescription>将已选择的 {selectedIds.length} 个场景移动到其他批次分组</DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="py-4">
             <div className="grid gap-2">
@@ -1067,8 +1153,12 @@ export default function SceneHallPage() {
       <Dialog open={isApprovalWorkflowDialogOpen} onOpenChange={setIsApprovalWorkflowDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>配置审批流程</DialogTitle>
-            <DialogDescription>管理场景审批流程模板</DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-approval-workflow-config")}>
+              <div>
+                <DialogTitle>配置审批流程</DialogTitle>
+                <DialogDescription>管理场景审批流程模板</DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto py-4 space-y-4">
             <div className="flex justify-end">
@@ -1118,10 +1208,14 @@ export default function SceneHallPage() {
       <Dialog open={isCloneRenameDialogOpen} onOpenChange={setIsCloneRenameDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>克隆场景</DialogTitle>
-            <DialogDescription>
-              请为克隆后的场景命名
-            </DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-clone-rename")}>
+              <div>
+                <DialogTitle>克隆场景</DialogTitle>
+                <DialogDescription>
+                  请为克隆后的场景命名
+                </DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="py-4">
             <div className="grid gap-2">
@@ -1145,10 +1239,14 @@ export default function SceneHallPage() {
       <Dialog open={isRejectReasonDialogOpen} onOpenChange={setIsRejectReasonDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>驳回原因</DialogTitle>
-            <DialogDescription>
-              场景「{rejectReasonScenario?.name}」的审批驳回原因
-            </DialogDescription>
+            <PrdAnnotation data={getAnnotation("dialog-reject-reason")}>
+              <div>
+                <DialogTitle>驳回原因</DialogTitle>
+                <DialogDescription>
+                  场景「{rejectReasonScenario?.name}」的审批驳回原因
+                </DialogDescription>
+              </div>
+            </PrdAnnotation>
           </DialogHeader>
           <div className="py-4">
             <div className="p-4 bg-red-50 rounded-lg border border-red-100">

@@ -16,6 +16,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 import {
   Select,
   SelectContent,
@@ -102,7 +104,9 @@ export default function PositionsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">岗位能力点管理</h1>
+        <PrdAnnotation data={getAnnotation("positions-title")}>
+          <h1 className="text-2xl font-bold text-gray-900">岗位能力点管理</h1>
+        </PrdAnnotation>
         <p className="text-gray-500 mt-1">为每个岗位配置能力评估指标，用于学生胜任度分析</p>
       </div>
 

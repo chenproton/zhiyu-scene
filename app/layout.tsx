@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { PlatformShellWrapper } from '@/components/layout/platform-shell-wrapper'
+import { AnnotationEditProvider } from '@/lib/annotation-edit-context'
+import { AnnotationEditToolbar } from '@/components/annotation-edit-toolbar'
+import { FloatingAnnotations } from '@/components/floating-annotations'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -41,7 +44,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{
           __html: `(function(){try{if(window.location.search.includes('embedded=1')||window.self!==window.top){document.documentElement.classList.add('embedded')}}catch(e){}})();`
         }} />
-        <PlatformShellWrapper>{children}</PlatformShellWrapper>
+        <AnnotationEditProvider>
+          <PlatformShellWrapper>{children}</PlatformShellWrapper>
+          <AnnotationEditToolbar />
+          <FloatingAnnotations />
+        </AnnotationEditProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

@@ -1,6 +1,8 @@
 "use client"
 
 import { ArrowRight, ChevronDown, ChevronRight, Eye, ImagePlus, List, ListOrdered, Save, Search, Star, X, UserPlus } from "lucide-react"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useState, useMemo, useRef, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
@@ -261,10 +263,12 @@ function NewScenarioEditForm() {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => router.push("/")}>
-              <X className="h-4 w-4 mr-2" />
-              取消
-            </Button>
+            <PrdAnnotation data={getAnnotation("editor-step1-cancel")}>
+              <Button variant="ghost" size="sm" onClick={() => router.push("/")}>
+                <X className="h-4 w-4 mr-2" />
+                取消
+              </Button>
+            </PrdAnnotation>
             <div className="h-5 w-px bg-gray-200" />
             <div className="flex items-center gap-2">
               <Badge className="bg-primary text-primary-foreground">步骤 1</Badge>
@@ -272,21 +276,27 @@ function NewScenarioEditForm() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={handleSaveDraft}>
-              <Save className="mr-2 h-4 w-4" />
-              保存草稿
-            </Button>
-            <Button variant="outline" size="sm" onClick={handlePreview}>
-              <Eye className="mr-2 h-4 w-4" />
-              预览
-            </Button>
-            <Button 
-              onClick={handleProceed}
-              disabled={!scenarioName}
-            >
-              下一步
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <PrdAnnotation data={getAnnotation("editor-step1-save")}>
+              <Button variant="outline" size="sm" onClick={handleSaveDraft}>
+                <Save className="mr-2 h-4 w-4" />
+                保存草稿
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("editor-step1-preview")}>
+              <Button variant="outline" size="sm" onClick={handlePreview}>
+                <Eye className="mr-2 h-4 w-4" />
+                预览
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("editor-step1-next")}>
+              <Button 
+                onClick={handleProceed}
+                disabled={!scenarioName}
+              >
+                下一步
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </PrdAnnotation>
           </div>
         </div>
       </div>
@@ -306,7 +316,9 @@ function NewScenarioEditForm() {
                 {/* Position and Batch selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="position">目标岗位</Label>
+                    <PrdAnnotation data={getAnnotation("editor-field-position")} className="block">
+                      <Label htmlFor="position">目标岗位</Label>
+                    </PrdAnnotation>
                     <div className="relative">
                       <Select value={positionId} onValueChange={(v) => {
                         setPositionId(v)
@@ -345,7 +357,9 @@ function NewScenarioEditForm() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="batch">所属批次</Label>
+                    <PrdAnnotation data={getAnnotation("editor-field-batch")} className="block">
+                      <Label htmlFor="batch">所属批次</Label>
+                    </PrdAnnotation>
                     <div className="relative">
                       <Select value={batchId} onValueChange={setBatchId}>
                         <SelectTrigger id="batch" className={batchId ? "pr-8" : ""}>
@@ -372,7 +386,9 @@ function NewScenarioEditForm() {
 
                 {/* Scenario name */}
                 <div className="grid gap-2">
-                  <Label htmlFor="name">场景名称 <span className="text-red-500">*</span></Label>
+                  <PrdAnnotation data={getAnnotation("editor-field-name")} className="block">
+                    <Label htmlFor="name">场景名称 <span className="text-red-500">*</span></Label>
+                  </PrdAnnotation>
                   <Input
                     id="name"
                     value={scenarioName}
@@ -383,7 +399,9 @@ function NewScenarioEditForm() {
 
                 {/* Scenario code (auto-generated) */}
                 <div className="grid gap-2">
-                  <Label htmlFor="code">场景编码</Label>
+                  <PrdAnnotation data={getAnnotation("editor-field-code")} className="block">
+                    <Label htmlFor="code">场景编码</Label>
+                  </PrdAnnotation>
                   <Input
                     id="code"
                     value={scenarioCode}
@@ -448,7 +466,9 @@ function NewScenarioEditForm() {
 
                 {/* Background */}
                 <div className="grid gap-2">
-                  <Label htmlFor="background">场景介绍</Label>
+                  <PrdAnnotation data={getAnnotation("editor-field-intro")} className="block">
+                    <Label htmlFor="background">场景介绍</Label>
+                  </PrdAnnotation>
                   <div className="border rounded-lg">
                     <div className="bg-gray-50 border-b px-3 py-2 flex gap-1 items-center">
                       <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold">B</Button>
@@ -480,7 +500,9 @@ function NewScenarioEditForm() {
             {/* Cover image */}
             <Card>
               <CardContent className="pt-6">
-                <Label className="mb-3 block">场景封面</Label>
+                <PrdAnnotation data={getAnnotation("editor-sidebar-cover")} className="block">
+                  <Label className="mb-3 block">场景封面</Label>
+                </PrdAnnotation>
                 <div 
                   className="aspect-video bg-gray-100 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
                 >
@@ -495,12 +517,16 @@ function NewScenarioEditForm() {
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <div>
-                  <Label className="text-gray-500 text-xs">创建人</Label>
+                  <PrdAnnotation data={getAnnotation("editor-sidebar-creator")} className="block">
+                    <Label className="text-gray-500 text-xs">创建人</Label>
+                  </PrdAnnotation>
                   <p className="font-medium text-gray-800 mt-1">{creatorName}</p>
                 </div>
 
                 <div>
-                  <Label className="mb-2 block">共建人/共建部门</Label>
+                  <PrdAnnotation data={getAnnotation("editor-sidebar-cobuilders")} className="block">
+                    <Label className="mb-2 block">共建人/共建部门</Label>
+                  </PrdAnnotation>
                   
                   {/* Selected co-builders compact view */}
                   <div 
@@ -537,7 +563,9 @@ function NewScenarioEditForm() {
                 </div>
 
                 <div className="pt-3 border-t border-gray-100">
-                  <Label className="text-gray-500 text-xs">当前版本号</Label>
+                  <PrdAnnotation data={getAnnotation("editor-sidebar-version")} className="block">
+                    <Label className="text-gray-500 text-xs">当前版本号</Label>
+                  </PrdAnnotation>
                   <p className="font-medium text-gray-800 mt-1">{version}</p>
                 </div>
               </CardContent>
@@ -547,10 +575,14 @@ function NewScenarioEditForm() {
             <Dialog open={isCoBuilderDialogOpen} onOpenChange={setIsCoBuilderDialogOpen}>
               <DialogContent className="sm:max-w-[640px] max-h-[80vh] overflow-hidden flex flex-col">
                 <DialogHeader>
-                  <DialogTitle>选择共建人/共建部门</DialogTitle>
-                  <DialogDescription>
-                    从组织架构中选择共建人，选中的用户将参与该场景的建设
-                  </DialogDescription>
+                  <PrdAnnotation data={getAnnotation("dialog-cobuilder-select")}>
+                    <div>
+                      <DialogTitle>选择共建人/共建部门</DialogTitle>
+                      <DialogDescription>
+                        从组织架构中选择共建人，选中的用户将参与该场景的建设
+                      </DialogDescription>
+                    </div>
+                  </PrdAnnotation>
                 </DialogHeader>
                 <div className="flex-1 overflow-hidden py-4">
                   {/* Shuttle Box */}

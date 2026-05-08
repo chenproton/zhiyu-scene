@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { dashboardStats, todoItems, approvalItems } from "@/lib/mock-data"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 
 export default function DashboardPage() {
   // Filter todo items by type
@@ -16,10 +18,12 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-800">数据统计工作台</h1>
-        <p className="text-sm text-gray-500 mt-1">全局数据概览与待办中心</p>
-      </div>
+      <PrdAnnotation data={getAnnotation("dashboard-title")}>
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-800">数据统计工作台</h1>
+          <p className="text-sm text-gray-500 mt-1">全局数据概览与待办中心</p>
+        </div>
+      </PrdAnnotation>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-4">

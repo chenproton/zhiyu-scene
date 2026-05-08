@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { students, studentScenarioScores, studentAbilityScores, getAbilityLevel, getAbilityLevelLabel, getAbilityLevelColor } from "@/lib/mock-data"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -52,91 +54,105 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">学生能力报告</h1>
-        <p className="text-gray-500 mt-1">查看学生的场景学习成绩和岗位胜任度分析</p>
-      </div>
+      <PrdAnnotation data={getAnnotation("students-title")}>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">学生能力报告</h1>
+          <p className="text-gray-500 mt-1">查看学生的场景学习成绩和岗位胜任度分析</p>
+        </div>
+      </PrdAnnotation>
 
       {/* Filters */}
       <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="搜索学生姓名、学号或班级..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="筛选院系" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">全部院系</SelectItem>
-            {departments.map(dept => (
-              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <PrdAnnotation data={getAnnotation("students-search")} className="flex-1 max-w-sm">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="搜索学生姓名、学号或班级..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("students-dept")}>
+          <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="筛选院系" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部院系</SelectItem>
+              {departments.map(dept => (
+                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </PrdAnnotation>
       </div>
 
       {/* Student Stats Overview */}
       <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <User className="h-5 w-5 text-blue-500" />
+        <PrdAnnotation data={getAnnotation("students-stat-total")}>
+          <Card className="w-full">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <User className="h-5 w-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{students.length}</p>
+                  <p className="text-sm text-gray-500">学生总数</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">{students.length}</p>
-                <p className="text-sm text-gray-500">学生总数</p>
+            </CardContent>
+          </Card>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("students-stat-scenarios")}>
+          <Card className="w-full">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <GraduationCap className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{studentScenarioScores.length}</p>
+                  <p className="text-sm text-gray-500">完成场景数</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <GraduationCap className="h-5 w-5 text-green-500" />
+            </CardContent>
+          </Card>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("students-stat-score")}>
+          <Card className="w-full">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-50 rounded-lg">
+                  <GraduationCap className="h-5 w-5 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {Math.round(studentScenarioScores.reduce((sum, s) => sum + s.totalScore, 0) / (studentScenarioScores.length || 1))}
+                  </p>
+                  <p className="text-sm text-gray-500">平均得分</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">{studentScenarioScores.length}</p>
-                <p className="text-sm text-gray-500">完成场景数</p>
+            </CardContent>
+          </Card>
+        </PrdAnnotation>
+        <PrdAnnotation data={getAnnotation("students-stat-abilities")}>
+          <Card className="w-full">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-50 rounded-lg">
+                  <GraduationCap className="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{studentAbilityScores.length}</p>
+                  <p className="text-sm text-gray-500">能力点评估</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-50 rounded-lg">
-                <GraduationCap className="h-5 w-5 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {Math.round(studentScenarioScores.reduce((sum, s) => sum + s.totalScore, 0) / (studentScenarioScores.length || 1))}
-                </p>
-                <p className="text-sm text-gray-500">平均得分</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-50 rounded-lg">
-                <GraduationCap className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{studentAbilityScores.length}</p>
-                <p className="text-sm text-gray-500">能力点评估</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </PrdAnnotation>
       </div>
 
       {/* Student List */}

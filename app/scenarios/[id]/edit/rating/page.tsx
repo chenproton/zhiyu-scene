@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input"
 import { Lock, Unlock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { scenarios, type GradeMapping, type Task } from "@/lib/mock-data"
+import { PrdAnnotation } from "@/components/prd-annotation"
+import { getAnnotation } from "@/lib/prd-annotations"
 
 export default function RatingEditPage() {
   const params = useParams()
@@ -133,10 +135,12 @@ export default function RatingEditPage() {
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <NextLink href={`/scenarios/${scenarioId}/edit/tasks`}>
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                返回任务配置
-              </Button>
+              <PrdAnnotation data={getAnnotation("rating-header-back")}>
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  返回任务配置
+                </Button>
+              </PrdAnnotation>
             </NextLink>
             <div className="h-5 w-px bg-gray-200" />
             <div className="flex items-center gap-2">
@@ -145,131 +149,152 @@ export default function RatingEditPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={handleSaveDraft}>
-              <Save className="mr-2 h-4 w-4" />
-              保存草稿
-            </Button>
-            <Button variant="outline" size="sm" onClick={handlePreview}>
-              <Eye className="mr-2 h-4 w-4" />
-              预览
-            </Button>
-            <Button onClick={handleSave}>
-              <Save className="mr-2 h-4 w-4" />
-              保存规则
-            </Button>
+            <PrdAnnotation data={getAnnotation("rating-header-save-draft")}>
+              <Button variant="outline" size="sm" onClick={handleSaveDraft}>
+                <Save className="mr-2 h-4 w-4" />
+                保存草稿
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("rating-header-preview")}>
+              <Button variant="outline" size="sm" onClick={handlePreview}>
+                <Eye className="mr-2 h-4 w-4" />
+                预览
+              </Button>
+            </PrdAnnotation>
+            <PrdAnnotation data={getAnnotation("rating-header-save")}>
+              <Button onClick={handleSave}>
+                <Save className="mr-2 h-4 w-4" />
+                保存规则
+              </Button>
+            </PrdAnnotation>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-800">总评规则配置</h1>
-          <p className="text-sm text-gray-500 mt-1">配置各任务权重和成绩等级映射</p>
-        </div>
+        <PrdAnnotation data={getAnnotation("rating-page-title")}>
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800">总评规则配置</h1>
+            <p className="text-sm text-gray-500 mt-1">配置各任务权重和成绩等级映射</p>
+          </div>
+        </PrdAnnotation>
 
         {/* Weight allocation */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">任务权重分配</CardTitle>
-            <CardDescription>设置各任务在总评中的权重占比，总和必须为 100%</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <PrdAnnotation data={getAnnotation("rating-weight-card")}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">任务权重分配</CardTitle>
+              <CardDescription>设置各任务在总评中的权重占比，总和必须为 100%</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className={cn(
-                  "text-lg font-semibold",
-                  isWeightValid ? "text-green-600" : "text-amber-600"
-                )}>
-                  总权重: {totalWeight}%
-                </span>
-                {!isWeightValid && (
-                  <span className="text-sm text-amber-600">
-                    {totalWeight > 100 ? `超出 ${totalWeight - 100}%` : `还需分配 ${100 - totalWeight}%`}
+              <PrdAnnotation data={getAnnotation("rating-weight-total")}>
+                <div className="flex items-center gap-4">
+                  <span className={cn(
+                    "text-lg font-semibold",
+                    isWeightValid ? "text-green-600" : "text-amber-600"
+                  )}>
+                    总权重: {totalWeight}%
                   </span>
-                )}
-              </div>
-              <Button variant="outline" size="sm" onClick={distributeEvenly}>
-                均匀分配
-              </Button>
+                  {!isWeightValid && (
+                    <span className="text-sm text-amber-600">
+                      {totalWeight > 100 ? `超出 ${totalWeight - 100}%` : `还需分配 ${100 - totalWeight}%`}
+                    </span>
+                  )}
+                </div>
+              </PrdAnnotation>
+              <PrdAnnotation data={getAnnotation("rating-weight-distribute")}>
+                <Button variant="outline" size="sm" onClick={distributeEvenly}>
+                  均匀分配
+                </Button>
+              </PrdAnnotation>
             </div>
 
             {/* Progress bar */}
-            <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
-              {taskWeights.map((task, index) => (
-                <div
-                  key={task.taskId}
-                  className={cn("transition-all duration-300", colors[index % colors.length])}
-                  style={{ width: `${task.weight}%` }}
-                />
-              ))}
-            </div>
+            <PrdAnnotation data={getAnnotation("rating-weight-progress")}>
+              <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
+                {taskWeights.map((task, index) => (
+                  <div
+                    key={task.taskId}
+                    className={cn("transition-all duration-300", colors[index % colors.length])}
+                    style={{ width: `${task.weight}%` }}
+                  />
+                ))}
+              </div>
+            </PrdAnnotation>
 
             {/* Task weight inputs */}
             <div className="space-y-2">
               {taskWeights.map((task, index) => (
-                <div
-                  key={task.taskId}
-                  className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 bg-white hover:border-gray-200 transition-colors"
-                >
-                  <div className={cn("w-3 h-8 rounded-full shrink-0", colors[index % colors.length])} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-600">
-                        {index + 1}
-                      </span>
-                      <span className="font-medium text-gray-700 truncate">{task.taskName}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Input
-                      type="number"
-                      value={task.weight}
-                      onChange={(e) => handleWeightChange(task.taskId, parseInt(e.target.value) || 0)}
-                      disabled={task.locked}
-                      className={cn("w-20 text-center", task.locked && "bg-gray-50")}
-                      min={0}
-                      max={100}
-                    />
-                    <span className="text-gray-500 w-4">%</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggleLock(task.taskId)}
-                    className={cn("h-8 w-8", task.locked ? "text-amber-500" : "text-gray-400")}
+                <PrdAnnotation key={task.taskId} data={getAnnotation("rating-weight-row")}>
+                  <div
+                    className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 bg-white hover:border-gray-200 transition-colors"
                   >
-                    {task.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                  </Button>
-                </div>
+                    <div className={cn("w-3 h-8 rounded-full shrink-0", colors[index % colors.length])} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-600">
+                          {index + 1}
+                        </span>
+                        <span className="font-medium text-gray-700 truncate">{task.taskName}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Input
+                        type="number"
+                        value={task.weight}
+                        onChange={(e) => handleWeightChange(task.taskId, parseInt(e.target.value) || 0)}
+                        disabled={task.locked}
+                        className={cn("w-20 text-center", task.locked && "bg-gray-50")}
+                        min={0}
+                        max={100}
+                      />
+                      <span className="text-gray-500 w-4">%</span>
+                    </div>
+                    <PrdAnnotation data={getAnnotation("rating-weight-lock")} placement="top-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleLock(task.taskId)}
+                        className={cn("h-8 w-8", task.locked ? "text-amber-500" : "text-gray-400")}
+                      >
+                        {task.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+                      </Button>
+                    </PrdAnnotation>
+                  </div>
+                </PrdAnnotation>
               ))}
             </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </PrdAnnotation>
 
         {/* Grade mapping */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">成绩等级映射</CardTitle>
-            <CardDescription>选择任务后配置该任务的分数段与成绩等级的对应关系</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <PrdAnnotation data={getAnnotation("rating-grade-card")}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">成绩等级映射</CardTitle>
+              <CardDescription>选择任务后配置该任务的分数段与成绩等级的对应关系</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
             {/* Task selector */}
             <div className="flex gap-2 flex-wrap">
               {tasks.map((task, index) => (
-                <Button
-                  key={task.id}
-                  variant={selectedTaskForGrade === task.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedTaskForGrade(task.id)}
-                >
-                  <span className={cn(
-                    "w-2 h-2 rounded-full mr-2",
-                    colors[index % colors.length]
-                  )} />
-                  {task.name}
-                </Button>
+                <PrdAnnotation key={task.id} data={getAnnotation("rating-grade-task-selector")}>
+                  <Button
+                    variant={selectedTaskForGrade === task.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedTaskForGrade(task.id)}
+                  >
+                    <span className={cn(
+                      "w-2 h-2 rounded-full mr-2",
+                      colors[index % colors.length]
+                    )} />
+                    {task.name}
+                  </Button>
+                </PrdAnnotation>
               ))}
             </div>
 
@@ -277,31 +302,35 @@ export default function RatingEditPage() {
               <>
                 {/* Edit toggle */}
                 <div className="flex items-center justify-end">
-                  <Button variant="outline" size="sm" onClick={() => setIsEditingGrades(!isEditingGrades)}>
-                    {isEditingGrades ? "完成编辑" : "编辑等级"}
-                  </Button>
+                  <PrdAnnotation data={getAnnotation("rating-grade-edit-toggle")}>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingGrades(!isEditingGrades)}>
+                      {isEditingGrades ? "完成编辑" : "编辑等级"}
+                    </Button>
+                  </PrdAnnotation>
                 </div>
 
                 {/* Visual grade bar */}
-                <div className="h-10 bg-gray-100 rounded-lg overflow-hidden flex">
-                  {currentGradeMapping
-                    .sort((a, b) => a.minScore - b.minScore)
-                    .map((grade) => {
-                      const width = grade.maxScore - grade.minScore + 1
-                      return (
-                        <div
-                          key={grade.id}
-                          className={cn(
-                            "flex items-center justify-center text-white font-medium text-sm transition-all",
-                            grade.color
-                          )}
-                          style={{ width: `${width}%` }}
-                        >
-                          {grade.grade}
-                        </div>
-                      )
-                    })}
-                </div>
+                <PrdAnnotation data={getAnnotation("rating-grade-visual-bar")}>
+                  <div className="h-10 bg-gray-100 rounded-lg overflow-hidden flex">
+                    {currentGradeMapping
+                      .sort((a, b) => a.minScore - b.minScore)
+                      .map((grade) => {
+                        const width = grade.maxScore - grade.minScore + 1
+                        return (
+                          <div
+                            key={grade.id}
+                            className={cn(
+                              "flex items-center justify-center text-white font-medium text-sm transition-all",
+                              grade.color
+                            )}
+                            style={{ width: `${width}%` }}
+                          >
+                            {grade.grade}
+                          </div>
+                        )
+                      })}
+                  </div>
+                </PrdAnnotation>
 
                 {/* Grade cards */}
                 <div className="grid grid-cols-2 gap-3">
@@ -310,98 +339,104 @@ export default function RatingEditPage() {
                     .map((grade, index) => {
                       const colorConfig = colorOptions[index % colorOptions.length]
                       return (
-                        <div
-                          key={grade.id}
-                          className={cn("rounded-lg border p-4 transition-all", colorConfig.light)}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            {isEditingGrades ? (
-                              <Input
-                                value={grade.grade}
-                                onChange={(e) => handleGradeChange(grade.id, "grade", e.target.value)}
-                                className="w-20 h-8 text-center font-semibold"
-                              />
-                            ) : (
-                              <span className="text-xl font-bold">{grade.grade}</span>
-                            )}
-                            <div className={cn("w-4 h-4 rounded-full", grade.color)} />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {isEditingGrades ? (
-                              <>
+                        <PrdAnnotation key={grade.id} data={getAnnotation("rating-grade-score-card")}>
+                          <div
+                            className={cn("rounded-lg border p-4 transition-all", colorConfig.light)}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              {isEditingGrades ? (
                                 <Input
-                                  type="number"
-                                  value={grade.minScore}
-                                  onChange={(e) => handleGradeChange(grade.id, "minScore", parseInt(e.target.value) || 0)}
-                                  className="w-16 h-7 text-center text-sm"
-                                  min={0}
-                                  max={100}
+                                  value={grade.grade}
+                                  onChange={(e) => handleGradeChange(grade.id, "grade", e.target.value)}
+                                  className="w-20 h-8 text-center font-semibold"
                                 />
-                                <span className="text-gray-500">-</span>
-                                <Input
-                                  type="number"
-                                  value={grade.maxScore}
-                                  onChange={(e) => handleGradeChange(grade.id, "maxScore", parseInt(e.target.value) || 0)}
-                                  className="w-16 h-7 text-center text-sm"
-                                  min={0}
-                                  max={100}
-                                />
-                                <span className="text-sm text-gray-500">分</span>
-                              </>
-                            ) : (
-                              <span className="text-sm font-medium">
-                                {grade.minScore} - {grade.maxScore} 分
-                              </span>
-                            )}
+                              ) : (
+                                <span className="text-xl font-bold">{grade.grade}</span>
+                              )}
+                              <div className={cn("w-4 h-4 rounded-full", grade.color)} />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {isEditingGrades ? (
+                                <>
+                                  <Input
+                                    type="number"
+                                    value={grade.minScore}
+                                    onChange={(e) => handleGradeChange(grade.id, "minScore", parseInt(e.target.value) || 0)}
+                                    className="w-16 h-7 text-center text-sm"
+                                    min={0}
+                                    max={100}
+                                  />
+                                  <span className="text-gray-500">-</span>
+                                  <Input
+                                    type="number"
+                                    value={grade.maxScore}
+                                    onChange={(e) => handleGradeChange(grade.id, "maxScore", parseInt(e.target.value) || 0)}
+                                    className="w-16 h-7 text-center text-sm"
+                                    min={0}
+                                    max={100}
+                                  />
+                                  <span className="text-sm text-gray-500">分</span>
+                                </>
+                              ) : (
+                                <span className="text-sm font-medium">
+                                  {grade.minScore} - {grade.maxScore} 分
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        </PrdAnnotation>
                       )
                     })}
                 </div>
 
                 {/* Score preview */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-600 mb-3">分数模拟测试</h4>
-                  <div className="flex items-center gap-4 w-full">
-                    <Input
-                      type="number"
-                      value={testScore}
-                      onChange={(e) => setTestScore(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
-                      className="w-24"
-                      min={0}
-                      max={100}
-                    />
-                    <span className="text-gray-500">分 =</span>
-                    {getGradeForScore(testScore) ? (
-                      <div className={cn("px-4 py-2 rounded-lg font-semibold", getGradeForScore(testScore)!.color, "text-white")}>
-                        {getGradeForScore(testScore)!.grade} 等级
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">无匹配等级</span>
-                    )}
+                <PrdAnnotation data={getAnnotation("rating-score-preview")}>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-600 mb-3">分数模拟测试</h4>
+                    <div className="flex items-center gap-4 w-full">
+                      <Input
+                        type="number"
+                        value={testScore}
+                        onChange={(e) => setTestScore(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
+                        className="w-24"
+                        min={0}
+                        max={100}
+                      />
+                      <span className="text-gray-500">分 =</span>
+                      {getGradeForScore(testScore) ? (
+                        <div className={cn("px-4 py-2 rounded-lg font-semibold", getGradeForScore(testScore)!.color, "text-white")}>
+                          {getGradeForScore(testScore)!.grade} 等级
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">无匹配等级</span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </PrdAnnotation>
               </>
             )}
           </CardContent>
         </Card>
+        </PrdAnnotation>
 
         {/* Formula preview */}
-        <Card className="bg-gray-50 border-dashed">
-          <CardContent className="pt-6">
-            <p className="text-sm text-gray-600 mb-3">成绩计算公式：</p>
-            <div className="p-4 bg-white rounded-lg border border-gray-200 font-mono text-sm">
-              总成绩 = {taskWeights.map((t, i) => (
-                <span key={t.taskId}>
-                  {i > 0 && " + "}
-                  <span className="text-primary">{t.taskName}</span>
-                  <span className="text-gray-400"> x </span>
-                  <span className="text-blue-600">{t.weight}%</span>
-                </span>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <PrdAnnotation data={getAnnotation("rating-formula")}>
+          <Card className="bg-gray-50 border-dashed">
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-600 mb-3">成绩计算公式：</p>
+              <div className="p-4 bg-white rounded-lg border border-gray-200 font-mono text-sm">
+                总成绩 = {taskWeights.map((t, i) => (
+                  <span key={t.taskId}>
+                    {i > 0 && " + "}
+                    <span className="text-primary">{t.taskName}</span>
+                    <span className="text-gray-400"> x </span>
+                    <span className="text-blue-600">{t.weight}%</span>
+                  </span>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </PrdAnnotation>
       </div>
     </div>
   )
