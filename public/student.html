@@ -2019,6 +2019,14 @@
             grid-template-columns: 1fr;
             gap: 12px;
         }
+        .tl-assessment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .tl-assessment-grid .tl-assessment-section {
+            margin-bottom: 0;
+        }
         .tl-assessment-section {
             background: var(--bg-white);
             border: 1px solid #f0f0f0;
@@ -3906,7 +3914,8 @@
             const methodColors = { paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1' };
 
             if (evalMethods.length >= 1) {
-                body.innerHTML = '';
+                body.innerHTML = '<div class="tl-assessment-grid" id="tl-assessment-grid"></div>';
+                const grid = document.getElementById('tl-assessment-grid');
                 evalMethods.forEach((method, idx) => {
                     const sectionId = `assess-section-${task.id}-${method}-${idx}`;
                     const bodyId = `assess-body-${task.id}-${method}-${idx}`;
@@ -3919,7 +3928,7 @@
                             <div class="tl-section-body" id="${bodyId}"></div>
                         </div>
                     `;
-                    body.insertAdjacentHTML('beforeend', html);
+                    grid.insertAdjacentHTML('beforeend', html);
 
                     const sectionBody = document.getElementById(bodyId);
                     if (method === 'paper' || method === 'question_bank') {
