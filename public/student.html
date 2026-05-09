@@ -2363,6 +2363,147 @@
         #tlSimulationContainer.active { display: block; }
         #tlSimulationContainer iframe { width: 100%; height: 100%; border: none; }
 
+        /* ==================== 数据来源浮窗标注系统 ==================== */
+        .data-anno-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .data-anno-dot {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 14px;
+            height: 14px;
+            background: #f59e0b;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 0 0 2px #fff, 0 2px 4px rgba(0,0,0,0.15);
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .data-anno-dot::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        .data-anno-dot:hover {
+            transform: scale(1.2);
+            background: #d97706;
+        }
+        .data-anno-popup {
+            position: absolute;
+            top: 18px;
+            right: -10px;
+            width: 280px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            z-index: 100;
+            overflow: hidden;
+            display: none;
+            border: 1px solid #fde68a;
+        }
+        .data-anno-popup.active { display: block; }
+        .data-anno-popup-header {
+            background: #fffbeb;
+            padding: 8px 12px;
+            border-bottom: 1px solid #fde68a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #92400e;
+        }
+        .data-anno-popup-header i { font-size: 12px; }
+        .data-anno-popup-body {
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+        .data-anno-popup-footer {
+            padding: 6px 12px 10px;
+            text-align: right;
+        }
+        .data-anno-popup-footer button {
+            font-size: 12px;
+            color: #d97706;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .data-anno-popup-footer button:hover { text-decoration: underline; }
+        .data-anno-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 200;
+            display: none;
+        }
+        .data-anno-overlay.active { display: block; }
+        .data-anno-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 420px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #fff;
+            z-index: 210;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .data-anno-drawer.active { transform: translateX(0); }
+        .data-anno-drawer-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .data-anno-drawer-header-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .data-anno-drawer-header-title i { color: #f59e0b; }
+        .data-anno-drawer-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            background: #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+        }
+        .data-anno-drawer-close:hover { background: #e2e8f0; }
+        .data-anno-drawer-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
@@ -2415,8 +2556,8 @@
                         <div class="scene-info">
                             <div class="scene-title-row">
                                 <div class="scene-title-group">
-                                    <h1 class="scene-title" id="sceneTitle">智慧电商平台全栈开发实战</h1>
-                                    <span class="scene-version-tag" id="sceneVersion">V1.0</span>
+                                    <h1 class="scene-title" id="sceneTitle" data-annotation-title="场景名称" data-annotation-content="场景编辑——步骤 1 基础信息——场景名称">智慧电商平台全栈开发实战</h1>
+                                    <span class="scene-version-tag" id="sceneVersion" data-annotation-title="版本号" data-annotation-content="场景编辑——步骤 1 基础信息——版本号（系统自动生成）">V1.0</span>
                                 </div>
                                 <div class="scene-actions">
                                     <button class="action-btn">
@@ -2430,30 +2571,30 @@
                                 </div>
                             </div>
                             <div class="scene-meta">
-                                <span class="scene-meta-item"><i class="far fa-user"></i>创建人：<span id="sceneCreator">张明华 | 杭州知与未来科技有限公司</span></span>
-                                <span class="scene-meta-item"><i class="far fa-clock"></i>更新于 <span id="sceneUpdated">2026-03-20</span></span>
+                                <span class="scene-meta-item"><i class="far fa-user"></i>创建人：<span id="sceneCreator" data-annotation-title="创建人" data-annotation-content="场景编辑——步骤 1 基础信息——创建人">张明华 | 杭州知与未来科技有限公司</span></span>
+                                <span class="scene-meta-item"><i class="far fa-clock"></i>更新于 <span id="sceneUpdated" data-annotation-title="更新时间" data-annotation-content="场景编辑——步骤 1 基础信息——更新时间">2026-03-20</span></span>
                                 <span class="scene-meta-item"><i class="far fa-eye"></i>浏览 1,234 次</span>
                                 <span class="scene-meta-item"><i class="far fa-heart"></i>收藏 89 次</span>
                             </div>
-                            <p class="scene-desc" id="sceneDesc">
+                            <p class="scene-desc" id="sceneDesc" data-annotation-title="场景描述" data-annotation-content="场景编辑——步骤 1 基础信息——场景介绍">
                                 本场景模拟一家中型电商企业「智购科技」的真实技术团队工作环境，学员将扮演全栈开发工程师角色，参与公司核心电商平台从 0 到 1 的完整开发周期。涵盖需求分析、架构设计、前端开发、后端开发、核心业务实现、测试优化及部署上线等全流程工作。
                             </p>
                             <div class="scene-tags">
                                 <div class="tag-row">
                                     <span class="tag-label">适用专业：</span>
-                                    <div class="tag-values" id="sceneProfessions">
+                                    <div class="tag-values" id="sceneProfessions" data-annotation-title="适用专业" data-annotation-content="场景编辑——步骤 1 基础信息——适用专业">
                                         <span class="tag blue">软件技术</span>
                                     </div>
                                 </div>
                                 <div class="tag-row">
                                     <span class="tag-label">目标岗位：</span>
-                                    <div class="tag-values" id="scenePositions">
+                                    <div class="tag-values" id="scenePositions" data-annotation-title="目标岗位" data-annotation-content="场景编辑——步骤 1 基础信息——目标岗位">
                                         <span class="tag purple">全栈开发工程师</span>
                                     </div>
                                 </div>
                                 <div class="tag-row">
                                     <span class="tag-label">面向行业：</span>
-                                    <div class="tag-values" id="sceneIndustries">
+                                    <div class="tag-values" id="sceneIndustries" data-annotation-title="面向行业" data-annotation-content="场景编辑——步骤 1 基础信息——面向行业">
                                         <span class="tag orange">互联网/电子商务</span>
                                     </div>
                                 </div>
@@ -2461,7 +2602,7 @@
                             </div>
                             <div class="co-builders-row">
                                 <span class="tag-label">共建人/单位：</span>
-                                <div class="tag-values">
+                                <div class="tag-values" data-annotation-title="共建人/单位" data-annotation-content="场景编辑——步骤 1 基础信息——共建人/共建部门">
                                     <span class="tag gray"><i class="fas fa-building"></i> 河南职业技术学院</span>
                                     <span class="tag gray"><i class="fas fa-industry"></i> 字节跳动</span>
                                     <span class="tag gray"><i class="fab fa-alipay"></i> 蚂蚁集团</span>
@@ -2485,7 +2626,7 @@
                             <div class="stat-chart">
                                 <div class="chart-ring">
                                     <div class="chart-center">
-                                        <div class="chart-value" id="totalHours">44</div>
+                                        <div class="chart-value" id="totalHours" data-annotation-title="总课时" data-annotation-content="场景编辑——步骤 2 任务链配置——预估学时（所有任务累加）">44</div>
                                         <div class="chart-label">总课时</div>
                                     </div>
                                 </div>
@@ -2493,11 +2634,11 @@
                             <div class="stat-legend">
                                 <div class="legend-item">
                                     <span class="legend-dot theory"></span>
-                                    <span>考核 <span id="assessmentHours">32</span>课时</span>
+                                    <span>考核 <span id="assessmentHours" data-annotation-title="考核课时" data-annotation-content="场景编辑——步骤 2 任务链配置——预估学时（考核任务累加）">32</span>课时</span>
                                 </div>
                                 <div class="legend-item">
                                     <span class="legend-dot practice"></span>
-                                    <span>训练 <span id="trainingHours">12</span>课时</span>
+                                    <span>训练 <span id="trainingHours" data-annotation-title="训练课时" data-annotation-content="场景编辑——步骤 2 任务链配置——预估学时（训练任务累加）">12</span>课时</span>
                                 </div>
                             </div>
                         </div>
@@ -2511,17 +2652,17 @@
                     <div class="tab-item active" data-tab="tasks">
                         <i class="fas fa-tasks"></i>
                         任务概览
-                        <span class="tab-badge" id="taskCountBadge">6</span>
+                        <span class="tab-badge" id="taskCountBadge" data-annotation-title="任务数量" data-annotation-content="场景编辑——步骤 2 任务链配置——任务列表数量">6</span>
                     </div>
                     <div class="tab-item" data-tab="resources">
                         <i class="fas fa-book"></i>
                         资源中心
-                        <span class="tab-badge" id="resourceCountBadge">0</span>
+                        <span class="tab-badge" id="resourceCountBadge" data-annotation-title="资源数量" data-annotation-content="场景编辑——步骤 2 任务链配置——配置任务资源（去重统计）">0</span>
                     </div>
                     <div class="tab-item" data-tab="abilities">
                         <i class="fas fa-star"></i>
                         能力模型
-                        <span class="tab-badge" id="abilityCountBadge">0</span>
+                        <span class="tab-badge" id="abilityCountBadge" data-annotation-title="能力点数量" data-annotation-content="场景编辑——步骤 2 任务链配置——考查能力点（去重统计）">0</span>
                     </div>
                     <div class="tab-item" data-tab="rubric">
                         <i class="fas fa-clipboard-check"></i>
@@ -2616,11 +2757,11 @@
                     返回场景
                 </button>
                 <div class="tl-title-row">
-                    <h2 class="tl-task-name" id="tlTaskName">任务名称</h2>
+                    <h2 class="tl-task-name" id="tlTaskName" data-annotation-title="任务名称" data-annotation-content="场景编辑——步骤 2 任务链配置——任务名称">任务名称</h2>
                     <div class="tl-task-meta" id="tlTaskMeta">
-                        <span><i class="far fa-clock"></i> <span id="tlTaskHours">0</span> 课时</span>
-                        <span><i class="fas fa-star"></i> 难度 <span id="tlTaskDifficulty"></span></span>
-                        <span class="tl-type-badge" id="tlTaskType">训练任务</span>
+                        <span><i class="far fa-clock"></i> <span id="tlTaskHours" data-annotation-title="预估学时" data-annotation-content="场景编辑——步骤 2 任务链配置——预估学时">0</span> 课时</span>
+                        <span><i class="fas fa-star"></i> 难度 <span id="tlTaskDifficulty" data-annotation-title="难度等级" data-annotation-content="场景编辑——步骤 2 任务链配置——难度"></span></span>
+                        <span class="tl-type-badge" id="tlTaskType" data-annotation-title="任务类型" data-annotation-content="场景编辑——步骤 2 任务链配置——任务类型">训练任务</span>
                     </div>
                 </div>
             </div>
@@ -2639,7 +2780,7 @@
                             </button>
                         </div>
                         <div class="tl-panel-body">
-                            <div class="tl-task-desc" id="tlTaskDesc"></div>
+                            <div class="tl-task-desc" id="tlTaskDesc" data-annotation-title="任务说明" data-annotation-content="场景编辑——步骤 2 任务链配置——任务说明（富文本/PDF）"></div>
                         </div>
                     </div>
 
@@ -2739,6 +2880,111 @@
     </div>
 
     <script>
+        // ==================== 数据来源浮窗标注系统 ====================
+        (function() {
+            const annoPopupMaxLen = 100;
+
+            function initAnnotations() {
+                const nodes = document.querySelectorAll('[data-annotation-title]');
+                nodes.forEach(node => {
+                    if (node.closest('.data-anno-wrap')) return;
+                    const title = node.getAttribute('data-annotation-title') || '';
+                    const content = node.getAttribute('data-annotation-content') || '';
+                    if (!title && !content) return;
+
+                    const wrap = document.createElement('span');
+                    wrap.className = 'data-anno-wrap';
+                    node.parentNode.insertBefore(wrap, node);
+                    wrap.appendChild(node);
+
+                    const dot = document.createElement('span');
+                    dot.className = 'data-anno-dot';
+                    dot.setAttribute('role', 'button');
+                    dot.setAttribute('aria-label', '查看数据来源');
+                    dot.title = '点击查看数据来源';
+                    wrap.appendChild(dot);
+
+                    const popup = document.createElement('div');
+                    popup.className = 'data-anno-popup';
+                    const hasLong = content.length > annoPopupMaxLen;
+                    popup.innerHTML = `
+                        <div class="data-anno-popup-header"><i class="fas fa-info-circle"></i>${escapeHtml(title)}</div>
+                        <div class="data-anno-popup-body">${escapeHtml(hasLong ? content.slice(0, annoPopupMaxLen) + '…' : content)}</div>
+                        ${hasLong ? `<div class="data-anno-popup-footer"><button type="button">展开查看 <i class="fas fa-chevron-right" style="font-size:10px;"></i></button></div>` : ''}
+                    `;
+                    wrap.appendChild(popup);
+
+                    dot.addEventListener('click', e => {
+                        e.stopPropagation();
+                        closeAllPopups();
+                        popup.classList.add('active');
+                    });
+
+                    if (hasLong) {
+                        popup.querySelector('button').addEventListener('click', e => {
+                            e.stopPropagation();
+                            openDrawer(title, content);
+                        });
+                    }
+                });
+
+                document.addEventListener('click', e => {
+                    if (!e.target.closest('.data-anno-wrap')) {
+                        closeAllPopups();
+                    }
+                });
+            }
+
+            function closeAllPopups() {
+                document.querySelectorAll('.data-anno-popup.active').forEach(p => p.classList.remove('active'));
+            }
+
+            function openDrawer(title, content) {
+                closeAllPopups();
+                let overlay = document.getElementById('dataAnnoOverlay');
+                let drawer = document.getElementById('dataAnnoDrawer');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'dataAnnoOverlay';
+                    overlay.className = 'data-anno-overlay';
+                    overlay.innerHTML = `<div class="data-anno-drawer" id="dataAnnoDrawer">
+                        <div class="data-anno-drawer-header">
+                            <div class="data-anno-drawer-header-title"><i class="fas fa-info-circle"></i><span id="dataAnnoDrawerTitle"></span></div>
+                            <button class="data-anno-drawer-close" onclick="closeAnnoDrawer()" aria-label="关闭"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="data-anno-drawer-body" id="dataAnnoDrawerBody"></div>
+                    </div>`;
+                    document.body.appendChild(overlay);
+                    overlay.addEventListener('click', e => { if (e.target === overlay) closeAnnoDrawer(); });
+                }
+                document.getElementById('dataAnnoDrawerTitle').textContent = title;
+                document.getElementById('dataAnnoDrawerBody').textContent = content;
+                overlay.classList.add('active');
+                setTimeout(() => document.getElementById('dataAnnoDrawer').classList.add('active'), 10);
+            }
+
+            window.closeAnnoDrawer = function() {
+                const drawer = document.getElementById('dataAnnoDrawer');
+                const overlay = document.getElementById('dataAnnoOverlay');
+                if (drawer) drawer.classList.remove('active');
+                setTimeout(() => { if (overlay) overlay.classList.remove('active'); }, 300);
+            };
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initAnnotations);
+            } else {
+                initAnnotations();
+            }
+            // 也暴露一个刷新方法，供动态渲染后调用
+            window.refreshAnnotations = initAnnotations;
+        })();
+
         // ==================== Mock 数据 ====================
         const DEFAULT_GRADE_MAPPING = [
             { id: "g1", grade: "A", minScore: 90, maxScore: 100, remark: "表现卓越，完全超出预期要求，代码规范、架构设计、功能实现均达到优秀水准" },
@@ -3657,25 +3903,25 @@
                 // 测评方式标签
                 const evalMethods = task.evaluationMethods || [];
                 const evalTags = evalMethods.map(m => {
-                    return `<span class="eval-tag eval-tag-${m}">${evalMethodLabels[m] || m}</span>`;
+                    return `<span class="eval-tag eval-tag-${m}" data-annotation-title="测评方式" data-annotation-content="场景编辑——步骤 2 任务链配置——配置任务测评形式">${evalMethodLabels[m] || m}</span>`;
                 }).join('');
 
                 return `
                     <div class="task-item" data-task-id="${task.id}" onclick="enterTaskLearning('${task.id}')">
                         <div class="task-content">
                             <div class="task-title-row">
-                                <div class="task-title">${task.name}</div>
-                                <span class="task-code">${task.code}</span>
-                                <span class="task-type-tag ${typeClass}">${typeLabel}</span>
+                                <div class="task-title" data-annotation-title="任务名称" data-annotation-content="场景编辑——步骤 2 任务链配置——任务名称">${task.name}</div>
+                                <span class="task-code" data-annotation-title="任务编码" data-annotation-content="场景编辑——步骤 2 任务链配置——任务编码（系统自动生成）">${task.code}</span>
+                                <span class="task-type-tag ${typeClass}" data-annotation-title="任务类型" data-annotation-content="场景编辑——步骤 2 任务链配置——任务类型">${typeLabel}</span>
                             </div>
-                            <div class="task-desc">${task.description}</div>
+                            <div class="task-desc" data-annotation-title="任务描述" data-annotation-content="场景编辑——步骤 2 任务链配置——任务说明">${task.description}</div>
                             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${evalTags}</div>
                             <div class="task-meta">
-                                <span class="task-meta-item"><span class="meta-label">预估学时</span><span class="meta-value">${task.estimatedHours}课时</span></span>
-                                <span class="task-meta-item"><span class="meta-label">难度</span><span class="meta-value">${'★'.repeat(task.difficulty)}${'☆'.repeat(5 - task.difficulty)}</span></span>
-                                <span class="task-meta-item"><span class="meta-label">关联知识点</span><span class="meta-value">${task.knowledgePoints.length}个</span></span>
-                                <span class="task-meta-item"><span class="meta-label">关联能力点</span><span class="meta-value">${task.abilityPoints.length}个</span></span>
-                                <span class="task-meta-item"><span class="meta-label">资源数</span><span class="meta-value">${getTaskResources(task).length}个</span></span>
+                                <span class="task-meta-item"><span class="meta-label">预估学时</span><span class="meta-value" data-annotation-title="预估学时" data-annotation-content="场景编辑——步骤 2 任务链配置——预估学时">${task.estimatedHours}课时</span></span>
+                                <span class="task-meta-item"><span class="meta-label">难度</span><span class="meta-value" data-annotation-title="难度等级" data-annotation-content="场景编辑——步骤 2 任务链配置——难度">${'★'.repeat(task.difficulty)}${'☆'.repeat(5 - task.difficulty)}</span></span>
+                                <span class="task-meta-item"><span class="meta-label">关联知识点</span><span class="meta-value" data-annotation-title="关联知识点数" data-annotation-content="场景编辑——步骤 2 任务链配置——考查知识点">${task.knowledgePoints.length}个</span></span>
+                                <span class="task-meta-item"><span class="meta-label">关联能力点</span><span class="meta-value" data-annotation-title="关联能力点数" data-annotation-content="场景编辑——步骤 2 任务链配置——考查能力点">${task.abilityPoints.length}个</span></span>
+                                <span class="task-meta-item"><span class="meta-label">资源数</span><span class="meta-value" data-annotation-title="配套资源数" data-annotation-content="场景编辑——步骤 2 任务链配置——配置任务资源">${getTaskResources(task).length}个</span></span>
                             </div>
                         </div>
                         <div class="task-action-col">
@@ -3686,6 +3932,7 @@
                     </div>
                 `;
             }).join('');
+            if (window.refreshAnnotations) window.refreshAnnotations();
         }
 
         // 渲染资源中心
@@ -3730,8 +3977,8 @@
                                     <i class="fas ${getResourceIcon(r.type)}"></i>
                                 </div>
                                 <div class="resource-info">
-                                    <div class="resource-name">${r.name}</div>
-                                    <div class="resource-meta">${r.type === 'link' || r.type === 'software' ? '外部链接' : (r.size || '未知大小')}</div>
+                                    <div class="resource-name" data-annotation-title="资源名称" data-annotation-content="场景编辑——步骤 2 任务链配置——配置任务资源——资源名称">${r.name}</div>
+                                    <div class="resource-meta" data-annotation-title="资源类型/大小" data-annotation-content="场景编辑——步骤 2 任务链配置——配置任务资源——资源类型/大小">${r.type === 'link' || r.type === 'software' ? '外部链接' : (r.size || '未知大小')}</div>
                                 </div>
                                 <div class="resource-actions">
                                     ${r.type === 'video' || r.type === 'document' ? `
@@ -3746,6 +3993,7 @@
                     </div>
                 </div>
             `).join('');
+            if (window.refreshAnnotations) window.refreshAnnotations();
         }
 
         // 渲染能力模型
@@ -4620,7 +4868,14 @@
                 .text(d => d.name);
 
             nodeG.on('click', (ev, d) => {
-                if (d.type !== 'core') showKgDetailModal(d);
+                if (d.type === 'core') return;
+                if (d.type === 'ability') {
+                    // 点击绿色任务节点，跳转到第一个任务详情页
+                    const firstTask = SCENARIO.tasks[0];
+                    if (firstTask) enterTaskLearning(firstTask.id);
+                } else {
+                    showKgDetailModal(d);
+                }
             });
 
             const tooltip = document.getElementById('kgTooltip');
@@ -4686,10 +4941,10 @@
                     <td style="text-align:center;">
                         ${hasChildren ? `<button class="rubric-toggle-btn" onclick="event.stopPropagation(); toggleRubricRow(this.closest('tr'))"><i class="fas fa-chevron-right"></i></button>` : '<span style="display:inline-block;width:24px;"></span>'}
                     </td>
-                    <td><span class="rubric-dimension">${t.name}</span></td>
-                    <td><span style="color:var(--text-tertiary);font-size:12px;">${t.code}</span></td>
-                    <td><span class="task-type-tag ${t.taskType}" style="font-size:12px;">${typeLabel}</span></td>
-                    <td><span class="rubric-weight">${weight}%</span></td>
+                    <td><span class="rubric-dimension" data-annotation-title="任务名称" data-annotation-content="场景编辑——步骤 2 任务链配置——任务名称">${t.name}</span></td>
+                    <td><span style="color:var(--text-tertiary);font-size:12px;" data-annotation-title="任务编码" data-annotation-content="场景编辑——步骤 2 任务链配置——任务编码（系统自动生成）">${t.code}</span></td>
+                    <td><span class="task-type-tag ${t.taskType}" style="font-size:12px;" data-annotation-title="任务类型" data-annotation-content="场景编辑——步骤 2 任务链配置——任务类型">${typeLabel}</span></td>
+                    <td><span class="rubric-weight" data-annotation-title="场景权重" data-annotation-content="场景编辑——步骤 3 总评规则配置——任务权重分配">${weight}%</span></td>
                 </tr>`;
 
                 // 子行（测评方式详情）
@@ -4731,6 +4986,7 @@
             });
 
             tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:24px;">暂无数据</td></tr>';
+            if (window.refreshAnnotations) window.refreshAnnotations();
         }
 
         // ==================== 初始化 ====================

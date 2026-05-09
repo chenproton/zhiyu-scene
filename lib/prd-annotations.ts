@@ -518,7 +518,7 @@ export const sceneHallAnnotations: Record<string, AnnotationItem> = {
       "字段：流程名称（必填）、流程说明（3行文本）、审批步骤（动态列表，每步含圆形序号 Badge、步骤名称输入、审批角色输入、删除按钮，步骤数大于1时显示删除）。底部「添加步骤」按钮可新增步骤。操作：取消 / 保存（名称必填，且至少保留一个有效步骤）。",
   },
 
-  // ===== 学生能力报告页面标注 =====
+  // ===== 学生能力报告列表页标注 =====
   "students-title": {
     id: "students-title",
     title: "学生能力报告",
@@ -579,6 +579,143 @@ export const sceneHallAnnotations: Record<string, AnnotationItem> = {
     id: "students-list-abilities",
     title: "能力点掌握",
     content: "展示该学生 top-3 能力掌握情况，超出显示 +N。",
+  },
+
+  // ===== 学生能力报告详情页（competency）标注 =====
+  "competency-page-title": {
+    id: "competency-page-title",
+    title: "页面标题：学生能力报告",
+    content: "后台数据来源：页面级展示，无独立数据字段。",
+  },
+  "competency-student-avatar": {
+    id: "competency-student-avatar",
+    title: "学生头像",
+    content: "后台数据来源：Student.name 首字符自动生成。\n数据结构：students[] → student.name",
+  },
+  "competency-student-name": {
+    id: "competency-student-name",
+    title: "学生姓名",
+    content: "后台数据来源：Student.name\n数据结构：students[] → student.name",
+  },
+  "competency-student-number": {
+    id: "competency-student-number",
+    title: "学号",
+    content: "后台数据来源：Student.studentNumber\n数据结构：students[] → student.studentNumber",
+  },
+  "competency-student-class": {
+    id: "competency-student-class",
+    title: "班级",
+    content: "后台数据来源：Student.class\n数据结构：students[] → student.class",
+  },
+  "competency-student-department": {
+    id: "competency-student-department",
+    title: "院系",
+    content: "后台数据来源：Student.department\n数据结构：students[] → student.department",
+  },
+  "competency-student-enrollment-year": {
+    id: "competency-student-enrollment-year",
+    title: "入学年份",
+    content: "后台数据来源：Student.enrollmentYear\n数据结构：students[] → student.enrollmentYear",
+  },
+  "competency-stat-scenarios": {
+    id: "competency-stat-scenarios",
+    title: "完成场景数",
+    content: "后台数据来源：studentScenarioScores 按 studentId 过滤后的数组长度\n数据结构：studentScenarioScores[] → filter(s => s.studentId === studentId).length",
+  },
+  "competency-stat-avg-score": {
+    id: "competency-stat-avg-score",
+    title: "平均得分",
+    content: "后台数据来源：studentScenarioScores 按 studentId 过滤后计算平均分\n计算逻辑：reduce(sum + totalScore) / scenarioScores.length\n数据结构：studentScenarioScores[].totalScore",
+  },
+  "competency-stat-abilities": {
+    id: "competency-stat-abilities",
+    title: "能力点数",
+    content: "后台数据来源：studentAbilityScores 按 studentId 过滤后的数组长度\n数据结构：studentAbilityScores[] → filter(s => s.studentId === studentId).length",
+  },
+  "competency-tab-competency": {
+    id: "competency-tab-competency",
+    title: "岗位胜任度 Tab",
+    content: "后台数据来源：studentAbilityScores + positionAbilities\n计算逻辑：按岗位分组后，加权计算各能力点得分（ability.score * posAbility.weight）。",
+  },
+  "competency-tab-scenarios": {
+    id: "competency-tab-scenarios",
+    title: "场景学习记录 Tab",
+    content: "后台数据来源：studentScenarioScores 按 studentId 过滤\n数据结构：studentScenarioScores[] → filter(s => s.studentId === studentId)",
+  },
+  "competency-position-name": {
+    id: "competency-position-name",
+    title: "岗位名称",
+    content: "后台数据来源：professions → positions\n通过 positionId 在 professions.flatMap(p => p.positions) 中匹配名称。",
+  },
+  "competency-position-score": {
+    id: "competency-position-score",
+    title: "岗位胜任度百分比",
+    content: "后台数据来源：studentAbilityScores + positionAbilities\n计算逻辑：Σ(ability.score × posAbility.weight) / Σ(posAbility.weight)，结果四舍五入。",
+  },
+  "competency-overall-label": {
+    id: "competency-overall-label",
+    title: "综合胜任度",
+    content: "后台数据来源：studentAbilityScores + positionAbilities\n与「岗位胜任度百分比」同值，以进度条形式展示。",
+  },
+  "competency-ability-name": {
+    id: "competency-ability-name",
+    title: "能力点名称",
+    content: "后台数据来源：studentAbilityScores.abilityName\n数据结构：studentAbilityScores[] → abilityName",
+  },
+  "competency-ability-level": {
+    id: "competency-ability-level",
+    title: "能力等级",
+    content: "后台数据来源：studentAbilityScores.level\n枚举值：expert(精通) / proficient(熟练) / familiar(了解) / beginner(待提升)。\n通过 getAbilityLevelLabel() 转换为中文标签。",
+  },
+  "competency-ability-weight": {
+    id: "competency-ability-weight",
+    title: "能力点权重",
+    content: "后台数据来源：positionAbilities.weight\n数据结构：positionAbilities[] → weight（百分比）",
+  },
+  "competency-ability-score": {
+    id: "competency-ability-score",
+    title: "能力点得分",
+    content: "后台数据来源：studentAbilityScores.score\n数据结构：studentAbilityScores[] → score（0-100）",
+  },
+  "competency-scenario-contribution": {
+    id: "competency-scenario-contribution",
+    title: "场景贡献",
+    content: "后台数据来源：studentAbilityScores.scenarioContributions\n数据结构：scenarioContributions[] → { scenarioId, scenarioName, contribution }\n展示各场景对该能力点的得分贡献。",
+  },
+  "competency-scenario-name": {
+    id: "competency-scenario-name",
+    title: "场景名称（学习记录）",
+    content: "后台数据来源：studentScenarioScores.scenarioName\n数据结构：studentScenarioScores[] → scenarioName",
+  },
+  "competency-scenario-position": {
+    id: "competency-scenario-position",
+    title: "场景关联岗位",
+    content: "后台数据来源：studentScenarioScores.positionName\n数据结构：studentScenarioScores[] → positionName",
+  },
+  "competency-scenario-completed-at": {
+    id: "competency-scenario-completed-at",
+    title: "完成时间",
+    content: "后台数据来源：studentScenarioScores.completedAt\n数据结构：studentScenarioScores[] → completedAt（YYYY-MM-DD 格式）",
+  },
+  "competency-scenario-total-score": {
+    id: "competency-scenario-total-score",
+    title: "场景总得分",
+    content: "后台数据来源：studentScenarioScores.totalScore\n数据结构：studentScenarioScores[] → totalScore",
+  },
+  "competency-task-name": {
+    id: "competency-task-name",
+    title: "任务名称",
+    content: "后台数据来源：studentScenarioScores.taskScores.taskName\n数据结构：studentScenarioScores[].taskScores[] → taskName",
+  },
+  "competency-task-score": {
+    id: "competency-task-score",
+    title: "任务得分",
+    content: "后台数据来源：studentScenarioScores.taskScores.score\n数据结构：studentScenarioScores[].taskScores[] → score",
+  },
+  "competency-task-max-score": {
+    id: "competency-task-max-score",
+    title: "任务满分",
+    content: "后台数据来源：studentScenarioScores.taskScores.maxScore\n数据结构：studentScenarioScores[].taskScores[] → maxScore",
   },
 
   // ===== 场景评分管理页面标注 =====
