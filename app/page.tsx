@@ -190,7 +190,7 @@ export default function SceneHallPage() {
     [filteredScenarios]
   )
 
-  const openBatches = localBatches.filter((b) => b.status === "open")
+  const openBatches = localBatches
 
   const allPositions = useMemo(() => {
     return professions.flatMap((prof) =>
@@ -551,7 +551,6 @@ export default function SceneHallPage() {
                             <TableHead>分组名称</TableHead>
                             <TableHead>批次编号</TableHead>
                             <TableHead>审批流程</TableHead>
-                            <TableHead>状态</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -562,18 +561,6 @@ export default function SceneHallPage() {
                               <TableCell>
                                 <Badge variant="outline" className="text-xs">
                                   {batch.workflowName || "-"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="secondary"
-                                  className={
-                                    batch.status === "open"
-                                      ? "bg-green-50 text-green-600 text-xs"
-                                      : "bg-gray-100 text-gray-500 text-xs"
-                                  }
-                                >
-                                  {batch.status === "open" ? "开放中" : "已截稿"}
                                 </Badge>
                               </TableCell>
                             </TableRow>
@@ -903,17 +890,6 @@ export default function SceneHallPage() {
                         )}
                         <span className="font-medium text-gray-800">{batch.name}</span>
                         <span className="text-xs text-gray-400">({batch.code})</span>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-xs",
-                            batch.status === "open"
-                              ? "text-green-600 border-green-200"
-                              : "text-gray-400"
-                          )}
-                        >
-                          {batch.status === "open" ? "开放中" : "已截稿"}
-                        </Badge>
                       </div>
                       <Badge variant="secondary" className="text-xs">
                         {batchScenarios.length} 个场景
@@ -1130,7 +1106,7 @@ export default function SceneHallPage() {
                   <SelectValue placeholder="请选择目标批次分组" />
                 </SelectTrigger>
                 <SelectContent>
-                  {localBatches.filter((b) => b.status === "open").map((batch) => (
+                  {localBatches.map((batch) => (
                     <SelectItem key={batch.id} value={batch.id}>
                       <span className="flex items-center gap-2">
                         {batch.name}

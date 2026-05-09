@@ -393,7 +393,7 @@ export default function ScenarioEditPage() {
                           <SelectValue placeholder="请选择批次" />
                         </SelectTrigger>
                         <SelectContent>
-                          {batches.filter(b => b.status === "open").map((b) => (
+                          {batches.map((b) => (
                             <SelectItem key={b.id} value={b.id}>
                               {b.name}
                             </SelectItem>

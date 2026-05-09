@@ -59,7 +59,6 @@ export default function BatchesPage() {
       departmentName: "",
       workflowId: newBatchWorkflow,
       workflowName: approvalWorkflows.find((w) => w.id === newBatchWorkflow)?.name || "",
-      status: "open",
       scenarioCount: 0,
       createdAt: new Date().toISOString().split("T")[0],
     }
@@ -171,7 +170,6 @@ export default function BatchesPage() {
                   <TableHead className="text-xs font-medium text-slate-500">批次编号</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500">审批流程</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500">场景数</TableHead>
-                  <TableHead className="text-xs font-medium text-slate-500">状态</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -187,18 +185,6 @@ export default function BatchesPage() {
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{batch.scenarioCount}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={
-                          batch.status === "open"
-                            ? "bg-green-50 text-green-600"
-                            : "bg-gray-100 text-gray-500"
-                        }
-                      >
-                        {batch.status === "open" ? "开放中" : "已截稿"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -209,9 +195,6 @@ export default function BatchesPage() {
                           <DropdownMenuItem>
                             <Pencil className="mr-2 h-4 w-4" />
                             编辑
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            {batch.status === "open" ? "截稿" : "重新开放"}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-red-500 focus:text-red-500">

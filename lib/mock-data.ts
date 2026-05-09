@@ -21,7 +21,6 @@ export interface Batch {
   professionName?: string
   workflowId: string
   workflowName: string
-  status: "open" | "closed"
   scenarioCount: number
   createdAt: string
 }
@@ -459,7 +458,6 @@ export const batches: Batch[] = [
     professionName: "电子商务",
     workflowId: "wf-2",
     workflowName: "多级校企联合审批",
-    status: "open",
     scenarioCount: 12,
     createdAt: "2026-01-15",
   },
@@ -473,7 +471,6 @@ export const batches: Batch[] = [
     professionName: "信息技术",
     workflowId: "wf-1",
     workflowName: "单级教研组长审批",
-    status: "open",
     scenarioCount: 8,
     createdAt: "2026-01-10",
   },
@@ -487,7 +484,6 @@ export const batches: Batch[] = [
     professionName: "财务管理",
     workflowId: "wf-3",
     workflowName: "两级部门审批",
-    status: "closed",
     scenarioCount: 6,
     createdAt: "2025-09-01",
   },
