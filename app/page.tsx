@@ -461,14 +461,14 @@ export default function SceneHallPage() {
               </PrdAnnotation>
 
               <Dialog open={isBatchDialogOpen} onOpenChange={setIsBatchDialogOpen}>
-                <DialogTrigger asChild>
-                  <PrdAnnotation data={getAnnotation("config-batch-group")}>
+                <PrdAnnotation data={getAnnotation("config-batch-group")}>
+                  <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
                       <FolderKanban className="mr-2 h-4 w-4" />
                       配置批次分组
                     </Button>
-                  </PrdAnnotation>
-                </DialogTrigger>
+                  </DialogTrigger>
+                </PrdAnnotation>
                 <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
                   <DialogHeader>
                     <PrdAnnotation data={getAnnotation("dialog-batch-management")}>
@@ -525,10 +525,10 @@ export default function SceneHallPage() {
                               <SelectContent>
                                 {approvalWorkflows.map((wf) => (
                                   <SelectItem key={wf.id} value={wf.id}>
-                                    <div>
+                                    <span className="inline-flex items-center">
                                       <span>{wf.name}</span>
                                       <span className="text-xs text-gray-400 ml-2">({wf.steps.length}步)</span>
-                                    </div>
+                                    </span>
                                   </SelectItem>
                                 ))}
                               </SelectContent>

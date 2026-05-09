@@ -5859,7 +5859,11 @@ function EditCardDialog({
 
             {/* Rubric Knowledge Points Multi-Select Dialog */}
             <Dialog open={rubricKpDialogOpen} onOpenChange={v => { if (!v) setRubricKpDialogOpen(false) }}>
-              <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
+              <DialogContent
+        className="sm:max-w-3xl max-h-[90vh] flex flex-col"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
                 <DialogHeader>
                   <PrdAnnotation data={getAnnotation("dialog-link-knowledge-eval")}><DialogTitle>关联知识点</DialogTitle></PrdAnnotation>
                   <DialogDescription>选择要关联到此评价点的知识点</DialogDescription>
@@ -6159,7 +6163,11 @@ function WeightConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent
+        className="sm:max-w-3xl max-h-[90vh] flex flex-col"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <PrdAnnotation data={getAnnotation("editor-config-weight")}>
             <DialogTitle className="flex items-center gap-2">
@@ -6248,8 +6256,13 @@ function WeightConfigDialog({
             })}
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>关闭</Button>
+        <DialogFooter className="gap-2">
+          <Button
+            disabled={totalW !== 100}
+            onClick={() => onOpenChange(false)}
+          >
+            保存
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

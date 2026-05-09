@@ -2819,22 +2819,6 @@
             </div>
         </div>
 
-        <!-- 全局资源侧边栏 -->
-        <div class="tl-float-sidebar" id="tlFloatSidebar">
-            <div class="tl-sidebar-panel" id="tlSidebarPanel">
-                <div class="tl-sidebar-header">
-                    <span id="tlSidebarTitle">配套资源</span>
-                    <button class="tl-sidebar-close" onclick="closeFloatSidebar()"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="tl-sidebar-body" id="tlSidebarBody"></div>
-            </div>
-            <div class="tl-float-tabs">
-                <button class="tl-float-tab" onclick="openFloatSidebar('resources')" title="配套资源"><i class="fas fa-book"></i></button>
-                <button class="tl-float-tab" onclick="openFloatSidebar('knowledge')" title="知识点"><i class="fas fa-lightbulb"></i></button>
-                <button class="tl-float-tab" onclick="openFloatSidebar('tasks')" title="任务列表"><i class="fas fa-tasks"></i></button>
-            </div>
-        </div>
-
     </main>
 
     <!-- 学测模式选择弹窗 -->
@@ -4468,7 +4452,20 @@
                             </div>
                         </div>
                     </div>
-                    ${poolHtml}
+                    <div class="tl-review-meta" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;">
+                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;"><i class="fas fa-user-tie"></i> 评审教师</div>
+                            <div style="font-weight:500;color:var(--text-primary);">XXX</div>
+                        </div>
+                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;"><i class="fas fa-map-marker-alt"></i> 评审场地</div>
+                            <div style="font-weight:500;color:var(--text-primary);">XXX</div>
+                        </div>
+                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;"><i class="fas fa-clock"></i> 评审时间</div>
+                            <div style="font-weight:500;color:var(--text-primary);">XXX</div>
+                        </div>
+                    </div>
                     <div class="tl-draw-result">
                         <div class="tl-draw-result-title"><i class="fas fa-dice"></i> 已抽中题目</div>
                         <div style="font-weight:500;margin-bottom:6px;">${point ? point.name : '随机题目'}</div>
@@ -4494,12 +4491,19 @@
                             </div>
                         </div>
                     </div>
-                    ${poolHtml}
-                    <div style="text-align:center;margin-top:16px;">
-                        <button class="tl-submit-btn" onclick="simulateDrawQuestion('${task.id}')" style="background:var(--warning-color);border-color:var(--warning-color);">
-                            <i class="fas fa-dice"></i> 模拟抽题
-                        </button>
-                        <p style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">点击模拟抽题，体验现场问答流程</p>
+                    <div class="tl-review-meta" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;">
+                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;"><i class="fas fa-user-tie"></i> 评审教师</div>
+                            <div style="font-weight:500;color:var(--text-primary);">XXX</div>
+                        </div>
+                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;"><i class="fas fa-map-marker-alt"></i> 评审场地</div>
+                            <div style="font-weight:500;color:var(--text-primary);">XXX</div>
+                        </div>
+                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;"><i class="fas fa-clock"></i> 评审时间</div>
+                            <div style="font-weight:500;color:var(--text-primary);">XXX</div>
+                        </div>
                     </div>
                 `;
             }
@@ -4757,7 +4761,8 @@
         }
 
         function closeFloatSidebar() {
-            document.getElementById('tlSidebarPanel').classList.remove('open');
+            const panel = document.getElementById('tlSidebarPanel');
+            if (panel) panel.classList.remove('open');
         }
 
         let kgInitialized = false, kgSimulation, kgSvgSel, kgZoomBehavior, kgContainer;

@@ -80,14 +80,14 @@ export default function BatchesPage() {
           </div>
         </PrdAnnotation>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <PrdAnnotation data={getAnnotation("batches-create")}>
+          <PrdAnnotation data={getAnnotation("batches-create")}>
+            <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 新增批次
               </Button>
-            </PrdAnnotation>
-          </DialogTrigger>
+            </DialogTrigger>
+          </PrdAnnotation>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <PrdAnnotation data={getAnnotation("dialog-batch-form")}>
@@ -128,10 +128,10 @@ export default function BatchesPage() {
                   <SelectContent>
                     {approvalWorkflows.map((wf) => (
                       <SelectItem key={wf.id} value={wf.id}>
-                        <div>
+                        <span className="inline-flex items-center">
                           <span>{wf.name}</span>
                           <span className="text-xs text-gray-400 ml-2">({wf.steps.length}步)</span>
-                        </div>
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>

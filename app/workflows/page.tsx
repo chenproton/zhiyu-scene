@@ -55,11 +55,6 @@ export default function WorkflowsPage() {
     setSteps([{ id: "step-1", order: 1, name: "", approverRole: "" }])
   }
 
-  const openCreateDialog = () => {
-    resetForm()
-    setIsCreateDialogOpen(true)
-  }
-
   const openEditDialog = (workflow: ApprovalWorkflow) => {
     setEditingWorkflow(workflow)
     setWorkflowName(workflow.name)
@@ -193,15 +188,15 @@ export default function WorkflowsPage() {
             <p className="text-sm text-gray-500 mt-1">预设校内审批流模板，供批次关联使用</p>
           </div>
         </PrdAnnotation>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <PrdAnnotation data={getAnnotation("workflows-create")}>
-              <Button onClick={openCreateDialog}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={(open) => { if (open) resetForm(); setIsCreateDialogOpen(open) }}>
+          <PrdAnnotation data={getAnnotation("workflows-create")}>
+            <DialogTrigger asChild>
+              <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 新增审批流程
               </Button>
-            </PrdAnnotation>
-          </DialogTrigger>
+            </DialogTrigger>
+          </PrdAnnotation>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <PrdAnnotation data={getAnnotation("dialog-workflow-form")}>
