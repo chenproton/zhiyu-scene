@@ -42,18 +42,18 @@ export function TopNav() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <span className="inline-flex items-center px-3 py-1.5 text-sm text-gray-400 cursor-not-allowed">
+          <a href="http://47.251.48.187:3001/portal" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
             <Home className="mr-1.5 h-4 w-4" />
             门户首页
-          </span>
-          <span className="inline-flex items-center px-3 py-1.5 text-sm text-gray-400 cursor-not-allowed">
+          </a>
+          <a href="http://47.251.48.187:3001/portal/workspace" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
             <LayoutGrid className="mr-1.5 h-4 w-4" />
             我的服务台
-          </span>
-          <Button variant="ghost" size="sm" className="text-primary bg-primary/5 hover:bg-primary/10">
+          </a>
+          <a href="http://47.251.48.187:3001/portal/apps" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
             <Settings className="mr-1.5 h-4 w-4" />
             应用服务中心
-          </Button>
+          </a>
         </nav>
       </div>
 

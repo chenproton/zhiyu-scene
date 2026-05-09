@@ -12,41 +12,111 @@
   /* 顶部导航 */
   .header {
     background: #fff;
-    height: 64px;
-    padding: 0 40px;
+    height: 56px;
+    padding: 0 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    border-bottom: 1px solid #f3f4f6;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
   }
-  .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; color: #1a4cff; }
+  .header-left { display: flex; align-items: center; gap: 32px; }
+  .logo { display: flex; align-items: center; gap: 8px; }
   .logo-icon {
-    width: 36px; height: 36px; border-radius: 8px;
-    background: linear-gradient(135deg, #3b7cff, #6a9bff);
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1677ff;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: bold;
+    color: #fff; font-size: 14px;
   }
-  .logo-text { color: #1f2937; font-size: 17px; }
-  .logo-text span { color: #3b7cff; font-weight: 600; }
+  .logo-text { color: #1f2937; font-size: 18px; font-weight: 600; }
+  .header-nav { display: flex; align-items: center; gap: 4px; }
+  .header-nav-item {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; font-size: 14px; color: #4b5563;
+    border-radius: 6px; user-select: none;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .header-nav-item:hover { background: rgba(0,0,0,0.04); color: #1f2937; }
+  .header-nav-item.active { color: #1677ff; background: rgba(22,119,255,0.05); }
   .header-right { display: flex; align-items: center; gap: 16px; }
-  .btn-console {
-    background: linear-gradient(135deg, #3b7cff, #5a8eff);
-    color: #fff; border: none; padding: 9px 22px;
-    border-radius: 22px; cursor: pointer; font-size: 14px;
-    display: flex; align-items: center; gap: 6px;
+  .header-time { font-size: 14px; color: #9ca3af; user-select: none; }
+  .header-bell {
+    position: relative; width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: #6b7280; font-size: 14px; cursor: not-allowed;
   }
-  .user-info {
+  .header-bell-badge {
+    position: absolute; top: 2px; right: 2px;
+    width: 16px; height: 16px; background: #ef4444;
+    color: white; font-size: 10px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .header-user {
     display: flex; align-items: center; gap: 8px;
-    background: #f5f7fc; padding: 5px 14px 5px 5px;
-    border-radius: 20px; cursor: pointer;
+    padding: 4px 8px; border-radius: 6px;
+    color: #4b5563; font-size: 14px; cursor: not-allowed; user-select: none;
   }
-  .avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: linear-gradient(135deg,#ffd27a,#ff9b60);
+  .header-user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(22,119,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    color: #1677ff; font-size: 12px;
   }
 
   /* 主内容 */
-  .main { padding: 20px 40px 40px; }
+  .main { padding: 76px 40px 40px; }
+
+  /* 悬浮标注卡片 */
+  .annotation-float-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 2000;
+    overflow: hidden;
+    border: 1px solid #fde68a;
+  }
+  .annotation-float-card .annotation-header {
+    background: #fffbeb;
+    padding: 10px 14px;
+    border-bottom: 1px solid #fde68a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .annotation-float-card .annotation-header i {
+    color: #d97706;
+    font-size: 14px;
+  }
+  .annotation-float-card .annotation-header span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #92400e;
+  }
+  .annotation-float-card .annotation-body {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.7;
+  }
+  .annotation-float-card .annotation-body p {
+    margin-bottom: 8px;
+  }
+  .annotation-float-card .annotation-body p:last-child {
+    margin-bottom: 0;
+  }
+  .annotation-float-card .annotation-body strong {
+    color: #334155;
+  }
 
   /* 轮播区 */
   .banner-row { display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 18px; }
@@ -206,21 +276,46 @@
 
 <!-- 顶部导航 -->
 <div class="header">
-  <div class="logo">
-    <div class="logo-icon"><i class="fa fa-cubes"></i></div>
-    <div class="logo-text">场景化数智教学服务平台</div>
+  <div class="header-left">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa fa-th"></i></div>
+      <div class="logo-text">场景化数智教学服务平台</div>
+    </div>
+    <div class="header-nav">
+      <a href="http://47.251.48.187:3001/portal" target="_blank" class="header-nav-item"><i class="fa fa-home"></i>门户首页</a>
+      <a href="http://47.251.48.187:3001/portal/workspace" target="_blank" class="header-nav-item"><i class="fa fa-th"></i>我的服务台</a>
+      <a href="http://47.251.48.187:3001/portal/apps" target="_blank" class="header-nav-item"><i class="fa fa-cog"></i>应用服务中心</a>
+    </div>
   </div>
   <div class="header-right">
-    <button class="btn-console" onclick="window.location.href='/'">🖥 去操作台</button>
-    <div class="user-info">
-      <div class="avatar"></div>
-      <span style="font-size:13px;color:#5a6478;">同学</span>
-      <span style="color:#bfc5d1;">▾</span>
+    <span class="header-time" id="headerTime">2026年05月09日 星期六 11:20</span>
+    <div class="header-bell">
+      <i class="fa fa-bell"></i>
+      <span class="header-bell-badge">3</span>
+    </div>
+    <div class="header-user">
+      <div class="header-user-avatar"><i class="fa fa-user"></i></div>
+      <span>管理员</span>
+      <i class="fa fa-chevron-down" style="font-size:12px;color:#9ca3af;"></i>
     </div>
   </div>
 </div>
 
 <div class="main">
+
+  <!-- 悬浮标注卡片 -->
+  <div class="annotation-float-card">
+    <div class="annotation-header">
+      <i class="fa fa-info-circle"></i>
+      <span>场景门户首页说明</span>
+    </div>
+    <div class="annotation-body">
+      <p><strong>场景大厅</strong>是平台的资源展示中心，学员可在此浏览所有已发布的实践场景。</p>
+      <p>支持按<strong>行业</strong>、<strong>专业</strong>筛选，以及按名称、创建时间、更新时间排序。</p>
+      <p>点击场景卡片即可进入<strong>场景详情页</strong>，查看任务、资源及能力模型。</p>
+      <p>所有功能直接参考岗位的前台页面开发即可。</p>
+    </div>
+  </div>
 
   <!-- 轮播区 -->
   <div class="banner-row">
@@ -279,9 +374,9 @@
   <!-- 排序+搜索 -->
   <div class="toolbar">
     <div class="sort-group">
-      <span class="sort-btn active" data-sort="default">默认排序</span>
-      <span class="sort-btn" data-sort="recent">最近收录</span>
-      <span class="sort-btn" data-sort="name">名称排序</span>
+      <span class="sort-btn active" data-sort="default">默认排序（名称）</span>
+      <span class="sort-btn" data-sort="recent">最近收录（创建时间）</span>
+      <span class="sort-btn" data-sort="update">最近更新（更新时间）</span>
     </div>
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="请输入场景名称">
@@ -542,6 +637,12 @@
 
     // 排序
     if (currentSort === "recent") {
+      filtered.sort((a, b) => {
+        const aTime = a.publishTime ? new Date(a.publishTime) : new Date(a.updatedAt);
+        const bTime = b.publishTime ? new Date(b.publishTime) : new Date(b.updatedAt);
+        return bTime - aTime;
+      });
+    } else if (currentSort === "update") {
       filtered.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
     } else if (currentSort === "name") {
       filtered.sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
@@ -572,16 +673,11 @@
             <span class="tag-v">${s.version}</span>
             <span class="tag-date">${displayDate}</span>
             <span class="tag-category ${s.status === 'published' ? 'cat-system' : 'cat-particle'}">${status.label}</span>
-            <div>
-              <div class="cover-title">${s.name.substring(0, 10)}${s.name.length > 10 ? "..." : ""}</div>
-              <div class="cover-sub">${s.positionName || "通用岗位"}</div>
-            </div>
             <div class="code-bar">场景编码：${s.code}</div>
           </div>
           <div class="card-body">
             <div class="card-title">
               <span>${s.name}</span>
-              <span class="course-type-tag ${status.className}">${s.professionName || "未分类"}</span>
             </div>
             <div class="card-stats">
               <div>
@@ -597,17 +693,13 @@
                 <div class="card-stat-label">资源数</div>
               </div>
             </div>
-            <div class="meta-row">
+            <div class="meta-row" style="flex-wrap:wrap;gap:4px 10px;margin-bottom:0;">
               <span class="meta-label">行业</span>
               <span class="meta-tag">${s.industryName || "未指定"}</span>
-            </div>
-            <div class="meta-row">
-              <span class="meta-label">岗位</span>
+              <span class="meta-label" style="margin-left:4px;">岗位</span>
               <span class="meta-tag purple">${s.positionName || "未指定"}</span>
-            </div>
-            <div class="card-footer">
-              <div class="footer-left">${s.creatorName} · 👁 ${Math.floor(Math.random() * 5000 + 1000)} · 📚 ${Math.floor(Math.random() * 15000 + 5000)}</div>
-              <div>${s.updatedAt}</div>
+              <span class="meta-label" style="margin-left:4px;">专业</span>
+              <span class="meta-tag" style="background:#dbeafe;color:#1d4ed8;">${s.professionName || "未分类"}</span>
             </div>
           </div>
         </div>
@@ -626,6 +718,22 @@
   initStats();
   initFilters();
   renderCards();
+
+  // 更新日期时间
+  function updateDateTime() {
+    const now = new Date();
+    const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const weekDay = weekDays[now.getDay()];
+    const hour = String(now.getHours()).padStart(2, '0');
+    const minute = String(now.getMinutes()).padStart(2, '0');
+    const timeEl = document.getElementById('headerTime');
+    if (timeEl) timeEl.textContent = `${year}年${month}月${day}日 ${weekDay} ${hour}:${minute}`;
+  }
+  updateDateTime();
+  setInterval(updateDateTime, 60000);
 </script>
 
 </body>

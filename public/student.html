@@ -30,6 +30,8 @@
             --bg-white: #ffffff;
             --shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
             --shadow-hover: 0 6px 16px -8px rgba(0, 0, 0, 0.08), 0 9px 28px 0 rgba(0, 0, 0, 0.05), 0 12px 48px 16px rgba(0, 0, 0, 0.03);
+            --primary-bg: #e6f4ff;
+            --radius-md: 8px;
         }
 
         body {
@@ -42,13 +44,13 @@
 
         /* 页眉样式 */
         .header {
-            background: var(--bg-white);
-            height: 64px;
+            background: #fff;
+            height: 56px;
             padding: 0 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            border-bottom: 1px solid #f3f4f6;
             position: fixed;
             top: 0;
             left: 0;
@@ -59,116 +61,130 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 32px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
-            cursor: pointer;
+            gap: 8px;
         }
 
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary-color), #69b1ff);
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .logo-text {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .logo-subtitle {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-left: 8px;
-            padding-left: 8px;
-            border-left: 1px solid var(--border-color);
-        }
-
-        .back-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--bg-white);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s;
             font-size: 14px;
         }
 
-        .back-btn:hover {
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-nav-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            color: #4b5563;
+            border-radius: 6px;
+            user-select: none;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .header-nav-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: #1f2937;
+        }
+
+        .header-nav-item.active {
             color: var(--primary-color);
-            border-color: var(--primary-color);
+            background: rgba(22, 119, 255, 0.05);
         }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
         }
 
-        .datetime {
+        .header-time {
+            font-size: 14px;
+            color: #9ca3af;
+            user-select: none;
+        }
+
+        .header-bell {
+            position: relative;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
-            gap: 16px;
-            color: var(--text-secondary);
+            justify-content: center;
+            color: #6b7280;
             font-size: 14px;
+            cursor: not-allowed;
         }
 
-        .datetime i {
-            margin-right: 6px;
-            color: var(--text-tertiary);
+        .header-bell-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .nav-btns {
+        .header-user {
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .nav-btn {
-            padding: 8px 16px;
+            padding: 4px 8px;
             border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
+            color: #4b5563;
             font-size: 14px;
-            border: none;
-            background: transparent;
-            color: var(--text-primary);
+            cursor: not-allowed;
+            user-select: none;
         }
 
-        .nav-btn:hover {
-            background: rgba(0, 0, 0, 0.04);
-        }
-
-        .nav-btn.primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .nav-btn.primary:hover {
-            background: var(--primary-hover);
+        .header-user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(22, 119, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 12px;
         }
 
         /* 主内容区 */
         .main-container {
-            margin-top: 64px;
+            margin-top: 56px;
             padding: 24px;
-            min-height: calc(100vh - 64px);
+            min-height: calc(100vh - 56px);
             max-width: 1600px;
             margin-left: auto;
             margin-right: auto;
@@ -876,14 +892,16 @@
         .resource-item:hover .resource-icon {
             transform: scale(1.08);
         }
-        .resource-icon.pdf { background: #fff2f0; color: #ff4d4f; }
-        .resource-icon.video { background: #e6f4ff; color: #1677ff; }
-        .resource-icon.ppt { background: #fff7e6; color: #fa8c16; }
-        .resource-icon.doc { background: #e6f4ff; color: #1677ff; }
-        .resource-icon.link { background: #f6ffed; color: #52c41a; }
+        .resource-icon.document { background: #fff2f0; color: #ff4d4f; }
+        .resource-icon.spreadsheet { background: #f6ffed; color: #389e0d; }
         .resource-icon.image { background: #f9f0ff; color: #722ed1; }
-        .resource-icon.software { background: #e6fffb; color: #13c2c2; }
+        .resource-icon.link { background: #f6ffed; color: #52c41a; }
+        .resource-icon.audio { background: #fff0f6; color: #eb2f96; }
+        .resource-icon.video { background: #e6f4ff; color: #1677ff; }
+        .resource-icon.archive { background: #fff7e6; color: #d46b08; }
         .resource-icon.venue { background: #fff7e6; color: #fa8c16; }
+        .resource-icon.facility { background: #e6fffb; color: #08979c; }
+        .resource-icon.software { background: #e6fffb; color: #13c2c2; }
         .resource-icon.other { background: #f5f5f5; color: var(--text-secondary); }
         .resource-info { flex: 1; min-width: 0; }
         .resource-name {
@@ -937,13 +955,14 @@
         }
 
         /* 能力模型 */
-        .ability-model { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-        .ability-unit { border: 1px solid #f0f0f0; border-radius: 8px; overflow: hidden; }
-        .ability-unit-header { background: var(--primary-light); padding: 12px 16px; font-weight: 500; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
+        /* Tab 4: Ability Model */
+        .ability-model { display: grid; grid-template-columns: repeat(4, minmax(280px, 1fr)); gap: 16px; }
+        .ability-unit { border: 1px solid #f0f0f0; border-radius: var(--radius-md); overflow: hidden; }
+        .ability-unit-header { background: var(--primary-bg); padding: 12px 16px; font-weight: 500; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
         .ability-unit-body { padding: 12px 16px; }
-        .ability-point { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin: 0 -12px; border-radius: 6px; border-bottom: 1px solid #f5f5f5; position: relative; cursor: pointer; transition: all 0.2s; }
+        .ability-point { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; margin: 0 -12px; border-radius: 4px; border-bottom: 1px solid #f5f5f5; position: relative; cursor: pointer; transition: background-color 0.2s; }
         .ability-point:last-child { border-bottom: none; }
-        .ability-point:hover { background-color: #f0f5ff; transform: translateX(2px); }
+        .ability-point:hover { background-color: #f0f5ff; }
         .ability-point-name { display: flex; align-items: center; gap: 8px; font-size: 14px; z-index: 1; }
         .ability-point-code { font-size: 12px; color: var(--text-tertiary); }
         .ability-point-type { display: flex; gap: 4px; z-index: 1; }
@@ -1480,8 +1499,8 @@
         /* 响应式 */
         @media (max-width: 768px) {
             .header { padding: 0 16px; }
-            .logo-subtitle { display: none; }
-            .datetime { display: none; }
+            .header-nav { display: none; }
+            .header-time { display: none; }
             .main-container { padding: 16px; }
             .scene-header { flex-direction: column; }
             .scene-cover { width: 100%; height: 160px; }
@@ -2255,7 +2274,7 @@
         .tl-summary-item:last-child { border-bottom: none; }
 
         /* 全局资源侧边栏 */
-        .tl-float-sidebar { position: fixed; right: 0; top: 64px; bottom: 0; z-index: 100; pointer-events: none; }
+        .tl-float-sidebar { position: fixed; right: 0; top: 56px; bottom: 0; z-index: 100; pointer-events: none; }
         .tl-float-sidebar * { pointer-events: auto; }
         .tl-sidebar-panel {
             position: absolute;
@@ -2336,7 +2355,7 @@
         /* 模拟页面容器 */
         #tlSimulationContainer {
             position: fixed;
-            top: 64px; left: 0; right: 0; bottom: 0;
+            top: 56px; left: 0; right: 0; bottom: 0;
             background: white;
             z-index: 90;
             display: none;
@@ -2352,46 +2371,39 @@
     <header class="header" id="topHeader">
         <div class="header-left">
             <div class="logo">
-                <div class="logo-icon">知</div>
-                <span class="logo-text">知与</span>
-                <span class="logo-subtitle">实践场景学习平台</span>
+                <div class="logo-icon"><i class="fas fa-border-all"></i></div>
+                <span class="logo-text">场景化数智教学服务平台</span>
             </div>
-            <button class="back-btn">
-                <i class="fas fa-arrow-left"></i>
-                返回首页
-            </button>
+            <nav class="header-nav">
+                <a href="http://47.251.48.187:3001/portal" target="_blank" class="header-nav-item"><i class="fas fa-home"></i>门户首页</a>
+                <a href="http://47.251.48.187:3001/portal/workspace" target="_blank" class="header-nav-item"><i class="fas fa-border-all"></i>我的服务台</a>
+                <a href="http://47.251.48.187:3001/portal/apps" target="_blank" class="header-nav-item"><i class="fas fa-cog"></i>应用服务中心</a>
+            </nav>
         </div>
         <div class="header-right">
-            <div class="datetime">
-                <span><i class="far fa-calendar"></i><span id="currentDate">2024年1月15日</span></span>
-                <span><i class="far fa-clock"></i><span id="currentTime">14:30:25</span></span>
+            <span class="header-time" id="headerTime">2026年05月09日 星期六 11:20</span>
+            <div class="header-bell">
+                <i class="fas fa-bell"></i>
+                <span class="header-bell-badge">3</span>
             </div>
-            <div class="nav-btns">
-                <button class="nav-btn primary">
-                    <i class="fas fa-plus"></i>
-                    新建场景
-                </button>
-                <button class="nav-btn">
-                    <i class="fas fa-folder"></i>
-                    我的场景
-                </button>
+            <div class="header-user">
+                <div class="header-user-avatar"><i class="fas fa-user"></i></div>
+                <span>管理员</span>
+                <i class="fas fa-chevron-down" style="font-size:12px;color:#9ca3af;"></i>
             </div>
         </div>
     </header>
 
     <!-- 主内容区 -->
     <main class="main-container">
-        <!-- 面包屑 -->
-        <div class="breadcrumb" id="breadcrumbNav">
-            <a href="#">首页</a>
-            <span>/</span>
-            <a href="#">场景库</a>
-            <span>/</span>
-            <span class="current" id="breadcrumbScenarioName">智慧电商平台全栈开发实战</span>
-        </div>
-
         <!-- 场景详情视图 -->
         <div class="content-wrapper" id="scenarioDetailView">
+            <!-- 面包屑 -->
+            <div class="breadcrumb" id="breadcrumbNav">
+                <a href="student_navigation.html">首页</a>
+                <span>/</span>
+                <a href="student.html">智慧电商平台全栈开发实战</a>
+            </div>
             <!-- 顶部信息行 -->
             <div class="top-info-row">
                 <!-- 场景详情卡片 -->
@@ -2418,7 +2430,7 @@
                                 </div>
                             </div>
                             <div class="scene-meta">
-                                <span class="scene-meta-item"><i class="far fa-user"></i>创建者：<span id="sceneCreator">张明华 | 杭州知与未来科技有限公司</span></span>
+                                <span class="scene-meta-item"><i class="far fa-user"></i>创建人：<span id="sceneCreator">张明华 | 杭州知与未来科技有限公司</span></span>
                                 <span class="scene-meta-item"><i class="far fa-clock"></i>更新于 <span id="sceneUpdated">2026-03-20</span></span>
                                 <span class="scene-meta-item"><i class="far fa-eye"></i>浏览 1,234 次</span>
                                 <span class="scene-meta-item"><i class="far fa-heart"></i>收藏 89 次</span>
@@ -2434,13 +2446,13 @@
                                     </div>
                                 </div>
                                 <div class="tag-row">
-                                    <span class="tag-label">关联岗位：</span>
+                                    <span class="tag-label">目标岗位：</span>
                                     <div class="tag-values" id="scenePositions">
                                         <span class="tag purple">全栈开发工程师</span>
                                     </div>
                                 </div>
                                 <div class="tag-row">
-                                    <span class="tag-label">关联行业：</span>
+                                    <span class="tag-label">面向行业：</span>
                                     <div class="tag-values" id="sceneIndustries">
                                         <span class="tag orange">互联网/电子商务</span>
                                     </div>
@@ -2538,9 +2550,8 @@
 
                 <!-- 能力模型 -->
                 <div class="tab-content" id="abilities">
-                    <div class="ability-model" id="abilityList">
-                        <!-- 动态生成 -->
-                    </div>
+                    <div id="abilityHeader"></div>
+                    <div class="ability-model" id="abilityList"></div>
                 </div>
 
                 <!-- 评价标准 -->
@@ -2590,6 +2601,14 @@
 
         <!-- ==================== 任务学习视图 ==================== -->
         <div id="taskLearningView" style="display:none;">
+            <!-- 面包屑 -->
+            <div class="breadcrumb" id="breadcrumbNavTask">
+                <a href="student_navigation.html">首页</a>
+                <span>/</span>
+                <a href="student.html">智慧电商平台全栈开发实战</a>
+                <span>/</span>
+                <span class="current" id="breadcrumbTaskName">任务名称</span>
+            </div>
             <!-- 顶部任务信息栏 -->
             <div class="tl-header">
                 <button class="tl-back-btn" onclick="backToScenario()">
@@ -2614,18 +2633,13 @@
                     <div class="tl-panel" id="learningPanel">
                         <div class="tl-panel-header">
                             <i class="fas fa-book-open"></i>
-                            <span>任务学习</span>
+                            <span>任务说明</span>
+                            <button class="tl-fullscreen-btn" onclick="openTaskDescFullscreen()">
+                                <i class="fas fa-expand"></i> 全屏查看
+                            </button>
                         </div>
                         <div class="tl-panel-body">
-                            <div class="tl-section">
-                                <div class="tl-section-title">
-                                    <span>任务说明</span>
-                                    <button class="tl-fullscreen-btn" onclick="openTaskDescFullscreen()">
-                                        <i class="fas fa-expand"></i> 全屏查看
-                                    </button>
-                                </div>
-                                <div class="tl-task-desc" id="tlTaskDesc"></div>
-                            </div>
+                            <div class="tl-task-desc" id="tlTaskDesc"></div>
                         </div>
                     </div>
 
@@ -2634,7 +2648,6 @@
                         <div class="tl-panel-header">
                             <i class="fas fa-edit"></i>
                             <span>任务测评</span>
-                            <span class="tl-assessment-status" id="tlAssessmentStatus"></span>
                         </div>
                         <div class="tl-panel-body" id="tlAssessmentBody"></div>
                     </div>
@@ -2796,7 +2809,7 @@
                         { id: "del-1-3", type: "result_file", name: "数据库设计文档", description: "包含 ER 图、表结构定义、索引设计、字段说明" }
                     ],
                     knowledgePoints: ["kp-8", "kp-9", "kp-10", "kp-5", "kp-4", "kp-7"],
-                    abilityPoints: ["ab-9", "ab-10", "ab-4", "ab-7"],
+                    abilityPoints: ["ab-9", "ab-10", "ab-4", "ab-19", "ab-20"],
                     evaluationMethods: ["paper", "question_bank", "review", "random_draw"],
                     simulationTaskId: "sim-paper",
                     evalPoints: {
@@ -2900,7 +2913,7 @@
                         { id: "del-2-3", type: "exercise", name: "代码规范检查", description: "通过 ESLint 和 Prettier 代码规范检查" }
                     ],
                     knowledgePoints: ["kp-1", "kp-2", "kp-3", "kp-7", "kp-14"],
-                    abilityPoints: ["ab-1", "ab-2", "ab-6", "ab-7"],
+                    abilityPoints: ["ab-1", "ab-2", "ab-15", "ab-7", "ab-16"],
                     evaluationMethods: ["question_bank"],
                     simulationTaskId: "sim-question-bank",
                     evalPoints: {
@@ -2967,7 +2980,7 @@
                         { id: "del-3-4", type: "result_file", name: "Postman 测试集合", description: "包含所有接口的请求示例和测试用例" }
                     ],
                     knowledgePoints: ["kp-4", "kp-5", "kp-6", "kp-7", "kp-17"],
-                    abilityPoints: ["ab-3", "ab-4", "ab-5", "ab-8"],
+                    abilityPoints: ["ab-3", "ab-17", "ab-5", "ab-8", "ab-18"],
                     evaluationMethods: ["review"],
                     simulationTaskId: "sim-review",
                     evalPoints: {
@@ -3055,7 +3068,7 @@
                         { id: "del-4-4", type: "result_file", name: "技术方案文档", description: "超卖解决方案、状态机设计、事务处理方案" }
                     ],
                     knowledgePoints: ["kp-11", "kp-12", "kp-17", "kp-1", "kp-4", "kp-5"],
-                    abilityPoints: ["ab-9", "ab-6", "ab-8", "ab-5", "ab-11"],
+                    abilityPoints: ["ab-9", "ab-6", "ab-8", "ab-5", "ab-26", "ab-27"],
                     evaluationMethods: ["random_draw", "review"],
                     simulationTaskId: "sim-random-draw",
                     evalPoints: {
@@ -3141,7 +3154,7 @@
                         { id: "del-5-3", type: "result_file", name: "安全扫描报告", description: "OWASP ZAP 扫描结果和处理方案" }
                     ],
                     knowledgePoints: ["kp-13", "kp-14", "kp-11", "kp-6"],
-                    abilityPoints: ["ab-11", "ab-6", "ab-5", "ab-8"],
+                    abilityPoints: ["ab-11", "ab-22", "ab-6", "ab-25", "ab-28"],
                     evaluationMethods: ["paper"],
                     simulationTaskId: "sim-paper",
                     evalPoints: {
@@ -3207,7 +3220,7 @@
                         { id: "del-6-3", type: "result_file", name: "部署操作手册", description: "包含环境准备、部署步骤、验证方法、故障排查的完整手册" }
                     ],
                     knowledgePoints: ["kp-15", "kp-16", "kp-18", "kp-7"],
-                    abilityPoints: ["ab-12", "ab-7", "ab-13", "ab-14"],
+                    abilityPoints: ["ab-12", "ab-23", "ab-24", "ab-7", "ab-13"],
                     evaluationMethods: ["review"],
                     simulationTaskId: "sim-review",
                     evalPoints: {
@@ -3264,7 +3277,7 @@
                         { id: "del-7-1", type: "result_file", name: "用户中心模块源码", description: "包含登录注册、个人中心、权限控制的完整代码" }
                     ],
                     knowledgePoints: ["kp-6", "kp-4", "kp-7"],
-                    abilityPoints: ["ab-3", "ab-5", "ab-7"],
+                    abilityPoints: ["ab-3", "ab-5", "ab-7", "ab-17"],
                     evaluationMethods: ["question_bank", "review"],
                     simulationTaskId: "sim-question-bank"
                 },
@@ -3283,7 +3296,7 @@
                         { id: "del-8-1", type: "result_file", name: "商品管理模块源码", description: "商品CRUD、分类管理、搜索筛选功能实现" }
                     ],
                     knowledgePoints: ["kp-5", "kp-11", "kp-12"],
-                    abilityPoints: ["ab-4", "ab-6", "ab-8"],
+                    abilityPoints: ["ab-4", "ab-6", "ab-8", "ab-15"],
                     evaluationMethods: ["paper", "question_bank", "random_draw"],
                     simulationTaskId: "sim-paper"
                 },
@@ -3302,7 +3315,7 @@
                         { id: "del-9-1", type: "result_file", name: "购物车订单模块源码", description: "购物车、订单流程、库存管理完整实现" }
                     ],
                     knowledgePoints: ["kp-17", "kp-5", "kp-9"],
-                    abilityPoints: ["ab-9", "ab-10", "ab-4"],
+                    abilityPoints: ["ab-9", "ab-10", "ab-4", "ab-21"],
                     evaluationMethods: ["review", "random_draw"],
                     simulationTaskId: "sim-review"
                 },
@@ -3321,7 +3334,7 @@
                         { id: "del-10-1", type: "result_file", name: "支付对接模块源码", description: "支付接口集成、回调处理、对账功能实现" }
                     ],
                     knowledgePoints: ["kp-6", "kp-17", "kp-18"],
-                    abilityPoints: ["ab-3", "ab-5", "ab-12"],
+                    abilityPoints: ["ab-3", "ab-5", "ab-12", "ab-29"],
                     evaluationMethods: ["paper", "review"],
                     simulationTaskId: "sim-paper"
                 },
@@ -3340,7 +3353,7 @@
                         { id: "del-11-1", type: "result_file", name: "数据报表模块源码", description: "统计报表、数据可视化、导出功能实现" }
                     ],
                     knowledgePoints: ["kp-14", "kp-11", "kp-2"],
-                    abilityPoints: ["ab-1", "ab-6", "ab-14"],
+                    abilityPoints: ["ab-1", "ab-6", "ab-14", "ab-26"],
                     evaluationMethods: ["question_bank"],
                     simulationTaskId: "sim-question-bank"
                 },
@@ -3359,7 +3372,7 @@
                         { id: "del-12-1", type: "result_file", name: "监控告警配置", description: "监控面板、日志收集、告警规则配置" }
                     ],
                     knowledgePoints: ["kp-15", "kp-16", "kp-18"],
-                    abilityPoints: ["ab-12", "ab-13", "ab-8"],
+                    abilityPoints: ["ab-12", "ab-13", "ab-8", "ab-24", "ab-30"],
                     evaluationMethods: ["paper", "question_bank", "review", "random_draw"],
                     simulationTaskId: "sim-paper"
                 }
@@ -3416,20 +3429,47 @@
         ];
 
         const ABILITY_POINTS = [
-            { id: "ab-1", name: "组件封装与复用能力", description: "能够将业务需求拆解为可复用的 UI 组件，设计清晰的 Props 接口，编写组件使用文档，考虑组件的扩展性和通用性", category: "开发能力" },
-            { id: "ab-2", name: "状态管理与数据流设计", description: "根据应用复杂度选择合适的状态管理方案（Context/Zustand/Redux），设计合理的数据流，避免不必要的渲染和状态冗余", category: "开发能力" },
-            { id: "ab-3", name: "接口设计与文档编写", description: "设计符合 RESTful 规范的 API 接口，定义清晰的请求/响应格式，使用 Swagger/OpenAPI 编写可交互的接口文档", category: "设计能力" },
-            { id: "ab-4", name: "数据库建模与查询优化", description: "根据业务需求设计规范的表结构（遵循范式），合理创建索引，编写高效的 SQL 查询，使用 EXPLAIN 分析和优化慢查询", category: "设计能力" },
-            { id: "ab-5", name: "安全编码与漏洞防范", description: "具备安全开发意识，能够防范 XSS、CSRF、SQL 注入、敏感信息泄露等常见 Web 漏洞，正确使用加密和哈希算法", category: "开发能力" },
-            { id: "ab-6", name: "性能分析与调优", description: "使用 Lighthouse、Chrome DevTools、React DevTools 等工具分析性能瓶颈，针对性地实施代码分割、懒加载、缓存、查询优化等措施", category: "优化能力" },
-            { id: "ab-7", name: "团队协作与沟通表达", description: "有效进行技术沟通，清晰表达设计思路和方案，积极参与代码审查，编写清晰的技术文档，配合团队成员完成协作任务", category: "软技能" },
-            { id: "ab-8", name: "问题排查与调试", description: "面对技术问题能够系统化地定位根因，熟练使用调试工具（断点/日志/网络面板），从错误信息、日志、监控中快速找到解决方案", category: "开发能力" },
-            { id: "ab-9", name: "业务分析与需求转化", description: "理解业务需求，将模糊的业务描述转化为清晰的技术方案和实现步骤，识别核心业务流程和边界场景", category: "分析能力" },
-            { id: "ab-10", name: "技术选型与架构决策", description: "根据项目规模、团队能力、性能要求、维护成本等因素，做出合理的技术选型和架构设计决策，能说明选型理由", category: "架构能力" },
-            { id: "ab-11", name: "测试设计与质量保障", description: "设计有效的测试用例覆盖正常和异常场景，编写单元测试和集成测试，关注测试覆盖率，建立质量门禁意识", category: "质量保障" },
-            { id: "ab-12", name: "容器化与运维部署", description: "熟练使用 Docker 进行应用容器化，编写 Dockerfile 和 Compose 配置，配置 Nginx 反向代理，搭建 CI/CD 自动化流水线", category: "运维能力" },
-            { id: "ab-13", name: "项目管理与进度把控", description: "合理估算任务工时，制定开发计划，识别风险点，按时交付里程碑，及时同步进度和阻塞问题", category: "软技能" },
-            { id: "ab-14", name: "技术文档与知识沉淀", description: "编写清晰的技术方案文档、API 文档、部署手册，使用图表辅助表达，文档结构清晰、步骤明确、易于理解和执行", category: "软技能" }
+            // 1. 专业技术能力 (8个)
+            { id: "ab-1", name: "组件封装与复用能力", description: "能够将业务需求拆解为可复用的 UI 组件，设计清晰的 Props 接口，编写组件使用文档，考虑组件的扩展性和通用性", category: "专业技术能力" },
+            { id: "ab-2", name: "状态管理与数据流设计", description: "根据应用复杂度选择合适的状态管理方案（Context/Zustand/Redux），设计合理的数据流，避免不必要的渲染和状态冗余", category: "专业技术能力" },
+            { id: "ab-5", name: "安全编码与漏洞防范", description: "具备安全开发意识，能够防范 XSS、CSRF、SQL 注入、敏感信息泄露等常见 Web 漏洞，正确使用加密和哈希算法", category: "专业技术能力" },
+            { id: "ab-8", name: "问题排查与调试", description: "面对技术问题能够系统化地定位根因，熟练使用调试工具（断点/日志/网络面板），从错误信息、日志、监控中快速找到解决方案", category: "专业技术能力" },
+            { id: "ab-15", name: "前端框架深度应用", description: "深入理解 React/Vue 等前端框架原理，掌握 Hooks/Composition API、虚拟 DOM、响应式系统等核心机制，能进行框架级优化", category: "专业技术能力" },
+            { id: "ab-16", name: "后端服务开发能力", description: "熟练使用 Node.js/Java/Go 等后端技术栈，掌握 RESTful API 开发、中间件设计、服务分层架构，能独立完成后端模块开发", category: "专业技术能力" },
+            { id: "ab-17", name: "数据库操作与优化", description: "熟练使用 SQL 进行数据查询和操作，掌握索引优化、事务控制、连接池配置，能分析和解决数据库性能问题", category: "专业技术能力" },
+            { id: "ab-18", name: "代码版本控制与协作", description: "熟练使用 Git 进行分支管理、代码合并、冲突解决，掌握 Git Flow/GitHub Flow 等工作流，能高效参与团队协作开发", category: "专业技术能力" },
+
+            // 2. 系统设计能力 (6个)
+            { id: "ab-3", name: "接口设计与文档编写", description: "设计符合 RESTful 规范的 API 接口，定义清晰的请求/响应格式，使用 Swagger/OpenAPI 编写可交互的接口文档", category: "系统设计能力" },
+            { id: "ab-4", name: "数据库建模与查询优化", description: "根据业务需求设计规范的表结构（遵循范式），合理创建索引，编写高效的 SQL 查询，使用 EXPLAIN 分析和优化慢查询", category: "系统设计能力" },
+            { id: "ab-10", name: "技术选型与架构决策", description: "根据项目规模、团队能力、性能要求、维护成本等因素，做出合理的技术选型和架构设计决策，能说明选型理由", category: "系统设计能力" },
+            { id: "ab-19", name: "UML建模与可视化表达", description: "熟练使用 UML 各类图表（用例图、类图、时序图、活动图）表达系统设计，能将复杂技术方案可视化呈现", category: "系统设计能力" },
+            { id: "ab-20", name: "领域驱动设计实践", description: "理解领域驱动设计核心概念（限界上下文、聚合根、领域事件），能在项目中识别领域边界并应用 DDD 战术模式", category: "系统设计能力" },
+            { id: "ab-21", name: "系统架构图绘制", description: "能绘制清晰准确的系统架构图，包括部署架构、数据架构、技术架构等，准确表达各组件之间的关系", category: "系统设计能力" },
+
+            // 3. 工程实践能力 (7个)
+            { id: "ab-6", name: "性能分析与调优", description: "使用 Lighthouse、Chrome DevTools、React DevTools 等工具分析性能瓶颈，针对性地实施代码分割、懒加载、缓存、查询优化等措施", category: "工程实践能力" },
+            { id: "ab-11", name: "测试设计与质量保障", description: "设计有效的测试用例覆盖正常和异常场景，编写单元测试和集成测试，关注测试覆盖率，建立质量门禁意识", category: "工程实践能力" },
+            { id: "ab-12", name: "容器化与运维部署", description: "熟练使用 Docker 进行应用容器化，编写 Dockerfile 和 Compose 配置，配置 Nginx 反向代理，搭建 CI/CD 自动化流水线", category: "工程实践能力" },
+            { id: "ab-22", name: "自动化测试体系构建", description: "能搭建完整的自动化测试体系，包括单元测试、集成测试、E2E 测试，配置测试覆盖率报告和质量门禁", category: "工程实践能力" },
+            { id: "ab-23", name: "CI/CD流水线配置", description: "熟练使用 GitHub Actions/GitLab CI 等工具配置持续集成/持续部署流水线，实现自动化构建、测试、部署和回滚", category: "工程实践能力" },
+            { id: "ab-24", name: "系统监控与日志分析", description: "能配置应用监控和日志收集系统，使用 Prometheus/Grafana/ELK 等工具进行指标监控、告警配置和日志分析", category: "工程实践能力" },
+            { id: "ab-25", name: "性能压测与瓶颈定位", description: "使用 Artillery/k6/JMeter 等工具进行压力测试，分析系统瓶颈（CPU/内存/IO/网络），提出针对性优化方案", category: "工程实践能力" },
+
+            // 4. 分析解决问题能力 (5个)
+            { id: "ab-9", name: "业务分析与需求转化", description: "理解业务需求，将模糊的业务描述转化为清晰的技术方案和实现步骤，识别核心业务流程和边界场景", category: "分析解决问题能力" },
+            { id: "ab-26", name: "数据驱动决策能力", description: "能基于数据分析结果做出合理的技术和业务决策，掌握常用的数据分析方法和指标定义", category: "分析解决问题能力" },
+            { id: "ab-27", name: "根因分析与问题定位", description: "面对复杂系统故障能运用 5Why、鱼骨图等方法进行根因分析，快速定位问题源头并制定修复方案", category: "分析解决问题能力" },
+            { id: "ab-28", name: "技术方案评估与选择", description: "面对多个技术方案能进行全面的对比评估（成本/性能/维护性/团队能力），给出合理的选择建议", category: "分析解决问题能力" },
+            { id: "ab-29", name: "项目风险识别与应对", description: "能在项目早期识别技术风险、进度风险和资源风险，制定应对预案并在风险发生时有效处置", category: "分析解决问题能力" },
+
+            // 5. 职业素养能力 (6个)
+            { id: "ab-7", name: "团队协作与沟通表达", description: "有效进行技术沟通，清晰表达设计思路和方案，积极参与代码审查，编写清晰的技术文档，配合团队成员完成协作任务", category: "职业素养能力" },
+            { id: "ab-13", name: "项目管理与进度把控", description: "合理估算任务工时，制定开发计划，识别风险点，按时交付里程碑，及时同步进度和阻塞问题", category: "职业素养能力" },
+            { id: "ab-14", name: "技术文档与知识沉淀", description: "编写清晰的技术方案文档、API 文档、部署手册，使用图表辅助表达，文档结构清晰、步骤明确、易于理解和执行", category: "职业素养能力" },
+            { id: "ab-30", name: "代码审查与质量把关", description: "能进行有效的代码审查，发现潜在 Bug、性能问题和规范 violation，提出建设性改进意见，提升团队代码质量", category: "职业素养能力" },
+            { id: "ab-31", name: "技术分享与知识传播", description: "能将自己的技术经验和学习成果通过技术分享、博客、文档等形式传播给团队，促进团队整体技术能力提升", category: "职业素养能力" },
+            { id: "ab-32", name: "持续学习与自我提升", description: "保持对新技术的好奇心和学习热情，能主动学习前沿技术并应用到实际项目中，定期复盘总结提升自身能力", category: "职业素养能力" }
         ];
 
 
@@ -3465,16 +3505,18 @@
 
         function getResourceIconClass(type) {
             const map = {
-                document: 'pdf', video: 'video', link: 'link',
-                software: 'software', image: 'image', venue: 'venue', other: 'other'
+                document: 'document', spreadsheet: 'spreadsheet', image: 'image', link: 'link',
+                audio: 'audio', video: 'video', archive: 'archive', venue: 'venue',
+                facility: 'facility', software: 'software', other: 'other'
             };
             return map[type] || 'other';
         }
 
         function getResourceIcon(type) {
             const map = {
-                document: 'fa-file-pdf', video: 'fa-play-circle', link: 'fa-link',
-                software: 'fa-cogs', image: 'fa-image', venue: 'fa-map-marker-alt', other: 'fa-file'
+                document: 'fa-file-lines', spreadsheet: 'fa-table', image: 'fa-image', link: 'fa-link',
+                audio: 'fa-music', video: 'fa-play-circle', archive: 'fa-file-zipper', venue: 'fa-map-marker-alt',
+                facility: 'fa-building', software: 'fa-cogs', other: 'fa-file'
             };
             return map[type] || 'fa-file';
         }
@@ -3632,7 +3674,7 @@
                                 <span class="task-meta-item"><span class="meta-label">预估学时</span><span class="meta-value">${task.estimatedHours}课时</span></span>
                                 <span class="task-meta-item"><span class="meta-label">难度</span><span class="meta-value">${'★'.repeat(task.difficulty)}${'☆'.repeat(5 - task.difficulty)}</span></span>
                                 <span class="task-meta-item"><span class="meta-label">关联知识点</span><span class="meta-value">${task.knowledgePoints.length}个</span></span>
-                                <span class="task-meta-item"><span class="meta-label">关联任务</span><span class="meta-value">${task.abilityPoints.length}个</span></span>
+                                <span class="task-meta-item"><span class="meta-label">关联能力点</span><span class="meta-value">${task.abilityPoints.length}个</span></span>
                                 <span class="task-meta-item"><span class="meta-label">资源数</span><span class="meta-value">${getTaskResources(task).length}个</span></span>
                             </div>
                         </div>
@@ -3662,8 +3704,9 @@
             const groups = {};
             resources.forEach(r => {
                 const typeLabel = {
-                    document: '文档资料', video: '视频教程', link: '参考链接',
-                    software: '软件工具', image: '图片资源', venue: '场地资源', other: '其他资源'
+                    document: '文档资源', spreadsheet: '表格资源', image: '图片资源', link: '链接资源',
+                    audio: '音频资源', video: '视频资源', archive: '压缩包资源', venue: '场地资源',
+                    facility: '设施设备资源', software: '软件资源', other: '其他资源'
                 }[r.type] || '其他资源';
                 if (!groups[typeLabel]) groups[typeLabel] = [];
                 groups[typeLabel].push(r);
@@ -3707,43 +3750,114 @@
 
         // 渲染能力模型
         function renderAbilities() {
+            const header = document.getElementById('abilityHeader');
             const container = document.getElementById('abilityList');
-            
-            // 收集所有任务关联的任务
-            const abilityIds = new Set();
-            SCENARIO.tasks.forEach(t => {
-                (t.abilityPoints || []).forEach(id => abilityIds.add(id));
-            });
-            const abilities = Array.from(abilityIds).map(id => getAbilityPointById(id)).filter(Boolean);
-            document.getElementById('abilityCountBadge').textContent = abilities.length;
+            document.getElementById('abilityCountBadge').textContent = '32';
 
-            // 按 category 分组
-            const groups = {};
-            abilities.forEach(a => {
-                const cat = a.category || '未分类';
-                if (!groups[cat]) groups[cat] = [];
-                groups[cat].push(a);
-            });
-
-            const catIcons = {
-                '开发能力': 'fa-code', '设计能力': 'fa-pencil-ruler', '优化能力': 'fa-rocket',
-                '软技能': 'fa-users', '分析能力': 'fa-search', '架构能力': 'fa-sitemap',
-                '质量保障': 'fa-shield-alt', '运维能力': 'fa-server', '未分类': 'fa-star'
-            };
-
-            container.innerHTML = Object.entries(groups).map(([cat, items]) => `
-                <div class="ability-unit">
-                    <div class="ability-unit-header"><i class="fas ${catIcons[cat] || 'fa-star'}"></i> ${cat}</div>
-                    <div class="ability-unit-body">
-                        ${items.map((a, idx) => `
-                            <div class="ability-point" onclick="showKgDetailModal({name:'${a.name}', type:'ability', id:'${a.id}'})">
-                                <div class="ability-point-name"><span>${a.name}</span><span class="ability-point-code">${a.id.toUpperCase().replace('AB-', 'AP-')}</span></div>
+            header.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <span style="color: var(--text-secondary);">共 <strong style="color: var(--primary-color);">5</strong> 个能力领域，<strong style="color: var(--primary-color);">32</strong> 个能力点</span>
+                </div>
+            `;
+            container.innerHTML = `
+                    <div class="ability-unit">
+                        <div class="ability-unit-header"><i class="fas fa-eye"></i> 行业与岗位认知</div>
+                        <div class="ability-unit-body">
+                            <div class="ability-point" onclick="showKgDetailModal({name:'互联网产品思维', type:'ability', id:'a01'})">
+                                <div class="ability-point-name"><span>互联网产品思维</span><span class="ability-point-code">AP-001</span></div>
+                                <div class="ability-point-type"><span class="type-tag knowledge">知识</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'前端技术生态与演进', type:'ability', id:'a02'})">
+                                <div class="ability-point-name"><span>前端技术生态与演进</span><span class="ability-point-code">AP-002</span></div>
+                                <div class="ability-point-type"><span class="type-tag knowledge">知识</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'业务需求分析能力', type:'ability', id:'a03'})">
+                                <div class="ability-point-name"><span>业务需求分析能力</span><span class="ability-point-code">AP-003</span></div>
                                 <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
                             </div>
-                        `).join('')}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                    <div class="ability-unit">
+                        <div class="ability-unit-header"><i class="fas fa-book"></i> 专业知识</div>
+                        <div class="ability-unit-body">
+                            <div class="ability-point" onclick="showKgDetailModal({name:'HTML5/CSS3基础知识', type:'ability', id:'a04'})">
+                                <div class="ability-point-name"><span>HTML5/CSS3基础知识</span><span class="ability-point-code">AP-004</span></div>
+                                <div class="ability-point-type"><span class="type-tag knowledge">知识</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'JavaScript核心原理', type:'ability', id:'a05'})">
+                                <div class="ability-point-name"><span>JavaScript核心原理</span><span class="ability-point-code">AP-005</span></div>
+                                <div class="ability-point-type"><span class="type-tag knowledge">知识</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'计算机网络与HTTP协议', type:'ability', id:'a06'})">
+                                <div class="ability-point-name"><span>计算机网络与HTTP协议</span><span class="ability-point-code">AP-006</span></div>
+                                <div class="ability-point-type"><span class="type-tag knowledge">知识</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'数据结构与常见算法', type:'ability', id:'a07'})">
+                                <div class="ability-point-name"><span>数据结构与常见算法</span><span class="ability-point-code">AP-007</span></div>
+                                <div class="ability-point-type"><span class="type-tag knowledge">知识</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ability-unit">
+                        <div class="ability-unit-header"><i class="fas fa-tools"></i> 专业技能</div>
+                        <div class="ability-unit-body">
+                            <div class="ability-point" onclick="showKgDetailModal({name:'响应式页面开发', type:'ability', id:'a08'})">
+                                <div class="ability-point-name"><span>响应式页面开发</span><span class="ability-point-code">AP-008</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'Vue3/React组件化开发', type:'ability', id:'a09'})">
+                                <div class="ability-point-name"><span>Vue3/React组件化开发</span><span class="ability-point-code">AP-009</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'状态管理与路由配置', type:'ability', id:'a10'})">
+                                <div class="ability-point-name"><span>状态管理与路由配置</span><span class="ability-point-code">AP-010</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'前端性能优化实践', type:'ability', id:'a11'})">
+                                <div class="ability-point-name"><span>前端性能优化实践</span><span class="ability-point-code">AP-011</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'前端工程化与构建部署', type:'ability', id:'a12'})">
+                                <div class="ability-point-name"><span>前端工程化与构建部署</span><span class="ability-point-code">AP-012</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ability-unit">
+                        <div class="ability-unit-header"><i class="fas fa-project-diagram"></i> 通用能力</div>
+                        <div class="ability-unit-body">
+                            <div class="ability-point" onclick="showKgDetailModal({name:'团队协作与沟通', type:'ability', id:'a13'})">
+                                <div class="ability-point-name"><span>团队协作与沟通</span><span class="ability-point-code">AP-013</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'复杂线上问题排查', type:'ability', id:'a14'})">
+                                <div class="ability-point-name"><span>复杂线上问题排查</span><span class="ability-point-code">AP-014</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'技术文档编写能力', type:'ability', id:'a15'})">
+                                <div class="ability-point-name"><span>技术文档编写能力</span><span class="ability-point-code">AP-015</span></div>
+                                <div class="ability-point-type"><span class="type-tag skill">技能</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ability-unit">
+                        <div class="ability-unit-header"><i class="fas fa-heart"></i> 职业素养/价值观</div>
+                        <div class="ability-unit-body">
+                            <div class="ability-point" onclick="showKgDetailModal({name:'持续学习与技术视野', type:'ability', id:'a16'})">
+                                <div class="ability-point-name"><span>持续学习与技术视野</span><span class="ability-point-code">AP-016</span></div>
+                                <div class="ability-point-type"><span class="type-tag quality">素养</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'工作责任心与抗压', type:'ability', id:'a17'})">
+                                <div class="ability-point-name"><span>工作责任心与抗压</span><span class="ability-point-code">AP-017</span></div>
+                                <div class="ability-point-type"><span class="type-tag quality">素养</span></div>
+                            </div>
+                            <div class="ability-point" onclick="showKgDetailModal({name:'极致体验追求', type:'ability', id:'a18'})">
+                                <div class="ability-point-name"><span>极致体验追求</span><span class="ability-point-code">AP-018</span></div>
+                                <div class="ability-point-type"><span class="type-tag quality">素养</span></div>
+                            </div>
+                        </div>
+                    </div>
+            `;
         }
 
         // 渲染知识图谱（由标签页切换时触发）
@@ -3777,6 +3891,9 @@
             const tlView = document.getElementById('taskLearningView');
             tlView.style.display = 'block';
             tlView.classList.add('active');
+
+            // 更新面包屑任务名称
+            document.getElementById('breadcrumbTaskName').textContent = task.name;
 
             // 更新顶部信息
             document.getElementById('tlTaskName').textContent = task.name;
@@ -3842,7 +3959,7 @@
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联知识点</div>';
                 } else {
                     body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + kps.map(kp =>
-                        `<span class="tl-side-tag knowledge" onclick="showKgDetailModal({name:'${kp.name}',type:'knowledge',id:'${kp.id}'})">${kp.name}</span>`
+                        `<span class="tl-side-tag knowledge" onclick="alert('参考标准的知识点展示弹窗样式即可')">${kp.name}</span>`
                     ).join('') + '</div>';
                 }
             } else if (tab === 'ability') {
@@ -3851,7 +3968,7 @@
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联能力点</div>';
                 } else {
                     body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + aps.map(ap =>
-                        `<span class="tl-side-tag ability" onclick="showKgDetailModal({name:'${ap.name}',type:'ability',id:'${ap.id}'})">${ap.name}</span>`
+                        `<span class="tl-side-tag ability" onclick="alert('参考标准的能力点展示弹窗样式即可')">${ap.name}</span>`
                     ).join('') + '</div>';
                 }
             } else if (tab === 'resource') {
@@ -3860,7 +3977,7 @@
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无配套资源</div>';
                 } else {
                     body.innerHTML = resources.map(r => `
-                        <div class="tl-side-resource-item" onclick="${r.type === 'link' || r.type === 'software' ? `alert('打开外部链接')` : `openPreviewModal('${r.name}', '${r.type}')`}">
+                        <div class="tl-side-resource-item" onclick="alert('参考标准的资源展示弹窗样式即可')">
                             <div class="tl-side-resource-icon ${getResourceIconClass(r.type)}" style="background:${r.type==='video'?'#fff2f0':r.type==='document'?'#e6f4ff':'#f5f5f5'};color:${r.type==='video'?'#ff4d4f':r.type==='document'?'#1677ff':'#666'}">
                                 <i class="fas ${getResourceIcon(r.type)}"></i>
                             </div>
@@ -3889,7 +4006,6 @@
         function renderAssessmentPanel(task) {
             const panel = document.getElementById('assessmentPanel');
             const body = document.getElementById('tlAssessmentBody');
-            const statusEl = document.getElementById('tlAssessmentStatus');
 
             const evalMethods = task.evaluationMethods || [];
             const hasAssessment = evalMethods.length > 0 || task.assessment;
@@ -3900,13 +4016,6 @@
             panel.style.display = 'block';
 
             const isSubmitted = quizSubmitted[task.id];
-            if (isSubmitted) {
-                statusEl.textContent = '已作答';
-                statusEl.className = 'tl-assessment-status done';
-            } else {
-                statusEl.textContent = '未作答';
-                statusEl.className = 'tl-assessment-status pending';
-            }
 
             // 根据配置直接展示每种测评方式的具体内容
             const methodLabels = { paper: '试卷测评', question_bank: '题库测评', random_draw: '现场问答', review: '教师评审' };
@@ -4629,17 +4738,20 @@
         // 更新日期时间
         function updateDateTime() {
             const now = new Date();
-            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const weekDay = weekDays[now.getDay()];
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
             
-            const dateEl = document.getElementById('currentDate');
-            const timeEl = document.getElementById('currentTime');
-            if (dateEl) dateEl.textContent = now.toLocaleDateString('zh-CN', dateOptions);
-            if (timeEl) timeEl.textContent = now.toLocaleTimeString('zh-CN', timeOptions);
+            const timeEl = document.getElementById('headerTime');
+            if (timeEl) timeEl.textContent = `${year}年${month}月${day}日 ${weekDay} ${hour}:${minute}`;
         }
         
         updateDateTime();
-        setInterval(updateDateTime, 1000);
+        setInterval(updateDateTime, 60000);
 
         // 标签页切换
         const tabItems = document.querySelectorAll('.tab-item');
