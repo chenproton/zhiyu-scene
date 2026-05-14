@@ -2069,6 +2069,15 @@
             color: var(--text-primary);
         }
         .tl-section-header i { font-size: 18px; }
+        .tl-section-weight {
+            margin-left: auto;
+            background: linear-gradient(135deg, #3b7cff, #5a8eff);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
         .tl-section-body { padding: 18px; }
         .tl-quiz-collapsed {
             display: flex;
@@ -4257,6 +4266,19 @@
             if (evalMethods.length >= 1) {
                 body.innerHTML = '<div class="tl-assessment-grid" id="tl-assessment-grid"></div>';
                 const grid = document.getElementById('tl-assessment-grid');
+
+                // 计算权重（模拟，确保加起来100%）
+                const baseWeights = { paper: 30, question_bank: 25, random_draw: 20, review: 25 };
+                const totalBase = evalMethods.reduce((sum, m) => sum + (baseWeights[m] || 0), 0);
+                const methodWeights = {};
+                evalMethods.forEach(m => {
+                    methodWeights[m] = totalBase > 0 ? Math.round((baseWeights[m] || 0) / totalBase * 100) : 0;
+                });
+                const weightSum = Object.values(methodWeights).reduce((a, b) => a + b, 0);
+                if (weightSum !== 100 && evalMethods.length > 0) {
+                    methodWeights[evalMethods[0]] += 100 - weightSum;
+                }
+
                 evalMethods.forEach((method, idx) => {
                     const sectionId = `assess-section-${task.id}-${method}-${idx}`;
                     const bodyId = `assess-body-${task.id}-${method}-${idx}`;
@@ -4265,6 +4287,7 @@
                             <div class="tl-section-header">
                                 <i class="fas ${methodIcons[method] || 'fa-check'}" style="color:${methodColors[method] || '#666'}"></i>
                                 ${methodLabels[method] || method}
+                                <span class="tl-section-weight">${methodWeights[method]}%</span>
                             </div>
                             <div class="tl-section-body" id="${bodyId}"></div>
                         </div>
@@ -4311,9 +4334,13 @@
                             <span><i class="fas fa-star" style="margin-right:4px;"></i>总分 ${totalScore} 分</span>
                             <span class="tl-quiz-tag ${methodClasses[method] || 'paper'}">${methodLabels[method] || '测评'}</span>
                         </div>
-                        <button class="tl-expand-btn" onclick="expandQuiz('${task.id}', '${method}')">
-                            <i class="fas fa-play"></i> 开始答题
-                        </button>
+                        ${method === 'paper' || method === 'question_bank'
+                            ? `<button class="tl-expand-btn" onclick="showExternalQuizTip()">
+                                <i class="fas fa-play"></i> 开始答题
+                               </button>`
+                            : `<button class="tl-expand-btn" onclick="expandQuiz('${task.id}', '${method}')">
+                                <i class="fas fa-play"></i> 开始答题
+                               </button>`}
                     </div>
                 `;
             } else {
@@ -5061,6 +5088,13 @@
             document.getElementById('previewModalOverlay').classList.remove('active');
         }
 
+        function showExternalQuizTip() {
+            document.getElementById('externalQuizTipOverlay').classList.add('active');
+        }
+        function closeExternalQuizTip() {
+            document.getElementById('externalQuizTipOverlay').classList.remove('active');
+        }
+
         // 知识图谱详情弹窗
         function showKgDetailModal(data) {
             const overlay = document.getElementById('kgModalOverlay');
@@ -5110,6 +5144,21 @@
 
         init();
     </script>
+
+    <!-- 新开标签页答题提示弹窗 -->
+    <div class="preview-modal-overlay" id="externalQuizTipOverlay" onclick="if(event.target===this)closeExternalQuizTip()">
+        <div class="preview-modal-box" style="width:400px;">
+            <div class="preview-modal-header">
+                <div class="preview-modal-title">提示</div>
+                <button class="preview-modal-close" onclick="closeExternalQuizTip()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-modal-body" style="text-align:center;padding:30px 20px;">
+                <i class="fas fa-external-link-alt" style="font-size:32px;color:var(--primary-color);margin-bottom:12px;display:block;"></i>
+                <p style="font-size:15px;color:var(--text-primary);margin-bottom:8px;">请新开标签页开始答题</p>
+                <p style="font-size:13px;color:var(--text-secondary);">系统将自动在新标签页中打开测评页面</p>
+            </div>
+        </div>
+    </div>
 
     <!-- 能力/知识详情弹窗 -->
     <div class="kg-modal-overlay" id="kgModalOverlay" onclick="if(event.target===this)closeModal('kgModal')">
