@@ -31,25 +31,22 @@ export const senceNavigationTemplate: PlatformNavigationConfig = {
   ],
   topNavItems: [
     {
-      id: "portal-home",
+      id: "portal",
       label: "门户首页",
-      href: "/dashboard",
+      href: "http://47.251.48.187:3001/portal",
       icon: "home",
-      matchers: ["/dashboard"],
     },
     {
       id: "workspace",
       label: "我的服务台",
-      href: "/approvals",
+      href: "http://47.251.48.187:3001/portal/workspace",
       icon: "briefcase",
-      matchers: ["/approvals$"],
     },
     {
       id: "apps",
       label: "应用服务中心",
-      href: "/",
+      href: "http://47.251.48.187:3001/portal/apps",
       icon: "layoutGrid",
-      matchers: ["/", "/batches", "/workflows", "/positions", "/students", "/scenarios"],
     },
   ],
   sideNavItems: [

@@ -92,18 +92,6 @@ export function PlatformTopNav({ config }: { config: PlatformNavigationConfig })
           {config.topNavItems.map((item) => {
             const Icon = resolvePlatformIcon(item.icon)
             const active = isTopItemActive(pathname, item)
-            const disabled = item.id === "portal-home" || item.id === "workspace"
-            if (disabled) {
-              return (
-                <span
-                  key={item.id}
-                  className="relative flex items-center gap-1.5 rounded-md px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </span>
-              )
-            }
             return (
               <Link
                 key={item.id}
