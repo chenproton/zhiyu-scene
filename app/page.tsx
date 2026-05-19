@@ -22,6 +22,7 @@ import {
   ArrowUpFromLine,
   MessageSquare,
 } from "lucide-react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 import { ScenarioList } from "@/components/scenarios/scenario-list"
@@ -108,6 +109,7 @@ export default function SceneHallPage() {
 
   const [isApprovalWorkflowDialogOpen, setIsApprovalWorkflowDialogOpen] = useState(false)
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
+  const [importConflictRule, setImportConflictRule] = useState<"overwrite" | "new" | "skip">("overwrite")
   const [isResourceImportDialogOpen, setIsResourceImportDialogOpen] = useState(false)
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [isBatchMoveDialogOpen, setIsBatchMoveDialogOpen] = useState(false)
@@ -1014,11 +1016,32 @@ export default function SceneHallPage() {
               </div>
             </PrdAnnotation>
           </DialogHeader>
-          <div className="py-6">
+          <div className="py-6 space-y-4">
             <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 flex flex-col items-center justify-center text-center">
               <Upload className="h-10 w-10 text-slate-300 mb-3" />
               <p className="text-sm text-slate-600 font-medium">点击或拖拽文件到此处上传</p>
               <p className="text-xs text-slate-400 mt-1">支持 .xlsx, .json 格式，单个文件不超过 10MB</p>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">资源编码冲突处理规则</Label>
+              <RadioGroup
+                value={importConflictRule}
+                onValueChange={(v) => setImportConflictRule(v as "overwrite" | "new" | "skip")}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="overwrite" id="import-overwrite" />
+                  <Label htmlFor="import-overwrite" className="text-sm font-normal cursor-pointer">覆盖</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="new" id="import-new" />
+                  <Label htmlFor="import-new" className="text-sm font-normal cursor-pointer">新建</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="skip" id="import-skip" />
+                  <Label htmlFor="import-skip" className="text-sm font-normal cursor-pointer">跳过</Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
           <DialogFooter>
