@@ -33,6 +33,8 @@ interface AnnotationEditContextValue {
   setActiveAddForm: (v: boolean) => void
   pendingElement: HTMLElement | null
   setPendingElement: (el: HTMLElement | null) => void
+  annotationsVisible: boolean
+  toggleAnnotationsVisible: () => void
 }
 
 const STORAGE_KEY = "prd-annotations-overrides"
@@ -58,6 +60,11 @@ export function AnnotationEditProvider({
   const [pendingElement, setPendingElement] = useState<HTMLElement | null>(
     null
   )
+  const [annotationsVisible, setAnnotationsVisible] = useState(true)
+
+  const toggleAnnotationsVisible = useCallback(() => {
+    setAnnotationsVisible((prev) => !prev)
+  }, [])
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -134,6 +141,8 @@ export function AnnotationEditProvider({
       setActiveAddForm,
       pendingElement,
       setPendingElement,
+      annotationsVisible,
+      toggleAnnotationsVisible,
     }),
     [
       isEditMode,
@@ -147,6 +156,8 @@ export function AnnotationEditProvider({
       exportOverrides,
       activeAddForm,
       pendingElement,
+      annotationsVisible,
+      toggleAnnotationsVisible,
     ]
   )
 

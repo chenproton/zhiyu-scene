@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { Pencil, X, Download, Plus, MousePointerClick } from "lucide-react"
+import { Pencil, X, Download, Plus, MousePointerClick, Eye, EyeOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useAnnotationEdit } from "@/lib/annotation-edit-context"
@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 export function AnnotationEditToolbar() {
   const ctx = useAnnotationEdit()
-  const { isEditMode, toggleEditMode, exportOverrides, activeAddForm, setActiveAddForm, pendingElement, setPendingElement, addFloatingAnnotation } = ctx
+  const { isEditMode, toggleEditMode, exportOverrides, activeAddForm, setActiveAddForm, pendingElement, setPendingElement, addFloatingAnnotation, annotationsVisible, toggleAnnotationsVisible } = ctx
 
   const [showExport, setShowExport] = useState(false)
   const [newTitle, setNewTitle] = useState("")
@@ -100,6 +100,18 @@ export function AnnotationEditToolbar() {
                 <><X className="h-3 w-3 mr-1" />取消添加</>
               ) : (
                 <><Plus className="h-3 w-3 mr-1" />添加标注</>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-7 text-xs bg-blue-500 text-white hover:bg-blue-400 border-0"
+              onClick={toggleAnnotationsVisible}
+            >
+              {annotationsVisible ? (
+                <><EyeOff className="h-3 w-3 mr-1" />关闭所有标注</>
+              ) : (
+                <><Eye className="h-3 w-3 mr-1" />打开所有标注</>
               )}
             </Button>
             <Button

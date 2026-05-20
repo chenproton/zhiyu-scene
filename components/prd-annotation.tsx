@@ -57,6 +57,7 @@ export function PrdAnnotation({
 
   const editCtx = useAnnotationEdit()
   const isEditMode = editCtx?.isEditMode ?? false
+  const annotationsVisible = editCtx?.annotationsVisible ?? true
 
   const finalTitle = data?.title ?? title ?? annotationId ?? "标注"
   const finalContent = data?.content ?? content ?? ""
@@ -104,6 +105,7 @@ export function PrdAnnotation({
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <div className={cn("relative", className)}>
           {children}
+          {annotationsVisible && (
           <PopoverTrigger asChild>
             <span
               role="button"
@@ -128,6 +130,7 @@ export function PrdAnnotation({
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
             </span>
           </PopoverTrigger>
+          )}
         </div>
         <PopoverContent
           className="w-80 p-0 overflow-hidden"

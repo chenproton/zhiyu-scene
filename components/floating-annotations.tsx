@@ -22,7 +22,7 @@ const CONTENT_TRUNCATE_LENGTH = 120
 
 export function FloatingAnnotations() {
   const ctx = useAnnotationEdit()
-  const { floatingAnnotations, isEditMode, deleteFloatingAnnotation } = ctx
+  const { floatingAnnotations, isEditMode, deleteFloatingAnnotation, annotationsVisible } = ctx
 
   const pagePath = typeof window !== "undefined" ? window.location.pathname : ""
 
@@ -31,7 +31,7 @@ export function FloatingAnnotations() {
     [floatingAnnotations, pagePath]
   )
 
-  if (visible.length === 0) return null
+  if (visible.length === 0 || !annotationsVisible) return null
 
   return (
     <>
