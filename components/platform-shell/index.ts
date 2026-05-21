@@ -1,5 +1,25 @@
-import type { PlatformCatalogItem, PlatformNavigationConfig } from "../lib/config"
+export { PlatformShell, PlatformSideNav, PlatformTopNav } from "./PlatformShell"
 
+export {
+  platformIconMap,
+  resolvePlatformIcon,
+} from "./icons"
+
+export type {
+  PlatformCatalogItem,
+  PlatformNavigationConfig,
+  SideNavChild,
+  SideNavItem,
+  TopNavItem,
+  UserMenuItem,
+} from "./config"
+
+export type {
+  PlatformIcon,
+  PlatformIconKey,
+} from "./icons"
+
+// Navigation template (migrated from platform-navigation-shell/templates/sence-navigation.ts)
 export const platformCatalog: PlatformCatalogItem[] = [
   { id: "career", label: "职业岗位学习平台", icon: "briefcase" },
   { id: "scene", label: "实践场景学习平台", icon: "layers3" },
@@ -33,19 +53,19 @@ export const senceNavigationTemplate: PlatformNavigationConfig = {
     {
       id: "portal",
       label: "门户首页",
-      href: "http://47.251.48.187:3001/portal",
+      href: "http://111.170.170.202:3001/portal",
       icon: "home",
     },
     {
       id: "workspace",
       label: "我的服务台",
-      href: "http://47.251.48.187:3001/portal/workspace",
+      href: "http://111.170.170.202:3001/portal/workspace",
       icon: "briefcase",
     },
     {
       id: "apps",
       label: "应用服务中心",
-      href: "http://47.251.48.187:3001/portal/apps",
+      href: "http://111.170.170.202:3001/portal/apps",
       icon: "layoutGrid",
     },
   ],

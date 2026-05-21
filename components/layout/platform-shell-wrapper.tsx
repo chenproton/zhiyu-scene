@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { PlatformShell } from "@/platform-navigation-shell"
-import { senceNavigationTemplate } from "@/platform-navigation-shell"
+import { PlatformShell } from "@/components/platform-shell"
+import { senceNavigationTemplate } from "@/components/platform-shell"
 
 function isEmbedded() {
   if (typeof window === "undefined") return false
