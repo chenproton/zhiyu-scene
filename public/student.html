@@ -682,6 +682,9 @@
         .eval-tag-question_bank { background: #f6ffed; color: #389e0d; border-color: #b7eb8f; }
         .eval-tag-random_draw { background: #fff7e6; color: #d46b08; border-color: #ffd591; }
         .eval-tag-review { background: #f9f0ff; color: #722ed1; border-color: #d3adf7; }
+        .eval-tag-outcome { background: #e6fffb; color: #13c2c2; border-color: #87e8de; }
+        .eval-tag-homework { background: #fff0f6; color: #eb2f96; border-color: #ffadd2; }
+        .eval-tag-quiz { background: #fff1f0; color: #f5222d; border-color: #ffa39e; }
 
         .task-desc {
             font-size: 13px;
@@ -2032,6 +2035,62 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 11px; font-weight: 600; flex-shrink: 0;
         }
+        .tl-review-timeline {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0;
+            padding: 8px 0;
+        }
+        .tl-timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            flex: 1;
+            min-width: 0;
+        }
+        .tl-timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+        .tl-timeline-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .tl-timeline-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .tl-timeline-desc {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
 
         .tl-mixed-grid {
             display: grid;
@@ -2054,6 +2113,9 @@
             margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             transition: box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            min-height: 260px;
         }
         .tl-assessment-section:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
         .tl-assessment-section:last-child { margin-bottom: 0; }
@@ -2078,14 +2140,15 @@
             font-size: 12px;
             font-weight: 500;
         }
-        .tl-section-body { padding: 18px; }
+        .tl-section-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
         .tl-quiz-collapsed {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             padding: 16px;
             background: #fafafa;
             border-radius: 8px;
+            min-height: 200px;
         }
         .tl-quiz-collapsed-info { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
         .tl-quiz-collapsed-info span { font-size: 13px; color: var(--text-secondary); }
@@ -2124,7 +2187,7 @@
         .tl-upload-zone {
             border: 2px dashed #d9d9d9;
             border-radius: 8px;
-            padding: 32px 20px;
+            padding: 48px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
@@ -3049,7 +3112,7 @@
                     ],
                     knowledgePoints: ["kp-8", "kp-9", "kp-10", "kp-5", "kp-4", "kp-7"],
                     abilityPoints: ["ab-9", "ab-10", "ab-4", "ab-19", "ab-20"],
-                    evaluationMethods: ["paper", "question_bank", "review", "random_draw"],
+                    evaluationMethods: ["paper", "question_bank", "review", "random_draw", "outcome", "homework", "quiz"],
                     simulationTaskId: "sim-paper",
                     evalPoints: {
                         paper: [
@@ -3075,6 +3138,23 @@
                             { id: "ep-rd1-2", name: "方案论证能力", desc: "面对技术方案选择时能否给出充分的理由和对比分析，考虑多种因素", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
                             { id: "ep-rd1-3", name: "技术表达与沟通", desc: "口头阐述设计思路时是否逻辑清晰、论据充分、能够回应质疑", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING },
                             { id: "ep-rd1-4", name: "临场应变能力", desc: "面对追问或意外场景假设时能否快速思考、灵活调整方案", weight: 15, maxScore: 15, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ],
+                        outcome: [
+                            { id: "ep-oc-s1-1", name: "优化方案完整性", desc: "性能优化方案是否覆盖了前端、后端、数据库等多个维度", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-oc-s1-2", name: "实施效果可量化", desc: "优化前后是否有明确的数据对比（Lighthouse评分、加载时间、接口响应等）", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-oc-s1-3", name: "文档规范性", desc: "优化报告的结构是否清晰、数据是否准确、结论是否有依据", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-oc-s1-4", name: "创新性", desc: "是否提出了创新性的优化思路或采用了前沿的优化技术", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ],
+                        homework: [
+                            { id: "ep-hw-s1-1", name: "测试用例完整性", desc: "是否覆盖了正常流程、边界条件、异常场景等主要测试场景", weight: 40, maxScore: 40, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-hw-s1-2", name: "代码规范", desc: "测试代码是否遵循规范，命名清晰，结构合理", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-hw-s1-3", name: "测试报告质量", desc: "报告是否包含测试概述、用例说明、执行结果、问题分析等内容", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ],
+                        quiz: [
+                            { id: "ep-qz-s1-1", name: "前端基础知识", desc: "HTML/CSS/JS 基础知识、React 原理、TypeScript 语法等掌握程度", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qz-s1-2", name: "工程化知识", desc: "对构建工具、代码规范、Git 工作流、测试框架等工程化知识的理解", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qz-s1-3", name: "性能与安全", desc: "对前端性能优化手段、Web 安全漏洞及防范措施的理解", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qz-s1-4", name: "架构思维", desc: "对组件设计、状态管理、路由规划等前端架构相关知识的掌握", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING }
                         ]
                     },
                     reviewSteps: [
@@ -3153,8 +3233,22 @@
                     ],
                     knowledgePoints: ["kp-1", "kp-2", "kp-3", "kp-7", "kp-14"],
                     abilityPoints: ["ab-1", "ab-2", "ab-15", "ab-7", "ab-16"],
-                    evaluationMethods: ["question_bank"],
+                    evaluationMethods: ["question_bank", "quiz"],
                     simulationTaskId: "sim-question-bank",
+                    evalPoints: {
+                        questionBank: [
+                            { id: "ep-qb11-1", name: "图表库掌握", desc: "对 ECharts/AntV 等图表库的配置项、事件、交互的熟练程度", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qb11-2", name: "数据处理能力", desc: "对原始数据进行清洗、聚合、转换的能力，能否处理复杂的数据结构", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qb11-3", name: "可视化设计", desc: "能否根据数据特征选择合适的图表类型，配色和布局是否美观合理", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qb11-4", name: "交互体验", desc: "图表的交互功能（缩放、筛选、下钻、联动）是否完善，用户体验是否流畅", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ],
+                        quiz: [
+                            { id: "ep-qz1-1", name: "前端基础知识", desc: "HTML/CSS/JS 基础知识、React 原理、TypeScript 语法等掌握程度", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qz1-2", name: "工程化知识", desc: "对构建工具、代码规范、Git 工作流、测试框架等工程化知识的理解", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qz1-3", name: "性能与安全", desc: "对前端性能优化手段、Web 安全漏洞及防范措施的理解", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qz1-4", name: "架构思维", desc: "对组件设计、状态管理、路由规划等前端架构相关知识的掌握", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ]
+                    },
                     evalPoints: {
                         questionBank: [
                             { id: "ep-qb2-1", name: "框架原理理解", desc: "对 React 18 并发特性、Hooks 原理、虚拟 DOM  Diff 算法的理解深度", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
@@ -3394,7 +3488,7 @@
                     ],
                     knowledgePoints: ["kp-13", "kp-14", "kp-11", "kp-6"],
                     abilityPoints: ["ab-11", "ab-22", "ab-6", "ab-25", "ab-28"],
-                    evaluationMethods: ["paper"],
+                    evaluationMethods: ["paper", "outcome"],
                     simulationTaskId: "sim-paper",
                     evalPoints: {
                         paper: [
@@ -3402,6 +3496,12 @@
                             { id: "ep-p5-2", name: "性能优化方法论", desc: "对前端渲染性能指标（FCP、LCP、CLS）、代码分割、缓存策略、懒加载等优化手段的掌握", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING },
                             { id: "ep-p5-3", name: "安全测试意识", desc: "对 OWASP Top 10、常见 Web 漏洞（XSS、CSRF、SQL 注入）的识别和防范方法", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING },
                             { id: "ep-p5-4", name: "问题诊断能力", desc: "面对性能问题能否系统性地定位瓶颈（网络、渲染、JS 执行、数据库查询等）", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ],
+                        outcome: [
+                            { id: "ep-oc1-1", name: "优化方案完整性", desc: "性能优化方案是否覆盖了前端、后端、数据库等多个维度", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-oc1-2", name: "实施效果可量化", desc: "优化前后是否有明确的数据对比（Lighthouse评分、加载时间、接口响应等）", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-oc1-3", name: "文档规范性", desc: "优化报告的结构是否清晰、数据是否准确、结论是否有依据", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-oc1-4", name: "创新性", desc: "是否提出了创新性的优化思路或采用了前沿的优化技术", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING }
                         ]
                     },
                     assessment: {
@@ -3517,8 +3617,27 @@
                     ],
                     knowledgePoints: ["kp-6", "kp-4", "kp-7"],
                     abilityPoints: ["ab-3", "ab-5", "ab-7", "ab-17"],
-                    evaluationMethods: ["question_bank", "review"],
-                    simulationTaskId: "sim-question-bank"
+                    evaluationMethods: ["question_bank", "review", "homework"],
+                    simulationTaskId: "sim-question-bank",
+                    evalPoints: {
+                        questionBank: [
+                            { id: "ep-qb7-1", name: "认证流程理解", desc: "对 JWT、OAuth2.0、Session/Cookie 等认证机制的原理和适用场景的理解", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qb7-2", name: "权限模型设计", desc: "对 RBAC、ABAC 等权限模型的理解，能否设计合理的角色权限体系", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qb7-3", name: "安全编码意识", desc: "在编码过程中是否考虑了密码加密、SQL注入防护、XSS防范等安全问题", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-qb7-4", name: "前端表单处理", desc: "表单校验、状态管理、错误提示、用户体验等方面的实现质量", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ],
+                        review: [
+                            { id: "ep-r7-1", name: "功能完整性", desc: "用户注册、登录、个人信息管理、角色权限控制等功能是否完整实现", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-r7-2", name: "代码质量", desc: "代码结构是否清晰、命名是否规范、是否遵循最佳实践", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-r7-3", name: "安全性", desc: "密码存储、传输加密、权限校验、接口防护等安全机制是否到位", weight: 25, maxScore: 25, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-r7-4", name: "用户体验", desc: "页面交互是否流畅、错误提示是否友好、响应速度是否达标", weight: 20, maxScore: 20, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ],
+                        homework: [
+                            { id: "ep-hw1-1", name: "测试用例完整性", desc: "是否覆盖了正常流程、边界条件、异常场景等主要测试场景", weight: 40, maxScore: 40, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-hw1-2", name: "代码规范", desc: "测试代码是否遵循规范，命名清晰，结构合理", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING },
+                            { id: "ep-hw1-3", name: "测试报告质量", desc: "报告是否包含测试概述、用例说明、执行结果、问题分析等内容", weight: 30, maxScore: 30, gradeMapping: DEFAULT_GRADE_MAPPING }
+                        ]
+                    }
                 },
                 {
                     id: "task-1-8",
@@ -3782,9 +3901,12 @@
             const evalMethods = task.evaluationMethods || [];
             const methodLabels = {
                 random_draw: '现场问答',
-                review: '教师评审',
-                paper: '试卷测评',
-                question_bank: '题库测评'
+                review: '现场评审',
+                paper: '试卷',
+                question_bank: '题库',
+                outcome: '成果评价',
+                homework: '作业',
+                quiz: '随堂测'
             };
             if (evalMethods.length > 0) {
                 steps.push({
@@ -3858,10 +3980,14 @@
                 paper: '<i class="fas fa-file-alt"></i> 试卷',
                 question_bank: '<i class="fas fa-database"></i> 题库',
                 random_draw: '<i class="fas fa-comments"></i> 现场问答',
-                review: '<i class="fas fa-gavel"></i> 评审'
+                review: '<i class="fas fa-gavel"></i> 评审',
+                outcome: '<i class="fas fa-folder-check"></i> 成果评价',
+                homework: '<i class="fas fa-book"></i> 作业',
+                quiz: '<i class="fas fa-clipboard-question"></i> 随堂测'
             };
             const evalMethodColors = {
-                paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1'
+                paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1',
+                outcome: '#13c2c2', homework: '#eb2f96', quiz: '#f5222d'
             };
 
             container.innerHTML = SCENARIO.tasks.map((task, index) => {
@@ -4259,16 +4385,16 @@
             const isSubmitted = quizSubmitted[task.id];
 
             // 根据配置直接展示每种测评方式的具体内容
-            const methodLabels = { paper: '试卷测评', question_bank: '题库测评', random_draw: '现场问答', review: '教师评审' };
-            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-gavel' };
-            const methodColors = { paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1' };
+            const methodLabels = { paper: '试卷', question_bank: '题库', random_draw: '现场问答', review: '现场评审', outcome: '成果评价', homework: '作业', quiz: '随堂测' };
+            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-gavel', outcome: 'fa-folder-check', homework: 'fa-book', quiz: 'fa-clipboard-question' };
+            const methodColors = { paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1', outcome: '#13c2c2', homework: '#eb2f96', quiz: '#f5222d' };
 
             if (evalMethods.length >= 1) {
                 body.innerHTML = '<div class="tl-assessment-grid" id="tl-assessment-grid"></div>';
                 const grid = document.getElementById('tl-assessment-grid');
 
                 // 计算权重（模拟，确保加起来100%）
-                const baseWeights = { paper: 30, question_bank: 25, random_draw: 20, review: 25 };
+                const baseWeights = { paper: 30, question_bank: 25, random_draw: 20, review: 25, outcome: 25, homework: 25, quiz: 25 };
                 const totalBase = evalMethods.reduce((sum, m) => sum + (baseWeights[m] || 0), 0);
                 const methodWeights = {};
                 evalMethods.forEach(m => {
@@ -4287,7 +4413,7 @@
                             <div class="tl-section-header">
                                 <i class="fas ${methodIcons[method] || 'fa-check'}" style="color:${methodColors[method] || '#666'}"></i>
                                 ${methodLabels[method] || method}
-                                <span class="tl-section-weight">${methodWeights[method]}%</span>
+                                <span class="tl-section-weight">权重 ${methodWeights[method]}%</span>
                             </div>
                             <div class="tl-section-body" id="${bodyId}"></div>
                         </div>
@@ -4295,12 +4421,16 @@
                     grid.insertAdjacentHTML('beforeend', html);
 
                     const sectionBody = document.getElementById(bodyId);
-                    if (method === 'paper' || method === 'question_bank') {
+                    if (method === 'paper' || method === 'question_bank' || method === 'quiz') {
                         renderQuizAssessment(task, sectionBody, method, isSubmitted);
                     } else if (method === 'random_draw') {
                         renderOnsiteInteractive(task, sectionBody);
                     } else if (method === 'review') {
                         renderReviewInteractive(task, sectionBody);
+                    } else if (method === 'outcome') {
+                        renderOutcomeInteractive(task, sectionBody);
+                    } else if (method === 'homework') {
+                        renderHomeworkInteractive(task, sectionBody);
                     }
                 });
             } else if (task.assessment) {
@@ -4320,7 +4450,7 @@
             const isExpanded = quizExpanded[`${task.id}-${method}`] || isSubmitted;
             const answeredCount = Object.keys(quizAnswers[task.id] || {}).length;
 
-            const methodLabels = { paper: '试卷测评', question_bank: '题库测评', objective: '客观测评', mixed: '混合测评' };
+            const methodLabels = { paper: '试卷', question_bank: '题库', objective: '客观测评', mixed: '混合测评' };
             const methodClasses = { paper: 'paper', question_bank: 'question_bank', objective: 'paper', mixed: 'paper' };
 
             let html = '';
@@ -4430,14 +4560,17 @@
         }
 
         function renderMixedAssessment(task, container, isSubmitted) {
-            const methodLabels = { paper: '试卷测评', question_bank: '题库测评', random_draw: '现场问答', review: '教师评审' };
-            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-gavel' };
-            const methodColors = { paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1' };
+            const methodLabels = { paper: '试卷', question_bank: '题库', random_draw: '现场问答', review: '现场评审', outcome: '成果评价', homework: '作业', quiz: '随堂测' };
+            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-gavel', outcome: 'fa-folder-check', homework: 'fa-book', quiz: 'fa-clipboard-question' };
+            const methodColors = { paper: '#1677ff', question_bank: '#52c41a', random_draw: '#faad14', review: '#722ed1', outcome: '#13c2c2', homework: '#eb2f96', quiz: '#f5222d' };
             const methodDesc = {
                 paper: '固定试卷，含单选/多选/判断题',
                 question_bank: '从题库随机抽题作答',
                 random_draw: '教师现场抽题提问',
-                review: '提交材料，教师按量规评审'
+                review: '提交材料，教师按量规评审',
+                outcome: '提交成果材料，教师直接评价',
+                homework: '提交作业，教师按评分规则评价',
+                quiz: '从题库抽题，课堂即时测验'
             };
 
             let html = '<div class="tl-mixed-grid">';
@@ -4559,10 +4692,9 @@
             ];
             container.innerHTML = `
                 <div class="tl-review-notice">
-                    <div class="tl-review-title"><i class="fas fa-user-check"></i> 教师评审测评</div>
+                    <div class="tl-review-title"><i class="fas fa-user-check"></i> 现场评审测评</div>
                     <div class="tl-review-desc">
-                        <p>本任务采用「教师评审」方式评分。请在完成学习后，按照交付要求准备并上传成果材料。</p>
-                        <p>教师将按照评审量规的多维度评价点进行打分。</p>
+                        <p>本任务采用「现场评审」方式评分。请在完成学习后，按照交付要求准备并上传成果材料。</p>
                     </div>
                     <div class="tl-review-steps">
                         ${steps.map((s, i) => `
@@ -4584,23 +4716,7 @@
                 { label: '初评', desc: '由指导教师进行材料审查' },
                 { label: '复评', desc: '由企业导师进行专业评审' }
             ];
-            const rubric = task.evalPoints?.review || [];
             const uploadedFiles = JSON.parse(sessionStorage.getItem(`review-files-${task.id}`) || '[]');
-
-            let rubricHtml = '';
-            if (rubric.length > 0) {
-                rubricHtml = `
-                    <div class="tl-rubric-preview">
-                        <div style="font-weight:600;font-size:13px;margin-bottom:8px;"><i class="fas fa-list-check"></i> 评审量规</div>
-                        ${rubric.map(r => `
-                            <div class="tl-rubric-item">
-                                <span>${r.name} <span style="color:var(--text-tertiary);font-size:12px;">(${r.weight}%)</span></span>
-                                <span style="color:var(--primary-color);font-weight:500;">${r.maxScore}分</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
 
             let fileListHtml = '';
             if (uploadedFiles.length > 0) {
@@ -4616,28 +4732,50 @@
             }
 
             container.innerHTML = `
-                <div class="tl-review-notice">
-                    <div class="tl-review-title"><i class="fas fa-user-check"></i> 教师评审测评</div>
-                    <div class="tl-review-desc">
-                        <p>本任务采用「教师评审」方式评分。请在完成学习后，按照交付要求准备并上传成果材料。</p>
-                        <p>教师将按照评审量规的多维度评价点进行打分。</p>
-                    </div>
-                    <div class="tl-review-steps">
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;">
+                    <div class="tl-review-timeline">
                         ${steps.map((s, i) => `
-                            <div class="tl-review-step">
-                                <div class="tl-review-step-num">${i + 1}</div>
-                                <div>
-                                    <div style="font-weight:500;">${s.label}</div>
-                                    <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">${s.desc}</div>
-                                </div>
+                            <div class="tl-timeline-item">
+                                <div class="tl-timeline-dot">${i + 1}</div>
+                                <div class="tl-timeline-label">${s.label}</div>
+                                <div class="tl-timeline-desc">${s.desc}</div>
                             </div>
                         `).join('')}
                     </div>
-                    ${rubricHtml}
+                    <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;">
+                        <div style="font-size:13px;color:var(--text-secondary);">
+                            <i class="fas fa-info-circle" style="color:var(--primary-color);margin-right:6px;"></i>
+                            完成学习后，请上传成果材料等待评审
+                        </div>
+                        <button onclick="simulateUploadReviewFile('${task.id}')" style="padding:6px 14px;border:none;background:var(--primary-color);color:#fff;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap;">
+                            <i class="fas fa-cloud-upload-alt"></i> 上传材料
+                        </button>
+                    </div>
+                    ${fileListHtml}
                 </div>
-                <div style="margin-top:16px;">
+            `;
+        }
+
+        function renderOutcomeInteractive(task, container) {
+            const uploadedFiles = JSON.parse(sessionStorage.getItem(`outcome-files-${task.id}`) || '[]');
+
+            let fileListHtml = '';
+            if (uploadedFiles.length > 0) {
+                fileListHtml = `<div class="tl-file-list">` +
+                    uploadedFiles.map((f, i) => `
+                        <div class="tl-file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f}</span>
+                            <i class="fas fa-times" style="cursor:pointer;color:#999;" onclick="removeOutcomeFile('${task.id}', ${i})"></i>
+                        </div>
+                    `).join('') +
+                    `</div>`;
+            }
+
+            container.innerHTML = `
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
                     <div style="font-weight:600;font-size:13px;margin-bottom:10px;"><i class="fas fa-cloud-upload-alt"></i> 成果材料上传</div>
-                    <div class="tl-upload-zone" onclick="simulateUploadReviewFile('${task.id}')">
+                    <div class="tl-upload-zone" onclick="simulateUploadOutcomeFile('${task.id}')">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <div class="tl-upload-zone-text">点击上传成果材料（模拟）</div>
                         <div style="font-size:12px;color:#bfbfbf;margin-top:4px;">支持 PDF、DOCX、ZIP 等格式</div>
@@ -4645,6 +4783,71 @@
                     ${fileListHtml}
                 </div>
             `;
+        }
+
+        function simulateUploadOutcomeFile(taskId) {
+            const files = JSON.parse(sessionStorage.getItem(`outcome-files-${taskId}`) || '[]');
+            const mockNames = ['项目成果报告.pdf', '设计方案文档.docx', '演示视频.mp4', '源代码.zip'];
+            const name = mockNames[Math.floor(Math.random() * mockNames.length)];
+            files.push(`${name} (${new Date().toLocaleString('zh-CN')})`);
+            sessionStorage.setItem(`outcome-files-${taskId}`, JSON.stringify(files));
+            const task = getTaskById(taskId);
+            renderAssessmentPanel(task);
+        }
+
+        function removeOutcomeFile(taskId, index) {
+            const files = JSON.parse(sessionStorage.getItem(`outcome-files-${taskId}`) || '[]');
+            files.splice(index, 1);
+            sessionStorage.setItem(`outcome-files-${taskId}`, JSON.stringify(files));
+            const task = getTaskById(taskId);
+            renderAssessmentPanel(task);
+        }
+
+        function renderHomeworkInteractive(task, container) {
+            const uploadedFiles = JSON.parse(sessionStorage.getItem(`homework-files-${task.id}`) || '[]');
+
+            let fileListHtml = '';
+            if (uploadedFiles.length > 0) {
+                fileListHtml = `<div class="tl-file-list">` +
+                    uploadedFiles.map((f, i) => `
+                        <div class="tl-file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f}</span>
+                            <i class="fas fa-times" style="cursor:pointer;color:#999;" onclick="removeHomeworkFile('${task.id}', ${i})"></i>
+                        </div>
+                    `).join('') +
+                    `</div>`;
+            }
+
+            container.innerHTML = `
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:10px;"><i class="fas fa-cloud-upload-alt"></i> 作业上传</div>
+                    <div class="tl-upload-zone" onclick="simulateUploadHomeworkFile('${task.id}')">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="tl-upload-zone-text">点击上传作业（模拟）</div>
+                        <div style="font-size:12px;color:#bfbfbf;margin-top:4px;">支持 PDF、DOCX 等格式</div>
+                    </div>
+                    ${fileListHtml}
+                </div>
+            `;
+        }
+
+        function simulateUploadHomeworkFile(taskId) {
+            const files = JSON.parse(sessionStorage.getItem(`homework-files-${taskId}`) || '[]');
+            const mockNames = ['课后作业.docx', '练习题答案.pdf', '实验报告.docx'];
+            const name = mockNames[Math.floor(Math.random() * mockNames.length)];
+            files.push(`${name} (${new Date().toLocaleString('zh-CN')})`);
+            sessionStorage.setItem(`homework-files-${taskId}`, JSON.stringify(files));
+            const task = getTaskById(taskId);
+            renderAssessmentPanel(task);
+        }
+
+        function removeHomeworkFile(taskId, index) {
+            const files = JSON.parse(sessionStorage.getItem(`homework-files-${taskId}`) || '[]');
+            files.splice(index, 1);
+            sessionStorage.setItem(`homework-files-${taskId}`, JSON.stringify(files));
+            const task = getTaskById(taskId);
+            renderAssessmentPanel(task);
         }
 
         function simulateUploadReviewFile(taskId) {
@@ -4953,9 +5156,9 @@
 
         // 渲染评价标准权重表格（二级展开式）
         function renderWeightTables() {
-            const methodLabels = { paper: '试卷', question_bank: '题库', random_draw: '现场问答', review: '评审' };
-            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-user-check' };
-            const methodColors = { paper: '#1677ff', question_bank: '#389e0d', random_draw: '#d46b08', review: '#722ed1' };
+            const methodLabels = { paper: '试卷', question_bank: '题库', random_draw: '现场问答', review: '评审', outcome: '成果评价', homework: '作业', quiz: '随堂测' };
+            const methodIcons = { paper: 'fa-file-alt', question_bank: 'fa-database', random_draw: 'fa-comments', review: 'fa-user-check', outcome: 'fa-folder-check', homework: 'fa-book', quiz: 'fa-clipboard-question' };
+            const methodColors = { paper: '#1677ff', question_bank: '#389e0d', random_draw: '#d46b08', review: '#722ed1', outcome: '#13c2c2', homework: '#eb2f96', quiz: '#f5222d' };
             const taskWeights = [20, 15, 18, 12, 10, 15, 5, 5]; // 模拟权重
 
             const tbody = document.getElementById('rubricTableBody');

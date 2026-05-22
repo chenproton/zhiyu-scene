@@ -61,7 +61,7 @@ function getScenario(scenarioId: string) {
   return scenarios.find((s) => s.id === scenarioId)
 }
 
-function getTaskEvalPoints(scenarioId: string, taskId: string, methodKey: "randomDraw" | "review" | "paper" | "questionBank") {
+function getTaskEvalPoints(scenarioId: string, taskId: string, methodKey: "randomDraw" | "review" | "paper" | "questionBank" | "outcome" | "homework" | "quiz") {
   const scenario = getScenario(scenarioId)
   if (!scenario) return []
   const task = scenario.tasks.find((t) => t.id === taskId)
@@ -734,6 +734,103 @@ function StandardScoreInput({
   )
 }
 
+// ============================================================================
+// 作业类型评价点表格（扣分制）
+// ============================================================================
+
+function HomeworkEvalPointTable({
+  evalPoints,
+  evalPointScores,
+  isGraded,
+  onChange,
+}: {
+  evalPoints: TaskEvalPoint[]
+  evalPointScores: EvalPointScoreRecord[]
+  isGraded: boolean
+  onChange: (record: EvalPointScoreRecord) => void
+}) {
+  const getDeduction = (ep: TaskEvalPoint) => {
+    const record = evalPointScores.find((s) => s.evalPointId === ep.id)
+    if (!record) return 0
+    return Math.max(0, ep.maxScore - record.score)
+  }
+
+  const handleDeductionChange = (ep: TaskEvalPoint, deductionStr: string) => {
+    const deduction = parseFloat(deductionStr) || 0
+    const clampedDeduction = Math.max(0, Math.min(ep.maxScore, deduction))
+    const actualScore = Math.max(0, ep.maxScore - clampedDeduction)
+    onChange({
+      evalPointId: ep.id,
+      evalPointName: ep.name,
+      weight: ep.weight,
+      maxScore: ep.maxScore,
+      score: actualScore,
+      comment: "",
+    })
+  }
+
+  const totalScore = evalPointScores.reduce((sum, e) => sum + e.score, 0)
+  const maxTotal = evalPoints.reduce((sum, e) => sum + e.maxScore, 0)
+
+  return (
+    <div className="space-y-3">
+      {/* 表头 */}
+      <div className="grid grid-cols-[1fr_100px_80px] gap-3 px-3 py-2 bg-gray-100 rounded-lg text-xs font-medium text-gray-500">
+        <span>评价点</span>
+        <span className="text-center">扣分值</span>
+        <span className="text-right">总分</span>
+      </div>
+      {/* 评价点行 */}
+      {evalPoints.map((ep) => {
+        const record = evalPointScores.find((s) => s.evalPointId === ep.id)
+        const deduction = getDeduction(ep)
+        const hasScore = !!record
+        return (
+          <div
+            key={ep.id}
+            className={cn(
+              "grid grid-cols-[1fr_100px_80px] gap-3 px-3 py-3 rounded-lg border items-center transition-colors",
+              hasScore ? "bg-white border-gray-200" : "bg-amber-50/40 border-amber-200"
+            )}
+          >
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-gray-800">{ep.name}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{ep.desc}</div>
+            </div>
+            <div className="flex items-center justify-center gap-1">
+              <Input
+                type="number"
+                min={0}
+                max={ep.maxScore}
+                step={0.5}
+                value={deduction}
+                onChange={(e) => handleDeductionChange(ep, e.target.value)}
+                disabled={isGraded}
+                className="w-16 text-right h-8 text-sm font-semibold"
+              />
+              <span className="text-xs text-gray-400">分</span>
+            </div>
+            <div className="text-right text-sm text-gray-500">
+              <span className={cn("font-medium", hasScore ? "text-gray-700" : "text-amber-600")}>
+                {record?.score ?? "-"}
+              </span>
+              <span className="text-gray-400"> / {ep.maxScore}</span>
+            </div>
+          </div>
+        )
+      })}
+      {/* 合计 */}
+      <div className="grid grid-cols-[1fr_100px_80px] gap-3 px-3 py-2.5 bg-gray-50 rounded-lg border items-center">
+        <span className="text-sm font-medium text-gray-700">合计</span>
+        <div className="text-center text-xs text-gray-400">—</div>
+        <div className="text-right text-sm font-medium text-gray-800">
+          {totalScore} <span className="text-gray-400 font-normal">/ {maxTotal}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function EvalPointGradingCard({
   evalPoint,
   scoreRecord,
@@ -864,11 +961,14 @@ export default function GradingDetailPage() {
   const scenario = getScenario(submission.scenarioId)
 
   // 根据测评形式获取对应的评价点
-  const methodKeyMap: Record<string, "randomDraw" | "review" | "paper" | "questionBank"> = {
+  const methodKeyMap: Record<string, "randomDraw" | "review" | "paper" | "questionBank" | "outcome" | "homework" | "quiz"> = {
     "现场问答": "randomDraw",
-    "评审": "review",
+    "现场评审": "review",
     "试卷": "paper",
     "题库": "questionBank",
+    "成果评价": "outcome",
+    "作业": "homework",
+    "随堂测": "quiz",
   }
   const evalMethodKey = methodKeyMap[submission.assessmentForm]
   const evalPoints = evalMethodKey ? getTaskEvalPoints(submission.scenarioId, submission.taskId, evalMethodKey) : []
@@ -892,15 +992,18 @@ export default function GradingDetailPage() {
     .filter((a) => a.questionType === "text")
     .reduce((sum, a) => sum + a.maxScore, 0)
 
-  // 计算评价点总分（评审/现场问答）
+  // 计算评价点总分（现场评审/现场问答）
   const evalPointTotal = evalPointScores.reduce((sum, e) => sum + e.score, 0)
   const evalPointMaxTotal = evalPoints.reduce((sum, e) => sum + e.maxScore, 0)
 
   // 自动计算总分
-  const autoTotal =
-    submission.assessmentForm === "试卷" || submission.assessmentForm === "题库"
-      ? autoObjectiveScore + subjectiveQuestionScore + evalPointTotal
-      : evalPointTotal
+  const isObjectiveAssessment =
+    submission.assessmentForm === "试卷" ||
+    submission.assessmentForm === "题库" ||
+    submission.assessmentForm === "随堂测"
+  const autoTotal = isObjectiveAssessment
+    ? autoObjectiveScore + subjectiveQuestionScore + evalPointTotal
+    : evalPointTotal
 
   // 最终总分（教师可手动覆盖）
   const finalTotal = manualTotal !== null ? manualTotal : autoTotal
@@ -980,8 +1083,8 @@ export default function GradingDetailPage() {
 
       {/* 主内容区 */}
       <div className="flex-1 overflow-hidden">
-        {/* 试卷 / 题库 - 客观题评分 */}
-        {(submission.assessmentForm === "试卷" || submission.assessmentForm === "题库") && (
+        {/* 试卷 / 题库 / 随堂测 - 客观题评分 */}
+        {(submission.assessmentForm === "试卷" || submission.assessmentForm === "题库" || submission.assessmentForm === "随堂测") && (
           <div className="h-full flex flex-col">
             {/* 顶部大字总分 */}
             <div className="px-4 py-3 bg-white border-b shrink-0">
@@ -1028,7 +1131,7 @@ export default function GradingDetailPage() {
                     <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-200 bg-amber-50">待评分</Badge>
                   )}
                 </div>
-                {evalPoints.length > 0 && submission.assessmentForm === "试卷" && (
+                {evalPoints.length > 0 && (submission.assessmentForm === "试卷" || submission.assessmentForm === "随堂测") && (
                   <>
                     <div className="h-3 w-px bg-gray-200" />
                     <div className="flex items-center gap-1.5">
@@ -1092,13 +1195,13 @@ export default function GradingDetailPage() {
           </div>
         )}
 
-        {/* 评审 - 左右分屏 */}
-        {submission.assessmentForm === "评审" && (
+        {/* 现场评审 - 左右分屏 */}
+        {submission.assessmentForm === "现场评审" && (
           <div className="h-full flex">
             {/* 左侧：评审进度 + 历史评价 + 学生材料 */}
             <div className="w-1/2 flex flex-col border-r bg-white">
               <div className="px-4 py-2 border-b flex items-center justify-between shrink-0">
-                <h2 className="text-sm font-medium text-gray-700">评审材料</h2>
+                <h2 className="text-sm font-medium text-gray-700">现场评审材料</h2>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {/* 评审进度条 */}
@@ -1106,34 +1209,64 @@ export default function GradingDetailPage() {
                   <div className="px-4 py-3 border-b bg-gray-50/50">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-medium text-gray-500">评审进度</h3>
-                      <span className="text-xs text-gray-400">当前：{reviewSteps.filter(s => s.enabled).length} / {reviewSteps.length} 阶段</span>
+                      <span className="text-xs text-gray-400">
+                        {(() => {
+                          const enabledSteps = reviewSteps.filter(s => s.enabled)
+                          const currentIdx = submission.currentReviewPhaseIndex ?? 0
+                          if (currentIdx >= enabledSteps.length) {
+                            return "全部完成"
+                          }
+                          return `当前：${enabledSteps[currentIdx]?.label || "—"}`
+                        })()}
+                      </span>
                     </div>
                     <div className="flex items-center">
-                      {reviewSteps.map((step, idx) => {
-                        const isCompleted = idx < reviewSteps.filter(s => s.enabled).length - 1
-                        const isCurrent = step.enabled && !isCompleted
-                        return (
-                          <div key={step.id} className="flex items-center flex-1">
-                            <div className="flex flex-col items-center flex-1">
-                              <div className={cn(
-                                "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium border-2",
-                                isCompleted ? "bg-green-500 border-green-500 text-white" :
-                                isCurrent ? "bg-indigo-500 border-indigo-500 text-white" :
-                                "bg-white border-gray-300 text-gray-400"
-                              )}>
-                                {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
+                      {(() => {
+                        const enabledSteps = reviewSteps.filter(s => s.enabled)
+                        const currentIdx = submission.currentReviewPhaseIndex ?? 0
+                        return enabledSteps.map((step, idx) => {
+                          const isCompleted = idx < currentIdx
+                          const isCurrent = idx === currentIdx
+                          const isPending = idx > currentIdx
+                          return (
+                            <div key={step.id} className="flex items-center flex-1">
+                              <div className="flex flex-col items-center flex-1">
+                                <div className={cn(
+                                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium border-2 transition-colors",
+                                  isCompleted ? "bg-green-500 border-green-500 text-white" :
+                                  isCurrent ? "bg-indigo-500 border-indigo-500 text-white ring-2 ring-indigo-200" :
+                                  "bg-white border-gray-300 text-gray-400"
+                                )}>
+                                  {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
+                                </div>
+                                <span className={cn("text-[10px] mt-1", isCompleted || isCurrent ? "text-gray-700 font-medium" : "text-gray-400")}>
+                                  {step.label}
+                                </span>
                               </div>
-                              <span className={cn("text-[10px] mt-1", isCompleted || isCurrent ? "text-gray-700 font-medium" : "text-gray-400")}>
-                                {step.label}
-                              </span>
+                              {idx < enabledSteps.length - 1 && (
+                                <div className={cn("h-0.5 flex-1 mx-1", isCompleted ? "bg-green-400" : "bg-gray-200")} />
+                              )}
                             </div>
-                            {idx < reviewSteps.length - 1 && (
-                              <div className={cn("h-0.5 flex-1 mx-1", idx < reviewSteps.filter(s => s.enabled).length - 1 ? "bg-green-400" : "bg-gray-200")} />
-                            )}
-                          </div>
-                        )
-                      })}
+                          )
+                        })
+                      })()}
                     </div>
+                    {/* 当前阶段提示 */}
+                    {(() => {
+                      const enabledSteps = reviewSteps.filter(s => s.enabled)
+                      const currentIdx = submission.currentReviewPhaseIndex ?? 0
+                      const currentStep = enabledSteps[currentIdx]
+                      if (!currentStep) return null
+                      return (
+                        <div className="mt-3 px-3 py-2 bg-indigo-50 border border-indigo-100 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                            <span className="text-xs font-medium text-indigo-700">当前阶段：{currentStep.label}</span>
+                          </div>
+                          <p className="text-[11px] text-indigo-600 mt-0.5 ml-4">{currentStep.desc}</p>
+                        </div>
+                      )
+                    })()}
                   </div>
                 )}
 
@@ -1219,6 +1352,118 @@ export default function GradingDetailPage() {
                       onChange={handleEvalPointScoreChange}
                     />
                   ))
+                ) : (
+                  <div className="text-center py-8 text-gray-400">
+                    <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">该任务未配置评价点</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 成果评价 / 作业 - 左右分屏（无评审流程） */}
+        {(submission.assessmentForm === "成果评价" || submission.assessmentForm === "作业") && (
+          <div className="h-full flex">
+            {/* 左侧：学生材料 */}
+            <div className="w-1/2 flex flex-col border-r bg-white">
+              <div className="px-4 py-2 border-b flex items-center justify-between shrink-0">
+                <h2 className="text-sm font-medium text-gray-700">
+                  {submission.assessmentForm === "成果评价" ? "成果材料" : "作业材料"}
+                </h2>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* 学生提交内容 */}
+                {submission.subjectiveContent?.textAnswer && (
+                  <div className="bg-gray-50 rounded-lg border p-3">
+                    <h3 className="text-xs font-medium text-gray-500 mb-2">学生提交内容</h3>
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                      {submission.subjectiveContent.textAnswer}
+                    </pre>
+                  </div>
+                )}
+                {submission.subjectiveContent?.attachments &&
+                  submission.subjectiveContent.attachments.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-xs font-medium text-gray-500">附件</h3>
+                      {submission.subjectiveContent.attachments.map((att) => (
+                        <div
+                          key={att.id}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm group"
+                        >
+                          <Package className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-700 flex-1 min-w-0 truncate">{att.name}</span>
+                          <Badge variant="outline" className="text-xs shrink-0">
+                            {att.type === "code" ? "代码" : att.type === "video" ? "视频" : att.type === "document" ? "文档" : att.type === "image" ? "图片" : "其他"}
+                          </Badge>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            {["image", "video", "code", "document"].includes(att.type) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => setPreviewAttachment(att)}
+                              >
+                                <Eye className="h-3.5 w-3.5 mr-1" />
+                                预览
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => {
+                                const a = document.createElement("a")
+                                a.href = att.url
+                                a.download = att.name
+                                a.click()
+                              }}
+                            >
+                              <Package className="h-3.5 w-3.5 mr-1" />
+                              下载
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </div>
+            {/* 右侧：评价点评分 */}
+            <div className="w-1/2 flex flex-col bg-gray-50">
+              <div className="px-4 py-2 bg-white border-b flex items-center justify-between shrink-0">
+                <h2 className="text-sm font-medium text-gray-700">
+                  {submission.assessmentForm === "作业" ? "作业扣分评分" : "评价点评分"}
+                </h2>
+                <div className="text-sm text-gray-500">
+                  {submission.assessmentForm === "作业" ? (
+                    <span>已评分：<span className="font-medium text-gray-800">{evalPointTotal} / {evalPointMaxTotal}</span></span>
+                  ) : (
+                    <span>已评分：<span className="font-medium text-gray-800">{evalPointTotal} / {evalPointMaxTotal}</span></span>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                {evalPoints.length > 0 ? (
+                  submission.assessmentForm === "作业" ? (
+                    <HomeworkEvalPointTable
+                      evalPoints={evalPoints}
+                      evalPointScores={evalPointScores}
+                      isGraded={isGraded}
+                      onChange={handleEvalPointScoreChange}
+                    />
+                  ) : (
+                    evalPoints.map((ep) => (
+                      <EvalPointGradingCard
+                        key={ep.id}
+                        evalPoint={ep}
+                        scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
+                        isGraded={isGraded}
+                        onChange={handleEvalPointScoreChange}
+                      />
+                    ))
+                  )
                 ) : (
                   <div className="text-center py-8 text-gray-400">
                     <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />

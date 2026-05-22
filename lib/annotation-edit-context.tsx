@@ -60,7 +60,7 @@ export function AnnotationEditProvider({
   const [pendingElement, setPendingElement] = useState<HTMLElement | null>(
     null
   )
-  const [annotationsVisible, setAnnotationsVisible] = useState(true)
+  const [annotationsVisible, setAnnotationsVisible] = useState(false)
 
   const toggleAnnotationsVisible = useCallback(() => {
     setAnnotationsVisible((prev) => !prev)

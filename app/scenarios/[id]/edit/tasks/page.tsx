@@ -192,9 +192,10 @@ const evaluationMethodOptions = [
   { key: "defense", label: "答辩", icon: <MessageSquare className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生进行现场答辩", category: "互动评价" },
   { key: "debate", label: "辩论", icon: <PenTool className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生分组进行辩论", category: "互动评价" },
   { key: "presentation", label: "汇报", icon: <Presentation className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生进行成果汇报", category: "互动评价" },
-  { key: "quiz", label: "随堂测", icon: <FileQuestion className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "课堂即时测验", category: "基础考核" },
+  { key: "quiz", label: "随堂测", icon: <FileQuestion className="h-5 w-5" />, color: "bg-red-50 text-red-600 border-red-200", available: true, desc: "课堂即时测验", category: "基础考核" },
+  { key: "homework", label: "作业", icon: <BookOpen className="h-5 w-5" />, color: "bg-pink-50 text-pink-600 border-pink-200", available: true, desc: "学生提交作业进行评价", category: "基础考核" },
   { key: "ai_qa", label: "Ai 问答", icon: <Bot className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "AI 自动问答评测", category: "智能评测" },
-  { key: "outcome", label: "成果评价", icon: <FolderCheck className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "对学生成果进行评价", category: "综合评估" },
+  { key: "outcome", label: "成果评价", icon: <FolderCheck className="h-5 w-5" />, color: "bg-cyan-50 text-cyan-600 border-cyan-200", available: true, desc: "对学生成果进行评价", category: "综合评估" },
   { key: "practical", label: "现场实操", icon: <Wrench className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "现场操作技能考核", category: "互动评价" },
   { key: "roleplay", label: "角色扮演", icon: <Users className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "模拟场景角色扮演", category: "互动评价" },
   { key: "peer", label: "学生互评", icon: <UserCheck className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生之间互相评价", category: "综合评估" },
@@ -360,6 +361,14 @@ interface TaskState {
   paperEvalPoints: EvalPoint[]
   questionBankQuestions: string[]
   questionBankEvalPoints: EvalPoint[]
+  outcomeEvalPoints: EvalPoint[]
+  outcomeScoreType: "eval_points" | "ability_levels"
+  outcomeRubricId: string | null
+  homeworkEvalPoints: EvalPoint[]
+  homeworkScoreType: "eval_points" | "ability_levels"
+  homeworkRubricId: string | null
+  quizQuestions: string[]
+  quizEvalPoints: EvalPoint[]
   weight: number
   locked: boolean
   gradeMapping: GradeMapping[]
@@ -473,6 +482,14 @@ function makeDefaultTaskState(count: number, index: number): TaskState {
     paperEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
     questionBankQuestions: allQuestions.slice(0, 2).map(q => q.id),
     questionBankEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
+    outcomeEvalPoints: [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3]],
+    outcomeScoreType: "eval_points",
+    outcomeRubricId: null,
+    homeworkEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
+    homeworkScoreType: "eval_points",
+    homeworkRubricId: null,
+    quizQuestions: allQuestions.slice(0, 2).map(q => q.id),
+    quizEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
     weight: count > 0 ? Math.floor(100 / count) + (index < 100 % count ? 1 : 0) : 0,
     locked: false,
     gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)),
@@ -555,6 +572,14 @@ export default function TasksEditPage() {
         paperEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
         questionBankQuestions: methods.includes("question_bank") ? mockQuestions : [],
         questionBankEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
+        outcomeEvalPoints: methods.includes("outcome") ? [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3]] : [],
+        outcomeScoreType: "eval_points",
+        outcomeRubricId: null,
+        homeworkEvalPoints: methods.includes("homework") ? [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]] : [],
+        homeworkScoreType: "eval_points",
+        homeworkRubricId: null,
+        quizQuestions: methods.includes("quiz") ? mockQuestions : [],
+        quizEvalPoints: methods.includes("quiz") ? [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]] : [],
         weight: count > 0 ? Math.floor(100 / count) + (i < 100 % count ? 1 : 0) : 0,
         locked: false,
         gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)),
@@ -643,6 +668,9 @@ export default function TasksEditPage() {
           if (m === "review") return state.reviewEvalPoints.length > 0
           if (m === "paper") return !!state.paperId
           if (m === "question_bank") return state.questionBankQuestions.length > 0
+          if (m === "outcome") return state.outcomeEvalPoints.length > 0
+          if (m === "homework") return state.homeworkEvalPoints.length > 0
+          if (m === "quiz") return state.quizQuestions.length > 0
           return false
         })
         const methodWeightTotal2 = state.evaluationMethods.reduce((sum, m) => sum + (state.methodWeights[m] || 0), 0)
@@ -2805,6 +2833,12 @@ function EditCardDialog({
               return { title: "试卷", summary: state.paperId ? paperMocks.find(p => p.id === state.paperId)?.name || "已选择" : "未选择", configured: !!state.paperId }
             case "question_bank":
               return { title: "题库", summary: `${state.questionBankQuestions.length} 题`, configured: state.questionBankQuestions.length > 0 }
+            case "outcome":
+              return { title: "成果评价", summary: `${state.outcomeEvalPoints.length} 个评价点`, configured: state.outcomeEvalPoints.length > 0 }
+            case "homework":
+              return { title: "作业", summary: `${state.homeworkEvalPoints.length} 个评价点`, configured: state.homeworkEvalPoints.length > 0 }
+            case "quiz":
+              return { title: "随堂测", summary: `${state.quizQuestions.length} 题`, configured: state.quizQuestions.length > 0 }
             default: return { title: "", summary: "", configured: false }
           }
         }
@@ -2822,7 +2856,7 @@ function EditCardDialog({
           updateState({ methodEvalSubjects: { ...state.methodEvalSubjects, [methodKey]: newSubjects } })
         }
 
-        type EvalPointField = "randomDrawEvalPoints" | "reviewEvalPoints" | "paperEvalPoints" | "questionBankEvalPoints"
+        type EvalPointField = "randomDrawEvalPoints" | "reviewEvalPoints" | "paperEvalPoints" | "questionBankEvalPoints" | "outcomeEvalPoints" | "homeworkEvalPoints" | "quizEvalPoints"
 
         const getEvalPoints = (field: EvalPointField) => {
           switch (field) {
@@ -2830,6 +2864,9 @@ function EditCardDialog({
             case "reviewEvalPoints": return state.reviewEvalPoints
             case "paperEvalPoints": return state.paperEvalPoints
             case "questionBankEvalPoints": return state.questionBankEvalPoints
+            case "outcomeEvalPoints": return state.outcomeEvalPoints
+            case "homeworkEvalPoints": return state.homeworkEvalPoints
+            case "quizEvalPoints": return state.quizEvalPoints
           }
         }
 
@@ -2839,6 +2876,9 @@ function EditCardDialog({
             case "reviewEvalPoints": updateState({ reviewEvalPoints: points }); break
             case "paperEvalPoints": updateState({ paperEvalPoints: points }); break
             case "questionBankEvalPoints": updateState({ questionBankEvalPoints: points }); break
+            case "outcomeEvalPoints": updateState({ outcomeEvalPoints: points }); break
+            case "homeworkEvalPoints": updateState({ homeworkEvalPoints: points }); break
+            case "quizEvalPoints": updateState({ quizEvalPoints: points }); break
           }
         }
 
@@ -2868,11 +2908,12 @@ function EditCardDialog({
           setEvalPoints(field, getEvalPoints(field).map(p => p.id === id ? { ...p, ...updates } : p))
         }
 
-        const toggleQuestion = (qid: string, field: "randomDrawQuestions" | "questionBankQuestions") => {
-          const arr = field === "randomDrawQuestions" ? state.randomDrawQuestions : state.questionBankQuestions
+        const toggleQuestion = (qid: string, field: "randomDrawQuestions" | "questionBankQuestions" | "quizQuestions") => {
+          const arr = field === "randomDrawQuestions" ? state.randomDrawQuestions : field === "quizQuestions" ? state.quizQuestions : state.questionBankQuestions
           const exists = arr.includes(qid)
           const newArr = exists ? arr.filter(x => x !== qid) : [...arr, qid]
           if (field === "randomDrawQuestions") updateState({ randomDrawQuestions: newArr })
+          else if (field === "quizQuestions") updateState({ quizQuestions: newArr })
           else updateState({ questionBankQuestions: newArr })
         }
 
@@ -3900,6 +3941,157 @@ function EditCardDialog({
               </div>
             )
           }
+          if (methodKey === "outcome") {
+            return (
+              <div className="space-y-4">
+                <div className="p-4 bg-cyan-50 rounded-lg border border-cyan-100 text-sm text-cyan-700">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Info className="h-4 w-4" />
+                    <span className="font-medium">成果评价说明</span>
+                  </div>
+                  <p>成果评价时教师根据学生提交的成果材料进行打分。评价点配置请在「评价标准配置」卡片中设置。</p>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium">成果材料要求</p>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResReview.requiresMaterial} onCheckedChange={v => setMockResReview({ ...mockResReview, requiresMaterial: v })} />
+                      <span className="text-xs text-gray-600">是否需要提交成果材料</span>
+                    </div>
+                  </div>
+                  {mockResReview.requiresMaterial && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
+                          <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Label className="text-xs text-gray-500 mb-1.5">提交材料要求</Label>
+                        <Textarea
+                          value={mockResReview.submitFormatDesc}
+                          onChange={e => setMockResReview({ ...mockResReview, submitFormatDesc: e.target.value })}
+                          placeholder="请用一句话说明学生需要提交的成果材料要求..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
+                  <div className="mt-3">
+                    <Label className="text-xs text-gray-500 mb-1.5">评价场地/环境资源准备</Label>
+                    <Textarea
+                      value={mockResReview.venueResources}
+                      onChange={e => setMockResReview({ ...mockResReview, venueResources: e.target.value })}
+                      placeholder="请描述评价所需的场地、设备及环境资源准备要求..."
+                      rows={2}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResReview.allowResubmit} onCheckedChange={v => setMockResReview({ ...mockResReview, allowResubmit: v })} />
+                      <span className="text-xs text-gray-600">允许重新提交</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          if (methodKey === "homework") {
+            return (
+              <div className="space-y-4">
+                <div className="p-4 bg-pink-50 rounded-lg border border-pink-100 text-sm text-pink-700">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Info className="h-4 w-4" />
+                    <span className="font-medium">作业说明</span>
+                  </div>
+                  <p>学生提交作业后，教师按评分规则进行打分。评价点配置请在「评价标准配置」卡片中设置。</p>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium">作业提交要求</p>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResReview.requiresMaterial} onCheckedChange={v => setMockResReview({ ...mockResReview, requiresMaterial: v })} />
+                      <span className="text-xs text-gray-600">是否需要提交作业材料</span>
+                    </div>
+                  </div>
+                  {mockResReview.requiresMaterial && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
+                          <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Label className="text-xs text-gray-500 mb-1.5">作业格式要求</Label>
+                        <Textarea
+                          value={mockResReview.submitFormatDesc}
+                          onChange={e => setMockResReview({ ...mockResReview, submitFormatDesc: e.target.value })}
+                          placeholder="请用一句话说明学生需要提交的作业格式要求..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
+                  <div className="mt-3">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResReview.allowResubmit} onCheckedChange={v => setMockResReview({ ...mockResReview, allowResubmit: v })} />
+                      <span className="text-xs text-gray-600">允许重新提交</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          if (methodKey === "quiz") {
+            return (
+              <div className="space-y-4">
+                <QuestionSelectorPanel field="quizQuestions" selectedIds={state.quizQuestions} />
+                <div className="border rounded-xl p-4">
+                  <p className="text-sm font-medium mb-3">抽题规则</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">随机抽题数量</Label>
+                      <Input type="number" value={mockResQuestionBank.questionCount} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">难度分布</Label>
+                      <Select value={mockResQuestionBank.difficulty} onValueChange={v => setMockResQuestionBank({ ...mockResQuestionBank, difficulty: v })}>
+                        <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="easy">简单为主</SelectItem>
+                          <SelectItem value="mixed">难易混合</SelectItem>
+                          <SelectItem value="hard">困难为主</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">时间限制（分钟）</Label>
+                      <Input type="number" value={mockResQuestionBank.timeLimit} onChange={e => setMockResQuestionBank({ ...mockResQuestionBank, timeLimit: Math.max(5, parseInt(e.target.value) || 5) })} className="mt-1 text-sm" min={5} />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResQuestionBank.allowRetake} onCheckedChange={v => setMockResQuestionBank({ ...mockResQuestionBank, allowRetake: v })} />
+                      <span className="text-xs text-gray-600">允许重复测评</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResQuestionBank.shuffleQuestions} onCheckedChange={v => setMockResQuestionBank({ ...mockResQuestionBank, shuffleQuestions: v })} />
+                      <span className="text-xs text-gray-600">题目乱序</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={mockResQuestionBank.showResult} onCheckedChange={v => setMockResQuestionBank({ ...mockResQuestionBank, showResult: v })} />
+                      <span className="text-xs text-gray-600">提交后展示成绩</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
           return null
         }
 
@@ -3909,6 +4101,9 @@ function EditCardDialog({
             case "review": return { points: state.reviewEvalPoints, field: "reviewEvalPoints" as const }
             case "paper": return { points: state.paperEvalPoints, field: "paperEvalPoints" as const }
             case "question_bank": return { points: state.questionBankEvalPoints, field: "questionBankEvalPoints" as const }
+            case "outcome": return { points: state.outcomeEvalPoints, field: "outcomeEvalPoints" as const }
+            case "homework": return { points: state.homeworkEvalPoints, field: "homeworkEvalPoints" as const }
+            case "quiz": return { points: state.quizEvalPoints, field: "quizEvalPoints" as const }
             default: return { points: [] as EvalPoint[], field: "randomDrawEvalPoints" as const }
           }
         }
@@ -4488,7 +4683,12 @@ function EditCardDialog({
           const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false)
           const [saveTemplateMode, setSaveTemplateMode] = useState<"new" | "replace">("new")
           const [selectedReplaceTemplateId, setSelectedReplaceTemplateId] = useState<string | null>(null)
-          const rubricIdField = methodKey === "random_draw" ? "randomDrawRubricId" : "reviewRubricId"
+          const rubricIdField =
+            methodKey === "random_draw" ? "randomDrawRubricId" :
+            methodKey === "review" ? "reviewRubricId" :
+            methodKey === "outcome" ? "outcomeRubricId" :
+            methodKey === "homework" ? "homeworkRubricId" :
+            "reviewRubricId"
           const currentRubricId = (state as any)[rubricIdField] as string | null
           const view = methodDialogViews[methodKey] || "edit"
           const setView = (v: "list" | "edit" | "template") => setMethodDialogViews(prev => ({ ...prev, [methodKey]: v }))
@@ -4572,24 +4772,26 @@ function EditCardDialog({
                     <div>
                       <Label className="text-xs text-gray-500">评价标准类型</Label>
                       <div className="flex gap-3 mt-1">
-                        <button
-                          onClick={() => {
-                            if (editingRubricId) {
-                              setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, mode: "rubric" } : s))
-                            } else {
-                              setLocalDraft(prev => ({ ...prev, mode: "rubric" }))
-                            }
-                          }}
-                          className={cn(
-                            "px-3 py-1.5 rounded-lg text-xs border transition-all flex items-center gap-1.5",
-                            draftScheme.mode === "rubric" ? "bg-primary/10 text-primary border-primary" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
-                          )}
-                        >
-                          <div className={cn("w-3.5 h-3.5 rounded-full border flex items-center justify-center", draftScheme.mode === "rubric" ? "border-primary" : "border-gray-300")}>
-                            {draftScheme.mode === "rubric" && <div className="w-2 h-2 rounded-full bg-primary" />}
-                          </div>
-                          评价量规
-                        </button>
+                        {methodKey !== "homework" && (
+                          <button
+                            onClick={() => {
+                              if (editingRubricId) {
+                                setRubricLibrary(prev => prev.map(s => s.id === editingRubricId ? { ...s, mode: "rubric" } : s))
+                              } else {
+                                setLocalDraft(prev => ({ ...prev, mode: "rubric" }))
+                              }
+                            }}
+                            className={cn(
+                              "px-3 py-1.5 rounded-lg text-xs border transition-all flex items-center gap-1.5",
+                              draftScheme.mode === "rubric" ? "bg-primary/10 text-primary border-primary" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                            )}
+                          >
+                            <div className={cn("w-3.5 h-3.5 rounded-full border flex items-center justify-center", draftScheme.mode === "rubric" ? "border-primary" : "border-gray-300")}>
+                              {draftScheme.mode === "rubric" && <div className="w-2 h-2 rounded-full bg-primary" />}
+                            </div>
+                            评价量规
+                          </button>
+                        )}
                         <button
                           onClick={() => {
                             if (editingRubricId) {
@@ -4609,6 +4811,9 @@ function EditCardDialog({
                           评分规则
                         </button>
                       </div>
+                      {methodKey === "homework" && (
+                        <p className="text-[10px] text-gray-400 mt-1">作业测评仅需使用评分规则即可</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -5423,7 +5628,7 @@ function EditCardDialog({
                           <span className="text-[10px] font-medium">③</span>
                           <ArrowRight className="h-3.5 w-3.5" />
                         </div>
-                        {(methodKey === "question_bank" || methodKey === "paper") ? (
+                        {(methodKey === "question_bank" || methodKey === "paper" || methodKey === "quiz") ? (
                           <div className="flex-1 min-w-0 p-4 rounded-xl border text-left bg-green-50/50 border-green-100">
                             <div className="flex items-center gap-2 mb-2">
                               <Target className="h-4 w-4 text-green-500" />
@@ -5759,6 +5964,8 @@ function EditCardDialog({
                       toggleQuestion(newId, "randomDrawQuestions")
                     } else if (erDialogMethod === "question_bank") {
                       toggleQuestion(newId, "questionBankQuestions")
+                    } else if (erDialogMethod === "quiz") {
+                      toggleQuestion(newId, "quizQuestions")
                     }
                     setShowAddQuestion(false)
                     setNewQuestionName("")
