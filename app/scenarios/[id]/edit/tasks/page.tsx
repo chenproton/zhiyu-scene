@@ -351,6 +351,8 @@ interface TaskState {
   resources: string[]
   evaluationMethods: string[]
   randomDrawQuestions: string[]
+  randomDrawCustomQuestions: { id: string; name: string; description: string; answer: string; major: string }[]
+  randomDrawSelectedIds: string[]
   randomDrawEvalPoints: EvalPoint[]
   randomDrawScoreType: "eval_points" | "ability_levels"
   randomDrawRubricId: string | null
@@ -472,6 +474,8 @@ function makeDefaultTaskState(count: number, index: number): TaskState {
     evaluationMethods: ["random_draw", "review", "paper", "question_bank"],
     methodWeights: { random_draw: 25, review: 25, paper: 25, question_bank: 25 },
     randomDrawQuestions: allQuestions.slice(0, 2).map(q => q.id),
+    randomDrawCustomQuestions: [],
+    randomDrawSelectedIds: [],
     randomDrawEvalPoints: [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1], mockDefaultEvalPoints[7], mockDefaultEvalPoints[8]],
     randomDrawScoreType: "eval_points",
     randomDrawRubricId: null,
@@ -562,6 +566,29 @@ export default function TasksEditPage() {
         resources: t.resources || [],
         evaluationMethods: methods,
         randomDrawQuestions: mockQuestions,
+        randomDrawCustomQuestions: [
+          { id: "rdq-1", name: "请简述 React 的虚拟 DOM 工作原理", description: "考察学生对 React 核心机制的理解，包括 diff 算法和 reconciliation 过程。", answer: "虚拟 DOM 是 React 在内存中维护的一颗树形结构，用于描述真实 DOM 的状态。当状态变化时，React 会生成新的虚拟 DOM，通过 Diff 算法比较新旧虚拟 DOM 的差异，计算出最小变更集，最后批量更新真实 DOM。", major: "前端开发" },
+          { id: "rdq-2", name: "什么是闭包？请举例说明其在实际开发中的应用", description: "考察 JavaScript 核心概念闭包的理解及实际应用场景。", answer: "闭包是指有权访问另一个函数作用域中变量的函数。应用场景包括：1. 数据封装和私有变量；2. 函数柯里化；3. 防抖和节流函数的实现；4. 模块化模式。", major: "前端开发" },
+          { id: "rdq-3", name: "HTTP 状态码 301 和 302 的区别是什么", description: "考察对 HTTP 协议重定向状态码的理解。", answer: "301 Moved Permanently 表示资源已被永久移动到新的 URL，搜索引擎会更新索引。302 Found 表示资源临时位于其他 URL，客户端应继续使用原 URL 发起后续请求。", major: "后端开发" },
+          { id: "rdq-4", name: "请解释数据库事务的 ACID 特性", description: "考察关系型数据库核心概念。", answer: "ACID 指原子性（Atomicity，事务要么全部完成要么全部不完成）、一致性（Consistency，事务执行前后数据库处于一致状态）、隔离性（Isolation，并发事务互不干扰）、持久性（Durability，事务一旦提交就永久保存）。", major: "后端开发" },
+          { id: "rdq-5", name: "什么是 RESTful API？设计一个用户资源的 RESTful 接口", description: "考察 RESTful 架构风格的理解和接口设计能力。", answer: "RESTful API 是一种基于 HTTP 协议、使用 URL 定位资源、用 HTTP 方法（GET/POST/PUT/DELETE）操作资源的架构风格。用户资源接口示例：GET /users（查询列表）、GET /users/:id（查询详情）、POST /users（创建）、PUT /users/:id（更新）、DELETE /users/:id（删除）。", major: "后端开发" },
+          { id: "rdq-6", name: "请说明 CSS 中 BFC（块级格式化上下文）的作用及创建方式", description: "考察 CSS 布局核心概念。", answer: "BFC 是页面上的一个独立渲染区域，内部元素的布局不会影响外部。作用：1. 清除浮动；2. 防止外边距合并；3. 阻止元素被浮动元素覆盖。创建方式：overflow 不为 visible、display 为 inline-block/flex/grid、position 为 absolute/fixed、float 不为 none 等。", major: "前端开发" },
+          { id: "rdq-7", name: "TCP 三次握手的过程是什么？为什么需要三次", description: "考察网络协议基础知识。", answer: "三次握手：1. 客户端发送 SYN；2. 服务端回复 SYN+ACK；3. 客户端回复 ACK。需要三次的原因是为了确认双方的收发能力都正常，同时防止历史重复连接初始化造成混乱。", major: "后端开发" },
+          { id: "rdq-8", name: "请简述 Git 中 merge 和 rebase 的区别及使用场景", description: "考察版本控制工具的深入理解。", answer: "merge 会保留分支历史，产生一个新的合并提交，适合保留完整协作历史。rebase 会将当前分支的提交在目标分支上重新播放，历史呈线性，适合清理本地提交历史或在功能分支上保持与主分支同步。", major: "通用" },
+          { id: "rdq-9", name: "什么是跨域？如何解决浏览器的跨域问题", description: "考察前端安全及网络基础知识。", answer: "跨域是指浏览器的同源策略限制了不同源（协议、域名、端口不同）之间的资源访问。解决方案：1. CORS（服务端设置 Access-Control-Allow-Origin）；2. JSONP（仅支持 GET）；3. 反向代理；4. postMessage；5. WebSocket。", major: "前端开发" },
+          { id: "rdq-10", name: "请解释 JavaScript 中的事件循环（Event Loop）机制", description: "考察 JS 异步执行原理。", answer: "JavaScript 是单线程语言，事件循环负责协调同步任务和异步任务的执行。执行栈为空时，事件循环会优先检查微任务队列（Promise、MutationObserver），然后检查宏任务队列（setTimeout、setInterval、I/O），循环往复。", major: "前端开发" },
+          { id: "rdq-11", name: "Redis 有哪些常见的数据类型？分别适用于什么场景", description: "考察缓存数据库的使用经验。", answer: "String：缓存、计数器；List：消息队列、时间线；Set：去重、共同关注；ZSet：排行榜、延时队列；Hash：对象存储；Bitmap：签到统计；HyperLogLog：UV 统计；Geo：地理位置。", major: "后端开发" },
+          { id: "rdq-12", name: "请说明单点登录（SSO）的实现原理", description: "考察认证授权架构设计能力。", answer: "SSO 的核心思想是将用户认证信息集中管理。常见实现：1. 基于 Cookie 的 CAS 协议；2. 基于 Token 的 JWT/OAuth2.0；3. 统一认证中心签发票据，各子系统凭票据换取登录状态。", major: "后端开发" },
+          { id: "rdq-13", name: "什么是防抖（debounce）和节流（throttle）？", description: "考察前端性能优化技巧。", answer: "防抖：事件触发后等待一定时间，若期间再次触发则重新计时，适用于搜索框输入。节流：在固定时间间隔内只执行一次函数，适用于滚动加载、resize 事件。两者都通过闭包实现定时器控制。", major: "前端开发" },
+          { id: "rdq-14", name: "请简述 Docker 容器与虚拟机的区别", description: "考察容器化技术基础。", answer: "虚拟机通过 Hypervisor 在硬件层模拟完整操作系统，资源占用大、启动慢。Docker 容器共享宿主机内核，通过 Namespace 和 Cgroups 实现隔离，轻量、启动快、镜像小。", major: "运维部署" },
+          { id: "rdq-15", name: "前端性能优化有哪些常用手段？", description: "考察前端工程化实践经验。", answer: "1. 资源压缩与合并；2. 使用 CDN；3. 图片懒加载与 WebP 格式；4. 代码分割与懒加载；5. 浏览器缓存策略；6. SSR/SSG；7. 减少重排重绘；8. 使用 Web Worker；9. 服务端压缩（Gzip/Brotli）。", major: "前端开发" },
+          { id: "rdq-16", name: "请解释 MySQL 索引的工作原理及优化原则", description: "考察数据库性能优化能力。", answer: "索引通过 B+Tree 结构存储，加速数据检索。优化原则：1. 最左前缀原则；2. 避免全表扫描；3. 覆盖索引减少回表；4. 控制索引数量；5. 区分度高的列建索引；6. 避免索引失效（如函数操作、类型转换）。", major: "后端开发" },
+          { id: "rdq-17", name: "什么是微前端？有哪些实现方案", description: "考察前端架构设计能力。", answer: "微前端是将大型前端应用拆分为独立部署的子应用的架构。实现方案：1. qiankun（基于 single-spa）；2. Module Federation（Webpack 5）；3. iframe；4. Web Components；5. 路由分发。", major: "前端开发" },
+          { id: "rdq-18", name: "请说明 Linux 中进程和线程的区别", description: "考察操作系统基础知识。", answer: "进程是资源分配的基本单位，拥有独立的地址空间和系统资源。线程是 CPU 调度的基本单位，共享进程的地址空间和资源。线程切换开销小于进程切换。", major: "后端开发" },
+          { id: "rdq-19", name: "请简述敏捷开发（Scrum）的核心流程", description: "考察项目管理方法论。", answer: "Scrum 核心流程：1. 产品待办列表梳理；2. Sprint 计划会议；3. 每日站会（15分钟）；4. Sprint 执行与跟踪（燃尽图）；5. Sprint 评审会议；6. Sprint 回顾会议。通常 Sprint 周期为 1-4 周。", major: "通用" },
+          { id: "rdq-20", name: "WebSocket 与 HTTP 轮询的区别及适用场景", description: "考察实时通信技术选型能力。", answer: "HTTP 轮询：客户端定时请求服务端，实现简单但实时性差、浪费带宽。WebSocket：全双工长连接，服务端可主动推送，实时性好、开销低。适用场景：即时通讯、股票行情、协同编辑、在线游戏。", major: "后端开发" },
+        ],
+        randomDrawSelectedIds: [],
         randomDrawEvalPoints: mockEps.randomDraw.length > 0 ? mockEps.randomDraw : [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1], mockDefaultEvalPoints[7]],
         randomDrawScoreType: "eval_points",
         randomDrawRubricId: null,
@@ -664,7 +691,7 @@ export default function TasksEditPage() {
       case "evaluationRules":
         if (state.evaluationMethods.length === 0) return "未配置评价方式"
         const configuredMethods = state.evaluationMethods.filter(m => {
-          if (m === "random_draw") return state.randomDrawQuestions.length > 0 || state.randomDrawEvalPoints.length > 0
+          if (m === "random_draw") return state.randomDrawSelectedIds.length > 0 || state.randomDrawEvalPoints.length > 0
           if (m === "review") return state.reviewEvalPoints.length > 0
           if (m === "paper") return !!state.paperId
           if (m === "question_bank") return state.questionBankQuestions.length > 0
@@ -1258,6 +1285,15 @@ function EditCardDialog({
 
   // Determine if a knowledge point is reference (original library) or custom (added/cloned)
   const isReferenceKp = (kpId: string) => !customKnowledgePointIds.has(kpId)
+
+  // For random draw custom questions (现场问答题)
+  const [rdqSearch, setRdqSearch] = useState("")
+  const [rdqActionOpen, setRdqActionOpen] = useState(false)
+  const [rdqActionMode, setRdqActionMode] = useState<"add" | "edit" | null>(null)
+  const [rdqActionTarget, setRdqActionTarget] = useState<{ id: string; name: string; description: string; answer: string } | null>(null)
+  const [newRdqForm, setNewRdqForm] = useState({ name: "", description: "", answer: "", major: "" })
+  const [rdqDetailOpen, setRdqDetailOpen] = useState(false)
+  const [selectedRdqForDetail, setSelectedRdqForDetail] = useState<string | null>(null)
 
   // For resources search & upload
   const [resSearchName, setResSearchName] = useState("")
@@ -2826,7 +2862,7 @@ function EditCardDialog({
         const getMethodConfigSummary = (methodKey: string) => {
           switch (methodKey) {
             case "random_draw":
-              return { title: "现场问答", summary: `${state.randomDrawQuestions.length} 题 / ${state.randomDrawEvalPoints.length} 个评价点`, configured: state.randomDrawQuestions.length > 0 || state.randomDrawEvalPoints.length > 0 }
+              return { title: "现场问答", summary: `${state.randomDrawSelectedIds.length} 题 / ${state.randomDrawEvalPoints.length} 个评价点`, configured: state.randomDrawSelectedIds.length > 0 || state.randomDrawEvalPoints.length > 0 }
             case "review":
               return { title: "现场评审", summary: `${state.reviewEvalPoints.length} 个评价点`, configured: state.reviewEvalPoints.length > 0 }
             case "paper":
@@ -3537,37 +3573,247 @@ function EditCardDialog({
         // Resource-only panel (no eval points)
         const EvalResourceOnlyPanel = ({ methodKey }: { methodKey: string }) => {
           if (methodKey === "random_draw") {
+            const rdqMajorOptions = ["前端开发", "后端开发", "运维部署", "通用"]
+            const filteredRdq = state.randomDrawCustomQuestions.filter(q => !rdqSearch || q.name.includes(rdqSearch) || q.description.includes(rdqSearch) || q.major.includes(rdqSearch))
+
+            const handleAddRdq = () => {
+              setNewRdqForm({ name: "", description: "", answer: "", major: "" })
+              setRdqActionMode("add")
+              setRdqActionTarget(null)
+              setRdqActionOpen(true)
+            }
+
+            const handleEditRdq = (q: typeof state.randomDrawCustomQuestions[0]) => {
+              setNewRdqForm({ name: q.name, description: q.description, answer: q.answer, major: q.major })
+              setRdqActionMode("edit")
+              setRdqActionTarget(q)
+              setRdqActionOpen(true)
+            }
+
+            const handleSaveRdq = () => {
+              if (!newRdqForm.name.trim()) return
+              if (rdqActionMode === "edit" && rdqActionTarget) {
+                updateState({
+                  randomDrawCustomQuestions: state.randomDrawCustomQuestions.map(q =>
+                    q.id === rdqActionTarget.id ? { ...q, name: newRdqForm.name.trim(), description: newRdqForm.description.trim(), answer: newRdqForm.answer.trim(), major: newRdqForm.major.trim() } : q
+                  )
+                })
+                setRdqActionOpen(false)
+                return
+              }
+              const newId = `rdq-${Date.now()}`
+              const newQ = {
+                id: newId,
+                name: newRdqForm.name.trim(),
+                description: newRdqForm.description.trim(),
+                answer: newRdqForm.answer.trim(),
+                major: newRdqForm.major.trim(),
+              }
+              updateState({ randomDrawCustomQuestions: [...state.randomDrawCustomQuestions, newQ] })
+              setRdqActionOpen(false)
+              setRdqSearch("")
+            }
+
+            const handleDeleteRdq = (id: string) => {
+              updateState({
+                randomDrawCustomQuestions: state.randomDrawCustomQuestions.filter(q => q.id !== id),
+                randomDrawSelectedIds: state.randomDrawSelectedIds.filter(sid => sid !== id)
+              })
+            }
+
+            const handleToggleSelect = (id: string) => {
+              const isSelected = state.randomDrawSelectedIds.includes(id)
+              if (isSelected) {
+                updateState({ randomDrawSelectedIds: state.randomDrawSelectedIds.filter(sid => sid !== id) })
+              } else {
+                updateState({ randomDrawSelectedIds: [...state.randomDrawSelectedIds, id] })
+              }
+            }
+
+            const selectedRdqList = state.randomDrawSelectedIds.map(id => state.randomDrawCustomQuestions.find(q => q.id === id)).filter(Boolean) as typeof state.randomDrawCustomQuestions
+
             return (
-              <div className="space-y-4">
-                <QuestionSelectorPanel field="randomDrawQuestions" selectedIds={state.randomDrawQuestions} />
-                <div className="border rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium">抽题规则</p>
-                    <div className="flex items-center gap-2">
-                      <Switch checked={mockResRandomDraw.autoDraw} onCheckedChange={v => setMockResRandomDraw({ ...mockResRandomDraw, autoDraw: v })} />
-                      <span className="text-xs text-gray-600">{mockResRandomDraw.autoDraw ? "自动抽题" : "教师手动选择"}</span>
+              <div className="h-[calc(92vh-180px)] flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input value={rdqSearch} onChange={e => setRdqSearch(e.target.value)} placeholder="搜索现场问答题名称、描述或适用专业..." className="pl-9" />
+                  </div>
+                  <Button onClick={handleAddRdq}>
+                    <Plus className="h-4 w-4 mr-1" />新增现场问答题
+                  </Button>
+                </div>
+
+                <div className="flex gap-4 flex-1 min-h-0">
+                  {/* Left: All questions */}
+                  <div className="w-3/5 flex flex-col min-h-0 border rounded-xl p-3">
+                    <p className="text-sm font-medium mb-3 text-gray-700">
+                      {rdqSearch ? `搜索结果 (${filteredRdq.length})` : "全部现场问答题"}
+                    </p>
+                    <div className="flex-1 overflow-y-auto pr-1">
+                      {filteredRdq.length === 0 ? (
+                        <div className="text-center text-gray-400 py-8">
+                          <FileQuestion className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">{rdqSearch ? "未找到匹配的现场问答题" : "暂无现场问答题，请点击上方按钮新增"}</p>
+                        </div>
+                      ) : (
+                        <table className="w-full text-sm">
+                          <thead className="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                              <th className="text-left text-xs font-medium text-gray-500 px-3 py-2 w-[26%]">题目名称</th>
+                              <th className="text-left text-xs font-medium text-gray-500 px-3 py-2 w-[30%]">题目描述</th>
+                              <th className="text-left text-xs font-medium text-gray-500 px-3 py-2 w-[14%]">适用专业</th>
+                              <th className="text-right text-xs font-medium text-gray-500 px-3 py-2 w-[30%]">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {filteredRdq.map(q => {
+                              const isSelected = state.randomDrawSelectedIds.includes(q.id)
+                              return (
+                                <tr key={q.id} className={cn("hover:bg-gray-50 transition-colors", isSelected ? "bg-primary/[0.03]" : "")}>
+                                  <td className="px-3 py-2">
+                                    <span className="text-sm font-medium text-gray-800">{q.name}</span>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <p className="text-xs text-gray-500 line-clamp-1" title={q.description}>{q.description || "-"}</p>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <Badge variant="secondary" className="text-[10px]">{q.major || "-"}</Badge>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <div className="flex items-center justify-end gap-1">
+                                      <Button variant="ghost" size="sm" className="h-6 text-[11px] px-1.5 text-gray-500 hover:text-primary" onClick={() => { setSelectedRdqForDetail(q.id); setRdqDetailOpen(true) }}>
+                                        详情
+                                      </Button>
+                                      <Button variant="ghost" size="sm" className="h-6 text-[11px] px-1.5 text-gray-500 hover:text-primary" onClick={() => handleEditRdq(q)}>
+                                        编辑
+                                      </Button>
+                                      {isSelected ? (
+                                        <Button size="sm" variant="outline" className="h-6 text-[11px] px-2" onClick={() => handleToggleSelect(q.id)}>
+                                          取消
+                                        </Button>
+                                      ) : (
+                                        <Button size="sm" className="h-6 text-[11px] px-2" onClick={() => handleToggleSelect(q.id)}>
+                                          选择
+                                        </Button>
+                                      )}
+                                      <Button variant="ghost" size="sm" className="h-6 text-[11px] px-1.5 text-red-400 hover:text-red-600" onClick={() => handleDeleteRdq(q.id)}>
+                                        删除
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      )}
                     </div>
                   </div>
-                  {mockResRandomDraw.autoDraw && (
-                    <div className="grid grid-cols-2 gap-3">
+
+                  {/* Right: Selected questions */}
+                  <div className="w-2/5 border rounded-xl p-3 flex flex-col min-h-0">
+                    <p className="text-sm font-medium mb-3 text-gray-700">已配置现场问答题 ({selectedRdqList.length})</p>
+                    <div className="flex-1 overflow-y-auto">
+                      {selectedRdqList.length === 0 ? (
+                        <div className="text-center text-gray-400 py-8">
+                          <FileQuestion className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-xs">请从左侧选择现场问答题</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {selectedRdqList.map(q => (
+                            <div key={q.id} className="p-2.5 rounded-lg border border-primary/20 bg-primary/5 relative">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium flex-1 truncate">{q.name}</span>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-gray-400 -mr-1 -mt-1" onClick={() => handleToggleSelect(q.id)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              <p className="text-[11px] text-gray-500 line-clamp-1">{q.description || "暂无描述"}</p>
+                              <Badge variant="outline" className="text-[9px] mt-1 font-normal px-1 py-0 h-4">{q.major || "通用"}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add / Edit Dialog */}
+                <Dialog open={rdqActionOpen} onOpenChange={setRdqActionOpen}>
+                  <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>{rdqActionMode === "add" ? "新增现场问答题" : "编辑现场问答题"}</DialogTitle>
+                      <DialogDescription>{rdqActionMode === "add" ? "创建一个新的现场问答题" : "修改现场问答题信息"}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
                       <div>
-                        <Label className="text-xs text-gray-500">抽取题数</Label>
-                        <Input type="number" value={mockResRandomDraw.questionCount} onChange={e => setMockResRandomDraw({ ...mockResRandomDraw, questionCount: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
+                        <Label>题目名称</Label>
+                        <Input value={newRdqForm.name} onChange={e => setNewRdqForm({ ...newRdqForm, name: e.target.value })} placeholder="输入题目名称" className="mt-1.5" />
                       </div>
                       <div>
-                        <Label className="text-xs text-gray-500">难度分布</Label>
-                        <Select value={mockResRandomDraw.difficulty} onValueChange={v => setMockResRandomDraw({ ...mockResRandomDraw, difficulty: v })}>
-                          <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
+                        <Label>适用专业</Label>
+                        <Select value={newRdqForm.major} onValueChange={v => setNewRdqForm({ ...newRdqForm, major: v })}>
+                          <SelectTrigger className="mt-1.5"><SelectValue placeholder="选择适用专业" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="easy">简单为主</SelectItem>
-                            <SelectItem value="mixed">难易混合</SelectItem>
-                            <SelectItem value="hard">困难为主</SelectItem>
+                            {rdqMajorOptions.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                           </SelectContent>
                         </Select>
                       </div>
+                      <div>
+                        <Label>题目描述</Label>
+                        <Textarea value={newRdqForm.description} onChange={e => setNewRdqForm({ ...newRdqForm, description: e.target.value })} placeholder="输入题目描述" className="mt-1.5" rows={3} />
+                      </div>
+                      <div>
+                        <Label>题目答案</Label>
+                        <Textarea value={newRdqForm.answer} onChange={e => setNewRdqForm({ ...newRdqForm, answer: e.target.value })} placeholder="输入题目答案" className="mt-1.5" rows={3} />
+                      </div>
                     </div>
-                  )}
-                </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setRdqActionOpen(false)}>取消</Button>
+                      <Button onClick={handleSaveRdq} disabled={!newRdqForm.name.trim()}>
+                        {rdqActionMode === "add" ? "新增" : "保存修改"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Detail Dialog */}
+                <Dialog open={rdqDetailOpen} onOpenChange={setRdqDetailOpen}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>现场问答题详情</DialogTitle>
+                    </DialogHeader>
+                    {(() => {
+                      const q = state.randomDrawCustomQuestions.find(x => x.id === selectedRdqForDetail)
+                      if (!q) return null
+                      return (
+                        <div className="space-y-4 py-2">
+                          <div>
+                            <Label className="text-xs text-gray-500">题目名称</Label>
+                            <p className="text-sm font-medium mt-1">{q.name}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">适用专业</Label>
+                            <Badge variant="secondary" className="text-[10px] mt-1">{q.major || "通用"}</Badge>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">题目描述</Label>
+                            <p className="text-sm mt-1 text-gray-700 whitespace-pre-wrap">{q.description || "-"}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">题目答案</Label>
+                            <p className="text-sm mt-1 text-gray-700 whitespace-pre-wrap">{q.answer || "-"}</p>
+                          </div>
+                        </div>
+                      )
+                    })()}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setRdqDetailOpen(false)}>关闭</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             )
           }
@@ -3593,7 +3839,7 @@ function EditCardDialog({
                     <>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
+                          <Label className="text-xs text-gray-500">预估提交天数</Label>
                           <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
                         </div>
                       </div>
@@ -3963,7 +4209,7 @@ function EditCardDialog({
                     <>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
+                          <Label className="text-xs text-gray-500">预估提交天数</Label>
                           <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
                         </div>
                       </div>
@@ -4021,7 +4267,7 @@ function EditCardDialog({
                     <>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-xs text-gray-500">提交截止（距任务开始天数）</Label>
+                          <Label className="text-xs text-gray-500">预估提交天数</Label>
                           <Input type="number" value={mockResReview.deadlineDays} onChange={e => setMockResReview({ ...mockResReview, deadlineDays: Math.max(1, parseInt(e.target.value) || 1) })} className="mt-1 text-sm" min={1} />
                         </div>
                       </div>
@@ -5777,208 +6023,15 @@ function EditCardDialog({
             </Dialog>
 
             <Dialog open={showAddQuestion} onOpenChange={setShowAddQuestion}>
-              <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <PrdAnnotation data={getAnnotation("dialog-add-question")}><DialogTitle>新增题目</DialogTitle></PrdAnnotation>
-                  <DialogDescription>添加新题目到题库</DialogDescription>
+                  <DialogTitle>新增题目</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 py-2">
-                  <div>
-                    <Label className="text-xs text-gray-500">题目类型</Label>
-                    <Select value={newQuestionType} onValueChange={v => {
-                      setNewQuestionType(v as "single" | "multiple" | "judgment" | "short_answer" | "essay" | "fill_blank")
-                      setNewQuestionAnswer("")
-                      setNewQuestionMultipleAnswer([])
-                      setNewQuestionJudgmentAnswer("true")
-                      if (v === "single" || v === "multiple") {
-                        setNewQuestionOptions(["", "", "", ""])
-                      }
-                    }}>
-                      <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="single">单选题</SelectItem>
-                        <SelectItem value="multiple">多选题</SelectItem>
-                        <SelectItem value="judgment">判断题</SelectItem>
-                        <SelectItem value="short_answer">简答题</SelectItem>
-                        <SelectItem value="essay">论述题</SelectItem>
-                        <SelectItem value="fill_blank">填空题</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">题目名称</Label>
-                    <Input value={newQuestionName} onChange={e => setNewQuestionName(e.target.value)} placeholder="输入题目名称" className="mt-1 text-sm" />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">题目内容</Label>
-                    <Textarea value={newQuestionContent} onChange={e => setNewQuestionContent(e.target.value)} placeholder="输入题目内容" className="mt-1 text-sm" rows={3} />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">难度</Label>
-                    <Select value={newQuestionDifficulty} onValueChange={v => setNewQuestionDifficulty(v as "easy" | "medium" | "hard")}>
-                      <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="easy">简单</SelectItem>
-                        <SelectItem value="medium">中等</SelectItem>
-                        <SelectItem value="hard">困难</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">所属题库</Label>
-                    <Select value={newQuestionBank} onValueChange={v => setNewQuestionBank(v)}>
-                      <SelectTrigger className="mt-1 text-sm h-9"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="draft">草稿库</SelectItem>
-                        <SelectItem value="frontend">前端开发题库</SelectItem>
-                        <SelectItem value="backend">后端开发题库</SelectItem>
-                        <SelectItem value="public">公共基础题库</SelectItem>
-                        <SelectItem value="professional">专业技能题库</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {(newQuestionType === "single" || newQuestionType === "multiple") && (
-                    <div className="space-y-2">
-                      <Label className="text-xs text-gray-500">选项</Label>
-                      {newQuestionOptions.map((opt, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500 w-6">{String.fromCharCode(65 + i)}.</span>
-                          <Input value={opt} onChange={e => {
-                            const newOpts = [...newQuestionOptions]
-                            newOpts[i] = e.target.value
-                            setNewQuestionOptions(newOpts)
-                          }} placeholder={`选项 ${String.fromCharCode(65 + i)}`} className="text-sm flex-1" />
-                        </div>
-                      ))}
-                      {newQuestionType === "single" && (
-                        <div>
-                          <Label className="text-xs text-gray-500">正确答案</Label>
-                          <Select value={newQuestionAnswer} onValueChange={v => setNewQuestionAnswer(v)}>
-                            <SelectTrigger className="mt-1 text-sm h-9"><SelectValue placeholder="选择正确答案" /></SelectTrigger>
-                            <SelectContent>
-                              {newQuestionOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{String.fromCharCode(65 + i)}. {opt}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                      {newQuestionType === "multiple" && (
-                        <div>
-                          <Label className="text-xs text-gray-500">正确答案</Label>
-                          <div className="mt-1 space-y-1">
-                            {newQuestionOptions.map((opt, i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <div
-                                  className={cn("w-4 h-4 rounded border flex items-center justify-center cursor-pointer", newQuestionMultipleAnswer.includes(opt) ? "bg-primary border-primary" : "border-gray-300")}
-                                  onClick={() => {
-                                    if (newQuestionMultipleAnswer.includes(opt)) {
-                                      setNewQuestionMultipleAnswer(newQuestionMultipleAnswer.filter(a => a !== opt))
-                                    } else {
-                                      setNewQuestionMultipleAnswer([...newQuestionMultipleAnswer, opt])
-                                    }
-                                  }}
-                                >
-                                  {newQuestionMultipleAnswer.includes(opt) && <Check className="h-3 w-3 text-white" />}
-                                </div>
-                                <span className="text-sm">{String.fromCharCode(65 + i)}. {opt || `选项 ${String.fromCharCode(65 + i)}`}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {newQuestionType === "judgment" && (
-                    <div>
-                      <Label className="text-xs text-gray-500">正确答案</Label>
-                      <div className="mt-2 flex items-center gap-4">
-                        <button
-                          className={cn("flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-colors", newQuestionJudgmentAnswer === "true" ? "border-primary bg-primary/5 text-primary" : "border-gray-200 hover:border-gray-300")}
-                          onClick={() => setNewQuestionJudgmentAnswer("true")}
-                          type="button"
-                        >
-                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center", newQuestionJudgmentAnswer === "true" ? "bg-primary border-primary" : "border-gray-300")}>
-                            {newQuestionJudgmentAnswer === "true" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-                          正确
-                        </button>
-                        <button
-                          className={cn("flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-colors", newQuestionJudgmentAnswer === "false" ? "border-primary bg-primary/5 text-primary" : "border-gray-200 hover:border-gray-300")}
-                          onClick={() => setNewQuestionJudgmentAnswer("false")}
-                          type="button"
-                        >
-                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center", newQuestionJudgmentAnswer === "false" ? "bg-primary border-primary" : "border-gray-300")}>
-                            {newQuestionJudgmentAnswer === "false" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-                          错误
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {newQuestionType === "short_answer" && (
-                    <div>
-                      <Label className="text-xs text-gray-500">参考答案</Label>
-                      <Textarea value={newQuestionAnswer} onChange={e => setNewQuestionAnswer(e.target.value)} placeholder="输入参考答案" className="mt-1 text-sm" rows={3} />
-                    </div>
-                  )}
-                  {newQuestionType === "essay" && (
-                    <div>
-                      <Label className="text-xs text-gray-500">参考答案</Label>
-                      <Textarea value={newQuestionAnswer} onChange={e => setNewQuestionAnswer(e.target.value)} placeholder="输入参考答案" className="mt-1 text-sm" rows={5} />
-                    </div>
-                  )}
-                  {newQuestionType === "fill_blank" && (
-                    <div className="space-y-2">
-                      <Label className="text-xs text-gray-500">参考答案</Label>
-                      <Textarea value={newQuestionAnswer} onChange={e => setNewQuestionAnswer(e.target.value)} placeholder="输入参考答案，多个填空用 / 分隔" className="mt-1 text-sm" rows={3} />
-                      <p className="text-xs text-gray-400">多个填空答案请用“/”分隔，如：答案1/答案2/答案3</p>
-                    </div>
-                  )}
+                <div className="py-8 text-center text-gray-500">
+                  此处参考 1.0 版本页面功能即可
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowAddQuestion(false)}>取消</Button>
-                  <Button onClick={() => {
-                    const newId = `qb-${Date.now()}`
-                    const newQuestion: any = {
-                      id: newId,
-                      name: newQuestionName || "未命名题目",
-                      type: newQuestionType,
-                      content: newQuestionContent || "",
-                      difficulty: newQuestionDifficulty,
-                      score: 0,
-                      source: "my" as const,
-                      questionBank: newQuestionBank,
-                    }
-                    if (newQuestionType === "single") {
-                      newQuestion.options = newQuestionOptions.filter(o => o)
-                      newQuestion.answer = newQuestionAnswer
-                    } else if (newQuestionType === "multiple") {
-                      newQuestion.options = newQuestionOptions.filter(o => o)
-                      newQuestion.answer = newQuestionMultipleAnswer
-                    } else if (newQuestionType === "judgment") {
-                      newQuestion.answer = newQuestionJudgmentAnswer
-                    } else if (["short_answer", "essay", "fill_blank"].includes(newQuestionType)) {
-                      newQuestion.answer = newQuestionAnswer || ""
-                    }
-                    allQuestions.push(newQuestion)
-                    if (erDialogMethod === "random_draw") {
-                      toggleQuestion(newId, "randomDrawQuestions")
-                    } else if (erDialogMethod === "question_bank") {
-                      toggleQuestion(newId, "questionBankQuestions")
-                    } else if (erDialogMethod === "quiz") {
-                      toggleQuestion(newId, "quizQuestions")
-                    }
-                    setShowAddQuestion(false)
-                    setNewQuestionName("")
-                    setNewQuestionContent("")
-                    setNewQuestionDifficulty("easy")
-                    setNewQuestionScore(10)
-                    setNewQuestionOptions(["", "", "", ""])
-                    setNewQuestionAnswer("")
-                    setNewQuestionMultipleAnswer([])
-                    setNewQuestionJudgmentAnswer("true")
-                    setNewQuestionBank("draft")
-                    setNewQuestionType("single")
-                  }}>保存</Button>
+                  <Button onClick={() => setShowAddQuestion(false)}>知道了</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
