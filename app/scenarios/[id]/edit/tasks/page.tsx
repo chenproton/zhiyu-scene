@@ -185,20 +185,23 @@ const resourceTypeColors: Record<string, string> = {
 }
 
 const evaluationMethodOptions = [
-  { key: "random_draw", label: "现场问答", icon: <FileQuestion className="h-5 w-5" />, color: "bg-blue-50 text-blue-600 border-blue-200", available: true, desc: "从题库抽取题目，教师现场提问", category: "综合评估" },
-  { key: "review", label: "现场评审", icon: <Gavel className="h-5 w-5" />, color: "bg-purple-50 text-purple-600 border-purple-200", available: true, desc: "教师根据表现/材料给评价点打分", category: "综合评估" },
-  { key: "paper", label: "试卷", icon: <ClipboardList className="h-5 w-5" />, color: "bg-green-50 text-green-600 border-green-200", available: true, desc: "使用固定试卷进行考核", category: "基础考核" },
-  { key: "question_bank", label: "题库", icon: <Database className="h-5 w-5" />, color: "bg-orange-50 text-orange-600 border-orange-200", available: true, desc: "从题库选题组成测评资源", category: "基础考核" },
-  { key: "defense", label: "答辩", icon: <MessageSquare className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生进行现场答辩", category: "互动评价" },
-  { key: "debate", label: "辩论", icon: <PenTool className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生分组进行辩论", category: "互动评价" },
-  { key: "presentation", label: "汇报", icon: <Presentation className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生进行成果汇报", category: "互动评价" },
-  { key: "quiz", label: "随堂测", icon: <FileQuestion className="h-5 w-5" />, color: "bg-red-50 text-red-600 border-red-200", available: true, desc: "课堂即时测验", category: "基础考核" },
-  { key: "homework", label: "作业", icon: <BookOpen className="h-5 w-5" />, color: "bg-pink-50 text-pink-600 border-pink-200", available: true, desc: "学生提交作业进行评价", category: "基础考核" },
-  { key: "ai_qa", label: "Ai 问答", icon: <Bot className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "AI 自动问答评测", category: "智能评测" },
-  { key: "outcome", label: "成果评价", icon: <FolderCheck className="h-5 w-5" />, color: "bg-cyan-50 text-cyan-600 border-cyan-200", available: true, desc: "对学生成果进行评价", category: "综合评估" },
-  { key: "practical", label: "现场实操", icon: <Wrench className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "现场操作技能考核", category: "互动评价" },
-  { key: "roleplay", label: "角色扮演", icon: <Users className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "模拟场景角色扮演", category: "互动评价" },
-  { key: "peer", label: "学生互评", icon: <UserCheck className="h-5 w-5" />, color: "bg-gray-50 text-gray-400 border-gray-200", available: false, desc: "学生之间互相评价", category: "综合评估" },
+  // 平台通用 - 知识评价
+  { key: "question_bank", label: "题库", icon: <Database className="h-5 w-5" />, color: "bg-orange-50 text-orange-600 border-orange-200", available: true, desc: "从题库选题组成测评资源", primaryCategory: "platform", secondaryCategory: "知识评价" },
+  { key: "paper", label: "试卷", icon: <ClipboardList className="h-5 w-5" />, color: "bg-green-50 text-green-600 border-green-200", available: true, desc: "使用固定试卷进行考核", primaryCategory: "platform", secondaryCategory: "知识评价" },
+  { key: "quiz", label: "随堂测", icon: <FileQuestion className="h-5 w-5" />, color: "bg-red-50 text-red-600 border-red-200", available: true, desc: "课堂即时测验", primaryCategory: "platform", secondaryCategory: "知识评价" },
+  // 平台通用 - 过程评价
+  { key: "random_draw", label: "现场问答", icon: <FileQuestion className="h-5 w-5" />, color: "bg-blue-50 text-blue-600 border-blue-200", available: true, desc: "从题库抽取题目，教师现场提问", primaryCategory: "platform", secondaryCategory: "过程评价" },
+  // 平台通用 - 成果评价
+  { key: "review", label: "现场评审", icon: <Gavel className="h-5 w-5" />, color: "bg-purple-50 text-purple-600 border-purple-200", available: true, desc: "教师根据表现/材料给评价点打分", primaryCategory: "platform", secondaryCategory: "成果评价" },
+  { key: "outcome", label: "成果评价", icon: <FolderCheck className="h-5 w-5" />, color: "bg-cyan-50 text-cyan-600 border-cyan-200", available: true, desc: "对学生成果进行评价", primaryCategory: "platform", secondaryCategory: "成果评价" },
+  { key: "homework", label: "作业", icon: <BookOpen className="h-5 w-5" />, color: "bg-pink-50 text-pink-600 border-pink-200", available: true, desc: "学生提交作业进行评价", primaryCategory: "platform", secondaryCategory: "成果评价" },
+  // 行业专属 - 智慧物流
+  { key: "wms_inbound", label: "WMS(入库单)自动化评分", icon: <Package className="h-5 w-5" />, color: "bg-indigo-50 text-indigo-600 border-indigo-200", available: false, desc: "基于 WMS 入库单操作的自动化评分", primaryCategory: "industry", secondaryCategory: "智慧物流" },
+  { key: "wms_outbound", label: "WMS(出库单)自动化评分", icon: <Package className="h-5 w-5" />, color: "bg-indigo-50 text-indigo-600 border-indigo-200", available: false, desc: "基于 WMS 出库单操作的自动化评分", primaryCategory: "industry", secondaryCategory: "智慧物流" },
+  { key: "wms_wave", label: "WMS(波次分拣)自动化评分", icon: <Package className="h-5 w-5" />, color: "bg-indigo-50 text-indigo-600 border-indigo-200", available: false, desc: "基于 WMS 波次分拣操作的自动化评分", primaryCategory: "industry", secondaryCategory: "智慧物流" },
+  // 行业专属 - 网络安全
+  { key: "network_traffic", label: "网络流量分析自助评价", icon: <Shield className="h-5 w-5" />, color: "bg-emerald-50 text-emerald-600 border-emerald-200", available: false, desc: "基于网络流量分析的自助评价", primaryCategory: "industry", secondaryCategory: "网络安全" },
+  { key: "cyber_range", label: "网络靶场自助评价", icon: <Shield className="h-5 w-5" />, color: "bg-emerald-50 text-emerald-600 border-emerald-200", available: false, desc: "基于网络靶场环境的自助评价", primaryCategory: "industry", secondaryCategory: "网络安全" },
 ]
 
 const abilityLevels = ["了解", "理解", "掌握", "熟练", "精通"]
@@ -359,7 +362,8 @@ interface TaskState {
   reviewEvalPoints: EvalPoint[]
   reviewScoreType: "eval_points" | "ability_levels"
   reviewRubricId: string | null
-  paperId: string | null
+  paperIds: string[]
+  paperWeights: Record<string, number>
   paperEvalPoints: EvalPoint[]
   questionBankQuestions: string[]
   questionBankEvalPoints: EvalPoint[]
@@ -482,7 +486,8 @@ function makeDefaultTaskState(count: number, index: number): TaskState {
     reviewEvalPoints: [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3], mockDefaultEvalPoints[4], mockDefaultEvalPoints[5], mockDefaultEvalPoints[6], mockDefaultEvalPoints[9]],
     reviewScoreType: "eval_points",
     reviewRubricId: null,
-    paperId: paperMocks[0].id,
+    paperIds: [paperMocks[0].id],
+    paperWeights: { [paperMocks[0].id]: 100 },
     paperEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
     questionBankQuestions: allQuestions.slice(0, 2).map(q => q.id),
     questionBankEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
@@ -595,7 +600,8 @@ export default function TasksEditPage() {
         reviewEvalPoints: mockEps.review.length > 0 ? mockEps.review : [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3], mockDefaultEvalPoints[4], mockDefaultEvalPoints[5]],
         reviewScoreType: "eval_points",
         reviewRubricId: null,
-        paperId: hasPaper ? paperMocks[0].id : null,
+        paperIds: hasPaper ? [paperMocks[0].id] : [],
+        paperWeights: hasPaper ? { [paperMocks[0].id]: 100 } : {},
         paperEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
         questionBankQuestions: methods.includes("question_bank") ? mockQuestions : [],
         questionBankEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
@@ -693,7 +699,7 @@ export default function TasksEditPage() {
         const configuredMethods = state.evaluationMethods.filter(m => {
           if (m === "random_draw") return state.randomDrawSelectedIds.length > 0 || state.randomDrawEvalPoints.length > 0
           if (m === "review") return state.reviewEvalPoints.length > 0
-          if (m === "paper") return !!state.paperId
+          if (m === "paper") return state.paperIds.length > 0
           if (m === "question_bank") return state.questionBankQuestions.length > 0
           if (m === "outcome") return state.outcomeEvalPoints.length > 0
           if (m === "homework") return state.homeworkEvalPoints.length > 0
@@ -2737,6 +2743,21 @@ function EditCardDialog({
 
 
       case "evaluation": {
+        const [primaryTab, setPrimaryTab] = useState<"platform" | "industry">("platform")
+        const [secondaryTab, setSecondaryTab] = useState("全部")
+
+        const primaryTabs = [
+          { key: "platform" as const, label: "平台通用" },
+          { key: "industry" as const, label: "行业专属" },
+        ]
+
+        const secondaryTabsMap: Record<string, string[]> = {
+          platform: ["全部", "知识评价", "过程评价", "成果评价"],
+          industry: ["全部", "智慧物流", "网络安全"],
+        }
+
+        const secondaryTabs = secondaryTabsMap[primaryTab]
+
         const toggleMethod = (key: string) => {
           const opts = evaluationMethodOptions.find(o => o.key === key)
           if (!opts || !opts.available) return
@@ -2745,94 +2766,118 @@ function EditCardDialog({
           updateState({ evaluationMethods: newMethods })
         }
 
-        const categories = Array.from(new Set(evaluationMethodOptions.map(m => m.category)))
-        const categoryBgColors: Record<string, string> = {
-          "基础考核": "bg-blue-50/50",
-          "综合评估": "bg-purple-50/50",
-          "互动评价": "bg-amber-50/50",
-          "智能评测": "bg-cyan-50/50",
-        }
+        const filteredMethods = evaluationMethodOptions.filter(m => {
+          if (m.primaryCategory !== primaryTab) return false
+          if (secondaryTab === "全部") return true
+          return m.secondaryCategory === secondaryTab
+        })
 
         return (
-          <div className="h-full overflow-y-auto pr-2 space-y-5">
-            {categories.map(cat => {
-              const catMethods = evaluationMethodOptions.filter(m => m.category === cat)
-              const bgClass = categoryBgColors[cat] || "bg-gray-50/50"
-              return (
-                <div key={cat} className={cn("rounded-xl p-3.5 border", bgClass, "border-gray-100")}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-sm font-bold text-gray-800">{cat}</h3>
-                    <div className="h-px flex-1 bg-gray-200/60" />
-                    <span className="text-xs text-gray-400">{catMethods.length} 种</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {catMethods.map(method => {
-                      const enabled = state.evaluationMethods.includes(method.key)
-                      return (
-                        <button
-                          key={method.key}
-                          disabled={!method.available}
-                          onClick={() => toggleMethod(method.key)}
-                          className={cn(
-                            "p-2.5 rounded-lg border text-left transition-all flex flex-col gap-1.5 relative overflow-hidden",
-                            !method.available
-                              ? "opacity-50 cursor-not-allowed bg-white border-gray-200"
-                              : enabled
-                                ? "border-primary bg-white ring-1 ring-primary/20 shadow-sm"
-                                : "border-gray-200 hover:border-primary/40 bg-white hover:shadow-sm"
-                          )}
-                        >
-                          {!method.available && (
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                              <span className="text-xl font-bold text-gray-300/60 rotate-[-12deg] select-none border-2 border-gray-300/40 px-3 py-1 rounded">未开通</span>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between relative z-10">
-                            <div className="flex items-center gap-2.5">
-                              <div className={cn("p-2 rounded-lg", method.available ? method.color : "bg-gray-100 text-gray-400")}>{method.icon}</div>
-                              <div>
-                                <p className={cn("text-sm font-semibold", !method.available && "text-gray-400")}>{method.label}</p>
-                                <p className="text-[11px] text-gray-400 mt-0.5">{method.desc}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              {method.available && (
-                                <PrdAnnotation data={getAnnotation("eval-action-view-intro")}>
-                                  <span
-                                    className="p-1 rounded-md text-gray-400 hover:text-primary hover:bg-gray-100 transition-colors cursor-pointer"
-                                    onClick={(e) => { e.stopPropagation(); window.open(`/wiki/eval-method?key=${method.key}`, '_blank') }}
-                                    title="查看介绍"
-                                  >
-                                    <BookOpen className="h-3.5 w-3.5" />
-                                  </span>
-                                </PrdAnnotation>
-                              )}
-                              {enabled && (
-                                <div className="flex items-center gap-1.5 text-primary text-xs font-medium bg-primary/5 px-2 py-1 rounded-full">
-                                  <CheckCircle2 className="h-3.5 w-3.5" />
-                                  已开通
-                                </div>
-                              )}
-                              {!method.available && (
-                                <Badge variant="outline" className="text-[10px] text-gray-400 border-gray-300 bg-white">未开通</Badge>
-                              )}
-                            </div>
+          <div className="h-full overflow-y-auto pr-2 space-y-4">
+            {/* 一级分类 */}
+            <div className="flex items-center gap-2 border-b pb-2">
+              {primaryTabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setPrimaryTab(tab.key)
+                    setSecondaryTab("全部")
+                  }}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                    primaryTab === tab.key
+                      ? "bg-primary text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* 二级分类 */}
+            <div className="flex items-center gap-2">
+              {secondaryTabs.map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setSecondaryTab(tab)}
+                  className={cn(
+                    "px-3 py-1 rounded-md text-xs font-medium transition-colors border",
+                    secondaryTab === tab
+                      ? "border-primary text-primary bg-primary/5"
+                      : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* 测评方式网格 */}
+            <div className="grid grid-cols-2 gap-2">
+              {filteredMethods.map(method => {
+                const enabled = state.evaluationMethods.includes(method.key)
+                return (
+                  <button
+                    key={method.key}
+                    disabled={!method.available}
+                    onClick={() => toggleMethod(method.key)}
+                    className={cn(
+                      "p-2.5 rounded-lg border text-left transition-all flex flex-col gap-1.5 relative overflow-hidden",
+                      !method.available
+                        ? "opacity-50 cursor-not-allowed bg-white border-gray-200"
+                        : enabled
+                          ? "border-primary bg-white ring-1 ring-primary/20 shadow-sm"
+                          : "border-gray-200 hover:border-primary/40 bg-white hover:shadow-sm"
+                    )}
+                  >
+                    {!method.available && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                        <span className="text-xl font-bold text-gray-300/60 rotate-[-12deg] select-none border-2 border-gray-300/40 px-3 py-1 rounded">未开通</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-2.5">
+                        <div className={cn("p-2 rounded-lg", method.available ? method.color : "bg-gray-100 text-gray-400")}>{method.icon}</div>
+                        <div>
+                          <p className={cn("text-sm font-semibold", !method.available && "text-gray-400")}>{method.label}</p>
+                          <p className="text-[11px] text-gray-400 mt-0.5">{method.desc}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {method.available && (
+                          <PrdAnnotation data={getAnnotation("eval-action-view-intro")}>
+                            <span
+                              className="p-1 rounded-md text-gray-400 hover:text-primary hover:bg-gray-100 transition-colors cursor-pointer"
+                              onClick={(e) => { e.stopPropagation(); window.open(`/wiki/eval-method?key=${method.key}`, '_blank') }}
+                              title="查看介绍"
+                            >
+                              <BookOpen className="h-3.5 w-3.5" />
+                            </span>
+                          </PrdAnnotation>
+                        )}
+                        {enabled && (
+                          <div className="flex items-center gap-1.5 text-primary text-xs font-medium bg-primary/5 px-2 py-1 rounded-full">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            已开通
                           </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
+                        )}
+                        {!method.available && (
+                          <Badge variant="outline" className="text-[10px] text-gray-400 border-gray-300 bg-white">未开通</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
             {state.evaluationMethods.length === 0 && (
               <div className="p-12 text-center text-gray-400 border border-dashed rounded-xl">
                 <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm">请选择至少一种评价方式</p>
               </div>
             )}
-
-
           </div>
         )
       }
@@ -2866,7 +2911,7 @@ function EditCardDialog({
             case "review":
               return { title: "现场评审", summary: `${state.reviewEvalPoints.length} 个评价点`, configured: state.reviewEvalPoints.length > 0 }
             case "paper":
-              return { title: "试卷", summary: state.paperId ? paperMocks.find(p => p.id === state.paperId)?.name || "已选择" : "未选择", configured: !!state.paperId }
+              return { title: "试卷", summary: state.paperIds.length > 0 ? `已选 ${state.paperIds.length} 张试卷` : "未选择", configured: state.paperIds.length > 0 }
             case "question_bank":
               return { title: "题库", summary: `${state.questionBankQuestions.length} 题`, configured: state.questionBankQuestions.length > 0 }
             case "outcome":
@@ -4020,10 +4065,37 @@ function EditCardDialog({
             )
           }
           if (methodKey === "paper") {
+            const togglePaper = (paperId: string) => {
+              const selected = state.paperIds.includes(paperId)
+              if (selected) {
+                const newIds = state.paperIds.filter(id => id !== paperId)
+                const newWeights = { ...state.paperWeights }
+                delete newWeights[paperId]
+                if (newIds.length === 1) {
+                  newWeights[newIds[0]] = 100
+                }
+                updateState({ paperIds: newIds, paperWeights: newWeights })
+              } else {
+                const newIds = [...state.paperIds, paperId]
+                const newWeights = { ...state.paperWeights, [paperId]: 0 }
+                if (newIds.length === 1) {
+                  newWeights[paperId] = 100
+                }
+                updateState({ paperIds: newIds, paperWeights: newWeights })
+              }
+            }
+
+            const updatePaperWeight = (paperId: string, weight: number) => {
+              const clamped = Math.max(0, Math.min(100, weight))
+              updateState({ paperWeights: { ...state.paperWeights, [paperId]: clamped } })
+            }
+
+            const totalWeight = state.paperIds.reduce((sum, id) => sum + (state.paperWeights[id] || 0), 0)
+
             return (
               <div className="space-y-4">
                 <div className="border rounded-xl p-4">
-                  <p className="text-sm font-medium mb-3">选择已有试卷</p>
+                  <p className="text-sm font-medium mb-3">选择已有试卷（可多选）</p>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -4037,9 +4109,9 @@ function EditCardDialog({
                   </div>
                   <div className="space-y-2">
                     {paperMocks.filter(p => !pSearch || p.name.includes(pSearch)).map(paper => {
-                      const selected = state.paperId === paper.id
+                      const selected = state.paperIds.includes(paper.id)
                       return (
-                        <div key={paper.id} onClick={() => updateState({ paperId: selected ? null : paper.id })} className={cn("p-4 rounded-lg border cursor-pointer", selected ? "border-primary bg-primary/5" : "hover:border-gray-300")}>
+                        <div key={paper.id} onClick={() => togglePaper(paper.id)} className={cn("p-4 rounded-lg border cursor-pointer", selected ? "border-primary bg-primary/5" : "hover:border-gray-300")}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className={cn("w-4 h-4 rounded border flex items-center justify-center shrink-0", selected ? "bg-primary border-primary" : "border-gray-300")}>{selected && <CheckCircle2 className="h-3 w-3 text-white" />}</div>
@@ -4060,6 +4132,43 @@ function EditCardDialog({
                     })}
                   </div>
                 </div>
+
+                {state.paperIds.length > 0 && (
+                  <div className="border rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium">试卷权重分配</p>
+                      <div className={cn("text-xs font-medium", totalWeight === 100 ? "text-green-600" : "text-red-500")}>
+                        当前总和：{totalWeight}% {totalWeight !== 100 && "（需等于100%）"}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {state.paperIds.map(paperId => {
+                        const paper = paperMocks.find(p => p.id === paperId)
+                        if (!paper) return null
+                        return (
+                          <div key={paperId} className="flex items-center gap-3 p-3 rounded-lg border bg-gray-50/50">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{paper.name}</p>
+                              <p className="text-[11px] text-gray-400">{paper.questionCount} 题 / {paper.totalScore} 分</p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={state.paperWeights[paperId] || 0}
+                                onChange={e => updatePaperWeight(paperId, parseInt(e.target.value) || 0)}
+                                className="w-16 text-right h-8 text-sm"
+                              />
+                              <span className="text-xs text-gray-500">%</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="border rounded-xl p-4">
                   <p className="text-sm font-medium mb-3">考卷设置</p>
                   <div className="grid grid-cols-2 gap-3">
@@ -4908,8 +5017,8 @@ function EditCardDialog({
                   document.execCommand('insertText', false, pasted)
                 }}
               />
-              <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1 text-gray-400 hover:text-primary shrink-0" onMouseDown={updateCursorOffset} onClick={onOpenKpDialog}>+知识点</Button>
-              <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1 text-gray-400 hover:text-primary shrink-0" onMouseDown={updateCursorOffset} onClick={onOpenAbDialog}>+能力点</Button>
+              <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1 text-gray-400 hover:text-primary shrink-0" onMouseDown={updateCursorOffset} onClick={onOpenKpDialog}>关联考查知识点</Button>
+              <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1 text-gray-400 hover:text-primary shrink-0" onMouseDown={updateCursorOffset} onClick={onOpenAbDialog}>关联考查能力点</Button>
             </div>
           )
         }
@@ -6107,7 +6216,7 @@ function EditCardDialog({
                     if (!newPaperName.trim()) return
                     const newId = `paper-${Date.now()}`
                     ;(paperMocks as any).push({ id: newId, name: newPaperName.trim(), questionCount: newPaperQuestionCount, totalScore: newPaperTotalScore })
-                    updateState({ paperId: newId })
+                    updateState({ paperIds: [...state.paperIds, newId], paperWeights: { ...state.paperWeights, [newId]: state.paperIds.length === 0 ? 100 : 0 } })
                     setShowCreatePaper(false)
                     setNewPaperName("")
                     setNewPaperQuestionCount(10)
@@ -6125,8 +6234,8 @@ function EditCardDialog({
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
                 <DialogHeader>
-                  <PrdAnnotation data={getAnnotation("dialog-link-knowledge-eval")}><DialogTitle>关联知识点</DialogTitle></PrdAnnotation>
-                  <DialogDescription>选择要关联到此评价点的知识点</DialogDescription>
+                  <PrdAnnotation data={getAnnotation("dialog-link-knowledge-eval")}><DialogTitle>关联考查知识点</DialogTitle></PrdAnnotation>
+                  <DialogDescription>此处仅可选择任务关联的知识点/能力点，请先在任务中配置后选择。</DialogDescription>
                 </DialogHeader>
                 {(() => {
                   const field = rubricKpTargetField
@@ -6226,8 +6335,8 @@ function EditCardDialog({
             <Dialog open={rubricAbDialogOpen} onOpenChange={v => { if (!v) setRubricAbDialogOpen(false) }}>
               <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
-                  <PrdAnnotation data={getAnnotation("dialog-link-ability-eval")}><DialogTitle>关联能力点</DialogTitle></PrdAnnotation>
-                  <DialogDescription>选择要关联到此评价点的能力点</DialogDescription>
+                  <PrdAnnotation data={getAnnotation("dialog-link-ability-eval")}><DialogTitle>关联考查能力点</DialogTitle></PrdAnnotation>
+                  <DialogDescription>此处仅可选择任务关联的知识点/能力点，请先在任务中配置后选择。</DialogDescription>
                 </DialogHeader>
                 {(() => {
                   const field = rubricAbTargetField

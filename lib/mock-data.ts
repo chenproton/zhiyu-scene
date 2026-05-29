@@ -3385,7 +3385,6 @@ export const studentSubmissions: StudentSubmission[] = [
       attachments: [{"id": "att-75-1", "name": "架构设计文档.pdf", "type": "document", "url": "#"}, {"id": "att-75-2", "name": "数据库ER图.png", "type": "image", "url": "#"}],
     },
     evalPointScores: [],
-    currentReviewPhaseIndex: 1,
   },
   {
     id: "sub-76",
@@ -3410,9 +3409,78 @@ export const studentSubmissions: StudentSubmission[] = [
       { evalPointId: "ep-r1-4", evalPointName: "接口设计规范", weight: 20, maxScore: 20, score: 18, comment: "接口规划符合RESTful规范" },
     ],
     totalScore: 90,
-    currentReviewPhaseIndex: 1,
     gradedAt: "2026-04-27 11:00:00",
     gradedBy: "张老师",
+  },
+  // ============================================================================
+  // 作业类型演示数据
+  // ============================================================================
+  // 作业 - 有评价标准（scenario-1 / task-1-1 配置了 homework 评价点）
+  {
+    id: "sub-69a",
+    studentId: "stu-3",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    taskId: "task-1-1",
+    taskName: "项目初始化与架构搭建",
+    assessmentForm: "作业",
+    status: "pending",
+    submittedAt: "2026-04-28 10:00:00",
+    maxScore: 100,
+    subjectiveContent: {
+      textAnswer:
+        "本次作业完成了项目测试用例设计与测试报告撰写。\n\n1. 测试用例设计：\n   - 编写了 25 条测试用例，覆盖正常流程 12 条、边界条件 8 条、异常场景 5 条\n   - 使用等价类划分和边界值分析法设计用例\n   - 包含功能测试、兼容性测试、性能测试三类\n\n2. 测试执行：\n   - 在 Chrome、Firefox、Safari 三个浏览器执行兼容性测试\n   - 使用 Lighthouse 进行性能基准测试\n   - 所有用例执行通过率 92%\n\n3. 测试报告：\n   - 包含测试概述、测试范围、用例清单、执行结果、缺陷统计、改进建议六个章节\n   - 发现 3 个缺陷，均已记录并分类（1 个严重、2 个一般）",
+      attachments: [
+        { id: "att-69a-1", name: "测试用例设计表.xlsx", type: "document", url: "#" },
+        { id: "att-69a-2", name: "测试报告.pdf", type: "document", url: "#" },
+        { id: "att-69a-3", name: "缺陷跟踪表.md", type: "document", url: "#" },
+      ],
+    },
+    evalPointScores: [],
+  },
+  // 作业 - 有评价标准（scenario-1 / task-1-2 配置了 homework 评价点）
+  {
+    id: "sub-69b",
+    studentId: "stu-5",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    taskId: "task-1-2",
+    taskName: "用户认证模块开发",
+    assessmentForm: "作业",
+    status: "pending",
+    submittedAt: "2026-04-28 14:30:00",
+    maxScore: 100,
+    subjectiveContent: {
+      textAnswer:
+        "本次作业完成了用户认证模块的前端开发，包含以下功能：\n\n1. 登录功能：\n   - 邮箱/密码登录表单，包含前端校验（邮箱格式、密码长度）\n   - 集成 reCAPTCHA 防止暴力破解\n   - 登录成功后存储 JWT Token 到 httpOnly Cookie\n   - 错误提示：邮箱不存在、密码错误、账号锁定\n\n2. 注册功能：\n   - 分步注册流程：填写信息 → 邮箱验证 → 设置密码\n   - 密码强度实时检测，要求包含大小写字母、数字、特殊字符\n   - 邮箱验证码 5 分钟有效期\n\n3. 权限控制：\n   - 基于角色的权限控制（RBAC）\n   - 路由守卫：未登录跳转登录页，无权限跳转 403 页面\n   - 动态菜单渲染根据用户角色\n\n4. 安全考虑：\n   - 密码使用 bcrypt 加密存储\n   - XSS 防护：对用户输入进行转义\n   - CSRF 防护：使用双重 Cookie 验证",
+      attachments: [
+        { id: "att-69b-1", name: "auth-module.zip", type: "code", url: "#" },
+        { id: "att-69b-2", name: "功能演示视频.mp4", type: "video", url: "#" },
+      ],
+    },
+    evalPointScores: [],
+  },
+  // 作业 - 无评价标准（scenario-2 / task-2-1 未配置 homework 评价点）
+  {
+    id: "sub-69c",
+    studentId: "stu-4",
+    scenarioId: "scenario-2",
+    scenarioName: "RESTful API 设计与开发",
+    taskId: "task-2-1",
+    taskName: "API 设计规范学习",
+    assessmentForm: "作业",
+    status: "pending",
+    submittedAt: "2026-04-28 16:00:00",
+    maxScore: 100,
+    subjectiveContent: {
+      textAnswer:
+        "本次作业是阅读并总结 RESTful API 设计规范，完成以下任务：\n\n1. 阅读材料：\n   - 《RESTful Web APIs》第 1-3 章\n   - 公司内部 API 设计规范文档\n   - Google API Design Guide 中文版\n\n2. 学习笔记总结：\n   - REST 架构风格的六个约束：客户端-服务器、无状态、可缓存、分层系统、统一接口、按需代码\n   - URI 设计原则：使用名词复数、小写字母、中划线分隔，避免动词\n   - HTTP 方法语义：GET 幂等安全、POST 创建、PUT 全量更新、PATCH 部分更新、DELETE 删除\n   - 状态码使用规范：2xx 成功、3xx 重定向、4xx 客户端错误、5xx 服务器错误\n   - 版本控制策略：URL 路径版本号（推荐）、请求头 Accept 字段\n\n3. 案例分析：\n   - 分析了 GitHub API v3 的设计优点\n   - 指出了某旧项目 API 设计中的 5 处不规范问题",
+      attachments: [
+        { id: "att-69c-1", name: "RESTful学习笔记.md", type: "document", url: "#" },
+        { id: "att-69c-2", name: "API设计案例分析.pdf", type: "document", url: "#" },
+      ],
+    },
+    evalPointScores: [],
   },
 ]
 

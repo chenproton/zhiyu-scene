@@ -2164,6 +2164,54 @@
             transition: all 0.2s;
         }
         .tl-expand-btn:hover { background: #0958d9; }
+        .tl-paper-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .tl-paper-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+        .tl-paper-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #f0f0f0;
+            gap: 10px;
+        }
+        .tl-paper-list-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+        }
+        .tl-paper-list-item-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tl-paper-list-item-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
         .tl-quiz-content { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         .tl-draw-pool { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
@@ -3193,6 +3241,11 @@
                                 ]}
                             ]
                         },
+                        papers: [
+                            { id: "paper-1", name: "前端基础综合试卷", questionCount: 20, totalScore: 100, weight: 40 },
+                            { id: "paper-2", name: "React 进阶测试", questionCount: 15, totalScore: 100, weight: 35 },
+                            { id: "paper-3", name: "API 设计规范测验", questionCount: 10, totalScore: 100, weight: 25 }
+                        ],
                         mixedWeights: { objective: 80, subjective: 20 }
                     }
                 },
@@ -4457,22 +4510,47 @@
 
             if (!isExpanded) {
                 // 折叠状态：只显示概要 + 开始答题按钮
-                html = `
-                    <div class="tl-quiz-collapsed">
-                        <div class="tl-quiz-collapsed-info">
-                            <span><i class="fas fa-list-ol" style="margin-right:4px;"></i>共 ${questions.length} 道题目</span>
-                            <span><i class="fas fa-star" style="margin-right:4px;"></i>总分 ${totalScore} 分</span>
-                            <span class="tl-quiz-tag ${methodClasses[method] || 'paper'}">${methodLabels[method] || '测评'}</span>
+                const papers = assessment.papers || [];
+                const isMultiPaper = method === 'paper' && papers.length > 1;
+
+                if (isMultiPaper) {
+                    html = `
+                        <div class="tl-paper-list">
+                            <div class="tl-paper-list-header">
+                                <span><i class="fas fa-copy" style="margin-right:4px;"></i>共 ${papers.length} 张试卷</span>
+                                <span class="tl-quiz-tag ${methodClasses[method] || 'paper'}">${methodLabels[method] || '测评'}</span>
+                            </div>
+                            ${papers.map(paper => `
+                                <div class="tl-paper-list-item">
+                                    <div class="tl-paper-list-item-info">
+                                        <span class="tl-paper-list-item-name">${paper.name}</span>
+                                        <span class="tl-paper-list-item-meta">${paper.questionCount} 题 / ${paper.totalScore} 分 / 权重 ${paper.weight}%</span>
+                                    </div>
+                                    <button class="tl-expand-btn" style="padding:6px 14px;font-size:12px;" onclick="showExternalQuizTip()">
+                                        <i class="fas fa-play"></i> 开始答题
+                                    </button>
+                                </div>
+                            `).join('')}
                         </div>
-                        ${method === 'paper' || method === 'question_bank'
-                            ? `<button class="tl-expand-btn" onclick="showExternalQuizTip()">
-                                <i class="fas fa-play"></i> 开始答题
-                               </button>`
-                            : `<button class="tl-expand-btn" onclick="expandQuiz('${task.id}', '${method}')">
-                                <i class="fas fa-play"></i> 开始答题
-                               </button>`}
-                    </div>
-                `;
+                    `;
+                } else {
+                    html = `
+                        <div class="tl-quiz-collapsed">
+                            <div class="tl-quiz-collapsed-info">
+                                <span><i class="fas fa-list-ol" style="margin-right:4px;"></i>共 ${questions.length} 道题目</span>
+                                <span><i class="fas fa-star" style="margin-right:4px;"></i>总分 ${totalScore} 分</span>
+                                <span class="tl-quiz-tag ${methodClasses[method] || 'paper'}">${methodLabels[method] || '测评'}</span>
+                            </div>
+                            ${method === 'paper' || method === 'question_bank'
+                                ? `<button class="tl-expand-btn" onclick="showExternalQuizTip()">
+                                    <i class="fas fa-play"></i> 开始答题
+                                   </button>`
+                                : `<button class="tl-expand-btn" onclick="expandQuiz('${task.id}', '${method}')">
+                                    <i class="fas fa-play"></i> 开始答题
+                                   </button>`}
+                        </div>
+                    `;
+                }
             } else {
                 // 展开状态：显示完整题目
                 html = `

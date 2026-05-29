@@ -1434,36 +1434,42 @@ export default function GradingDetailPage() {
             <div className="w-1/2 flex flex-col bg-gray-50">
               <div className="px-4 py-2 bg-white border-b flex items-center justify-between shrink-0">
                 <h2 className="text-sm font-medium text-gray-700">
-                  {submission.assessmentForm === "作业" ? "作业扣分评分" : "评价点评分"}
+                  {submission.assessmentForm === "作业" && evalPoints.length === 0 ? "评价标准" : "评价点评分"}
                 </h2>
-                <div className="text-sm text-gray-500">
-                  {submission.assessmentForm === "作业" ? (
+                {(submission.assessmentForm !== "作业" || evalPoints.length > 0) && (
+                  <div className="text-sm text-gray-500">
                     <span>已评分：<span className="font-medium text-gray-800">{evalPointTotal} / {evalPointMaxTotal}</span></span>
-                  ) : (
-                    <span>已评分：<span className="font-medium text-gray-800">{evalPointTotal} / {evalPointMaxTotal}</span></span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
               <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                {evalPoints.length > 0 ? (
-                  submission.assessmentForm === "作业" ? (
-                    <HomeworkEvalPointTable
-                      evalPoints={evalPoints}
-                      evalPointScores={evalPointScores}
+                {submission.assessmentForm === "作业" && evalPoints.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 min-h-[300px]">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                      <FileText className="h-8 w-8 text-gray-300" />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">暂无评价标准</h3>
+                    <p className="text-xs text-gray-400 text-center max-w-xs">
+                      当前作业暂未配置评价标准，无需按评价点逐项评分
+                    </p>
+                  </div>
+                ) : submission.assessmentForm === "作业" && evalPoints.length > 0 ? (
+                  <HomeworkEvalPointTable
+                    evalPoints={evalPoints}
+                    evalPointScores={evalPointScores}
+                    isGraded={isGraded}
+                    onChange={handleEvalPointScoreChange}
+                  />
+                ) : evalPoints.length > 0 ? (
+                  evalPoints.map((ep) => (
+                    <EvalPointGradingCard
+                      key={ep.id}
+                      evalPoint={ep}
+                      scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
                       isGraded={isGraded}
                       onChange={handleEvalPointScoreChange}
                     />
-                  ) : (
-                    evalPoints.map((ep) => (
-                      <EvalPointGradingCard
-                        key={ep.id}
-                        evalPoint={ep}
-                        scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
-                        isGraded={isGraded}
-                        onChange={handleEvalPointScoreChange}
-                      />
-                    ))
-                  )
+                  ))
                 ) : (
                   <div className="text-center py-8 text-gray-400">
                     <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
