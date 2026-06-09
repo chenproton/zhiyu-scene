@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>场景详情 - 实践场景学习平台</title>
+    <title>场景详情 - AI 辅助学习模式</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -1746,6 +1746,53 @@
         .tl-side-resource-name { font-size: 13px; color: var(--text-primary); flex: 1; }
         .tl-side-resource-meta { font-size: 11px; color: var(--text-tertiary); }
 
+        .ai-explain-btn-inline {
+            width: 18px; height: 18px; border-radius: 50%;
+            border: none; background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white; cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; font-size: 9px;
+            margin-left: 4px; flex-shrink: 0; vertical-align: middle;
+            opacity: 0.7; transition: opacity 0.2s;
+        }
+        .ai-explain-btn-inline:hover { opacity: 1; }
+        .ai-explain-panel-inline {
+            width: 100%; margin-top: 6px; padding: 10px 12px;
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 8px; font-size: 12px; color: var(--text-secondary);
+            line-height: 1.7; animation: aiFadeIn 0.3s ease;
+        }
+        .ai-explain-panel-inline .ai-explain-title {
+            font-weight: 600; color: #7c3aed; margin-bottom: 6px;
+            display: flex; align-items: center; gap: 4px; font-size: 12px;
+        }
+        .ai-explain-panel-inline .ai-explain-section {
+            margin-bottom: 6px;
+        }
+        .ai-explain-panel-inline .ai-explain-section:last-child { margin-bottom: 0; }
+        .ai-explain-panel-inline .ai-explain-label {
+            font-weight: 500; color: var(--text-primary); font-size: 12px;
+        }
+        .ai-explain-tag-2 {
+            display: inline-block; padding: 1px 6px; border-radius: 4px;
+            font-size: 11px; margin-right: 4px; font-weight: 500;
+        }
+        .ai-explain-tag-2.core { background: #fef3c7; color: #b45309; }
+        .ai-explain-tag-2.important { background: #dbeafe; color: #1d4ed8; }
+        .ai-explain-tag-2.basic { background: #f3f4f6; color: #4b5563; }
+        .ai-resource-explain-row {
+            margin-top: 8px; padding: 8px 10px;
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 6px; font-size: 12px; line-height: 1.6;
+        }
+        .ai-resource-explain-row .ai-explain-title {
+            font-weight: 600; color: #7c3aed; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 4px; font-size: 12px;
+        }
+        @keyframes aiFadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .tl-header {
             background: var(--bg-white);
             border-bottom: 1px solid #f0f0f0;
@@ -2623,6 +2670,156 @@
             white-space: pre-line;
         }
 
+
+        /* ====== AI 辅助学习样式 ====== */
+        .ai-purple { color: #7c3aed; }
+        .ai-purple-bg { background: #7c3aed; }
+        .ai-purple-light { background: #f3e8ff; }
+        .ai-purple-border { border-color: #d8b4fe; }
+        
+        .ai-static-card {
+            background: var(--bg-white);
+            border: 1px solid #e9d5ff;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+        }
+        .ai-static-card-header {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0e6ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+        }
+        .ai-static-card-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 14px;
+        }
+        .ai-static-card-title { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+        .ai-static-card-subtitle { font-size: 11px; color: var(--text-secondary); }
+        .ai-static-card-body { padding: 12px 14px; }
+        .ai-action-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px;
+            border: 1px solid #d8b4fe;
+            border-radius: 8px;
+            background: #faf5ff;
+            color: #7c3aed;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+        .ai-action-btn:hover { background: #f3e8ff; border-color: #a855f7; transform: translateX(2px); }
+        .ai-action-btn i { font-size: 14px; }
+        .ai-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .ai-output-box {
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            animation: fadeIn 0.3s ease;
+        }
+        .ai-output-box .ai-output-title {
+            font-weight: 600;
+            color: #7c3aed;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .ai-output-box ul { padding-left: 16px; margin: 6px 0; }
+        .ai-output-box li { margin-bottom: 4px; }
+
+        .ai-loading-dots {
+            display: flex; align-items: center; gap: 4px;
+            padding: 12px; color: #7c3aed; font-size: 13px;
+        }
+        .ai-loading-dots span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #a855f7; animation: aiDotBounce 1.4s infinite ease-in-out both;
+        }
+        .ai-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .ai-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes aiDotBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .ai-hint-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 4px;
+            border: 1px solid #d8b4fe; background: #faf5ff;
+            color: #7c3aed; font-size: 12px; cursor: pointer;
+            transition: all 0.2s; margin-left: 8px;
+        }
+        .ai-hint-btn:hover { background: #f3e8ff; }
+        .ai-hint-popup {
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 8px; padding: 12px;
+            margin-top: 8px; font-size: 12px;
+            color: var(--text-secondary); line-height: 1.6;
+        }
+
+        .ai-summary-bar {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+            border: 1px solid #e9d5ff;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .ai-summary-bar i { color: #9333ea; }
+        .ai-summary-bar button {
+            margin-left: auto;
+            padding: 4px 12px; border-radius: 4px;
+            border: 1px solid #d8b4fe; background: white;
+            color: #7c3aed; font-size: 12px; cursor: pointer;
+        }
+        .ai-summary-bar button:hover { background: #f3e8ff; }
+
+        .ai-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 10px;
+            font-size: 11px; font-weight: 500;
+            background: #f3e8ff; color: #7c3aed;
+        }
+        .ai-score-card {
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+            border: 1px solid #e9d5ff;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .ai-score-card-title {
+            font-weight: 600;
+            color: #7c3aed;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        .ai-score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed #e9d5ff;
+            font-size: 13px;
+        }
+        .ai-score-item:last-child { border-bottom: none; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
@@ -2875,6 +3072,9 @@
                     <i class="fas fa-arrow-left"></i>
                     返回场景
                 </button>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <span class="ai-badge"><i class="fas fa-robot"></i> AI 辅助学习模式</span>
+                </div>
                 <div class="tl-title-row">
                     <h2 class="tl-task-name" id="tlTaskName" data-annotation-title="任务名称" data-annotation-content="场景编辑——步骤 2 任务链配置——任务名称">任务名称</h2>
                     <div class="tl-task-meta" id="tlTaskMeta">
@@ -2894,9 +3094,14 @@
                         <div class="tl-panel-header">
                             <i class="fas fa-book-open"></i>
                             <span>任务说明</span>
-                            <button class="tl-fullscreen-btn" onclick="openTaskDescFullscreen()">
-                                <i class="fas fa-expand"></i> 全屏查看
-                            </button>
+                            <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+                                <button class="ai-hint-btn" onclick="handleAiSummary(currentTaskId)" id="aiSummaryBtn" style="margin-left:0;">
+                                    <i class="fas fa-sparkles"></i> AI 摘要
+                                </button>
+                                <button class="tl-fullscreen-btn" onclick="openTaskDescFullscreen()">
+                                    <i class="fas fa-expand"></i> 全屏查看
+                                </button>
+                            </div>
                         </div>
                         <div class="tl-panel-body">
                             <div class="tl-task-desc" id="tlTaskDesc" data-annotation-title="任务说明" data-annotation-content="场景编辑——步骤 2 任务链配置——任务说明（富文本/PDF）"></div>
@@ -2920,6 +3125,25 @@
 
                 <!-- 右侧列 -->
                 <div class="tl-right">
+                    <!-- AI 学习助手静态卡片 -->
+                    <div class="ai-static-card" id="aiStaticCard">
+                        <div class="ai-static-card-header">
+                            <div class="ai-static-card-avatar"><i class="fas fa-robot"></i></div>
+                            <div>
+                                <div class="ai-static-card-title">AI 学习助手</div>
+                                <div class="ai-static-card-subtitle">随时为你答疑解惑</div>
+                            </div>
+                        </div>
+                        <div class="ai-static-card-body">
+                            <button class="ai-action-btn" onclick="handleAiParseTask()">
+                                <i class="fas fa-list-check"></i> 解析任务要点
+                            </button>
+                            <button class="ai-action-btn" onclick="handleAiWeakPointAnalysis()">
+                                <i class="fas fa-chart-line"></i> 薄弱点分析
+                            </button>
+                            <div id="aiOutputArea"></div>
+                        </div>
+                    </div>
                     <div class="tl-side-panel">
                         <div class="tl-side-tabs">
                             <div class="tl-side-tab active" data-side-tab="knowledge" onclick="switchSideTab('knowledge')">
@@ -2937,7 +3161,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 
     <!-- 学测模式选择弹窗 -->
@@ -2979,6 +3202,34 @@
             <div class="preview-modal-body" style="overflow-y:auto;">
                 <div id="taskDescFullscreenContent"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- AI 摘要全屏弹窗 -->
+    <div class="preview-modal-overlay" id="aiSummaryOverlay" onclick="if(event.target===this)closeAiSummaryFullscreen()">
+        <div class="preview-modal-box" style="width:900px;max-width:95vw;height:90vh;">
+            <div class="preview-modal-header">
+                <div class="preview-modal-title"><i class="fas fa-sparkles" style="color:#9333ea;margin-right:8px;"></i>AI 任务摘要与完整说明</div>
+                <button class="preview-modal-close" onclick="closeAiSummaryFullscreen()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-modal-body" style="overflow-y:auto;">
+                <div id="aiSummaryFullscreenContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 总结所有弹窗（带进度条） -->
+    <div class="preview-modal-overlay" id="summaryProgressOverlay" style="z-index:110;" onclick="if(event.target===this)closeSummaryModal()">
+        <div class="preview-modal-box" style="width:960px;max-width:95vw;text-align:center;padding:40px 30px;position:relative;">
+            <button onclick="closeSummaryModal()" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:none;background:#f5f5f5;color:#999;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.2s;" onmouseover="this.style.background='#e0e0e0';this.style.color='#666';" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';"><i class="fas fa-times"></i></button>
+            <div id="summaryProgressIcon" style="font-size:48px;color:#9333ea;margin-bottom:16px;"><i class="fas fa-brain"></i></div>
+            <div id="summaryProgressTitle" style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">AI 正在总结中...</div>
+            <div id="summaryProgressDesc" style="font-size:13px;color:var(--text-secondary);margin-bottom:24px;">正在分析关联内容并生成知识图谱摘要</div>
+            <div style="width:100%;height:8px;background:#f0e6ff;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+                <div id="summaryProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,#9333ea,#7c3aed);border-radius:4px;transition:width 0.3s ease;"></div>
+            </div>
+            <div id="summaryProgressPercent" style="font-size:13px;color:#9333ea;font-weight:600;">0%</div>
+            <div id="summaryResultArea" style="display:none;margin-top:24px;text-align:left;"></div>
         </div>
     </div>
 
@@ -4372,41 +4623,322 @@
             const task = currentLearningTask;
             if (!task) { body.innerHTML = ''; return; }
 
+            const summaryBtnHtml = (label, type) => `
+                <div style="margin-bottom:12px;">
+                    <button class="ai-action-btn" style="width:100%;justify-content:center;" onclick="showSummaryModal('${type}')">
+                        <i class="fas fa-wand-magic-sparkles"></i> ${label}
+                    </button>
+                </div>`;
+
             if (tab === 'knowledge') {
                 const kps = getTaskKnowledgePoints(task);
                 if (kps.length === 0) {
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联知识点</div>';
                 } else {
-                    body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + kps.map(kp =>
-                        `<span class="tl-side-tag knowledge" onclick="alert('参考标准的知识点展示弹窗样式即可')">${kp.name}</span>`
-                    ).join('') + '</div>';
+                    body.innerHTML = summaryBtnHtml('总结所有知识点', 'knowledge') +
+                        '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + kps.map(kp => {
+                        const safeName = (kp.name || '').replace(/'/g, '\\&#39;');
+                        return '<div class="ai-kp-item" id="ai-kp-wrap-' + kp.id + '" style="display:inline-flex;align-items:center;flex-wrap:wrap;">' +
+                            '<span class="tl-side-tag knowledge" onclick="showKgDetailModal({name:\'' + safeName + '\',type:\'knowledge\',id:\'' + kp.id + '\'})" style="cursor:pointer;">' + kp.name +
+                            '<button class="ai-explain-btn-inline" onclick="event.stopPropagation();toggleAiExplain(\'knowledge\',\'' + kp.id + '\',\'' + safeName + '\',\'ai-kp-wrap-' + kp.id + '\')" title="AI 解读"><i class="fas fa-robot"></i></button>' +
+                            '</span></div>';
+                    }).join('') + '</div>';
                 }
             } else if (tab === 'ability') {
                 const aps = (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean);
                 if (aps.length === 0) {
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联能力点</div>';
                 } else {
-                    body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + aps.map(ap =>
-                        `<span class="tl-side-tag ability" onclick="alert('参考标准的能力点展示弹窗样式即可')">${ap.name}</span>`
-                    ).join('') + '</div>';
+                    body.innerHTML = summaryBtnHtml('总结所有能力点', 'ability') +
+                        '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + aps.map(ap => {
+                        const safeName = (ap.name || '').replace(/'/g, '\\&#39;');
+                        return '<div class="ai-kp-item" id="ai-ab-wrap-' + ap.id + '" style="display:inline-flex;align-items:center;flex-wrap:wrap;">' +
+                            '<span class="tl-side-tag ability" onclick="showKgDetailModal({name:\'' + safeName + '\',type:\'ability\',id:\'' + ap.id + '\'})" style="cursor:pointer;">' + ap.name +
+                            '<button class="ai-explain-btn-inline" onclick="event.stopPropagation();toggleAiExplain(\'ability\',\'' + ap.id + '\',\'' + safeName + '\',\'ai-ab-wrap-' + ap.id + '\')" title="AI 解读"><i class="fas fa-robot"></i></button>' +
+                            '</span></div>';
+                    }).join('') + '</div>';
                 }
             } else if (tab === 'resource') {
                 const resources = getTaskResources(task);
                 if (resources.length === 0) {
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无配套资源</div>';
                 } else {
-                    body.innerHTML = resources.map(r => `
-                        <div class="tl-side-resource-item" onclick="alert('参考标准的资源展示弹窗样式即可')">
-                            <div class="tl-side-resource-icon ${getResourceIconClass(r.type)}" style="background:${r.type==='video'?'#fff2f0':r.type==='document'?'#e6f4ff':'#f5f5f5'};color:${r.type==='video'?'#ff4d4f':r.type==='document'?'#1677ff':'#666'}">
-                                <i class="fas ${getResourceIcon(r.type)}"></i>
-                            </div>
-                            <div style="flex:1;min-width:0;">
-                                <div class="tl-side-resource-name">${r.name}</div>
-                                <div class="tl-side-resource-meta">${r.size || '在线资源'}</div>
-                            </div>
-                        </div>
-                    `).join('');
+                    body.innerHTML = summaryBtnHtml('总结所有资源', 'resource') +
+                        resources.map(r => {
+                        const safeName = (r.name || '').replace(/'/g, '\\&#39;');
+                        return '<div class="tl-side-resource-item" id="ai-res-wrap-' + r.id + '" style="flex-wrap:wrap;cursor:pointer;" onclick="showResourceDetailModal(\'' + r.id + '\')">' +
+                            '<div style="display:flex;align-items:center;gap:10px;width:100%;">' +
+                            '<div class="tl-side-resource-icon ' + getResourceIconClass(r.type) + '" style="background:' + (r.type==='video'?'#fff2f0':r.type==='document'?'#e6f4ff':'#f5f5f5') + ';color:' + (r.type==='video'?'#ff4d4f':r.type==='document'?'#1677ff':'#666') + '">' +
+                            '<i class="fas ' + getResourceIcon(r.type) + '"></i></div>' +
+                            '<div style="flex:1;min-width:0;">' +
+                            '<div class="tl-side-resource-name">' + r.name + '</div>' +
+                            '<div class="tl-side-resource-meta">' + (r.size || '在线资源') + '</div></div>' +
+                            '<button class="ai-explain-btn-inline" onclick="event.stopPropagation();toggleAiExplain(\'resource\',\'' + r.id + '\',\'' + safeName + '\',\'ai-res-wrap-' + r.id + '\')" title="AI 推荐理由"><i class="fas fa-robot"></i></button>' +
+                            '</div></div>';
+                    }).join('');
                 }
+            }
+        }
+
+        // 总结所有弹窗（10秒进度条）
+        function closeSummaryModal() {
+            document.getElementById('summaryProgressOverlay').classList.remove('active');
+        }
+
+        function showSummaryModal(type) {
+            const overlay = document.getElementById('summaryProgressOverlay');
+            const bar = document.getElementById('summaryProgressBar');
+            const percent = document.getElementById('summaryProgressPercent');
+            const title = document.getElementById('summaryProgressTitle');
+            const desc = document.getElementById('summaryProgressDesc');
+            const icon = document.getElementById('summaryProgressIcon');
+            const resultArea = document.getElementById('summaryResultArea');
+
+            const labels = { knowledge: '知识点', ability: '能力点', resource: '资源' };
+            const label = labels[type] || type;
+
+            title.textContent = 'AI 正在总结所有' + label + '...';
+            desc.textContent = '正在分析关联内容并生成知识图谱摘要，请稍候';
+            icon.innerHTML = '<i class="fas fa-brain"></i>';
+            bar.style.width = '0%';
+            percent.textContent = '0%';
+            resultArea.style.display = 'none';
+            resultArea.innerHTML = '';
+            overlay.classList.add('active');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                bar.style.width = progress + '%';
+                percent.textContent = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showSummaryResult(type, label);
+                    }, 300);
+                }
+            }, 1000);
+        }
+
+        function showSummaryResult(type, label) {
+            const title = document.getElementById('summaryProgressTitle');
+            const desc = document.getElementById('summaryProgressDesc');
+            const icon = document.getElementById('summaryProgressIcon');
+            const resultArea = document.getElementById('summaryResultArea');
+            const task = currentLearningTask;
+
+            title.textContent = label + '总结完成';
+            desc.textContent = '以下是由 AI 生成的' + label + '关联图谱摘要';
+            icon.innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e;"></i>';
+
+            const cardBg = type === 'knowledge' ? '#faf5ff' : type === 'ability' ? '#f0fdf4' : '#eff6ff';
+            const cardBorder = type === 'knowledge' ? '#e9d5ff' : type === 'ability' ? '#bbf7d0' : '#bfdbfe';
+            const titleColor = type === 'knowledge' ? '#7c3aed' : type === 'ability' ? '#15803d' : '#1d4ed8';
+            const titleIcon = type === 'knowledge' ? 'fa-sitemap' : type === 'ability' ? 'fa-star' : 'fa-folder-open';
+            const advice = type === 'knowledge'
+                ? '建议按照节点关联度依次学习，核心知识点（紫色大节点）需要深入理解并能在实践中灵活运用。'
+                : type === 'ability'
+                ? '建议针对得分较低的能力项，通过配套资源进行针对性练习，并在任务实践中重点突破。'
+                : '建议按照推荐顺序依次阅读，视频资源适合快速入门，文档资源适合深度学习，代码示例建议动手实践。';
+
+            const html = '<div style="background:' + cardBg + ';border:1px solid ' + cardBorder + ';border-radius:8px;padding:12px;text-align:left;">' +
+                '<div style="font-weight:600;color:' + titleColor + ';margin-bottom:8px;font-size:14px;"><i class="fas ' + titleIcon + '" style="margin-right:6px;"></i>' + label + '图谱摘要</div>' +
+                '<div id="miniKgContainer" style="width:100%;height:420px;background:white;border-radius:6px;border:1px solid ' + cardBorder + ';position:relative;overflow:hidden;">' +
+                '<svg id="miniKgSvg"></svg>' +
+                '<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;">' +
+                '<button onclick="miniKgZoomIn()" style="width:26px;height:26px;border-radius:4px;border:1px solid ' + cardBorder + ';background:white;color:' + titleColor + ';cursor:pointer;font-size:11px;"><i class="fas fa-plus"></i></button>' +
+                '<button onclick="miniKgZoomOut()" style="width:26px;height:26px;border-radius:4px;border:1px solid ' + cardBorder + ';background:white;color:' + titleColor + ';cursor:pointer;font-size:11px;"><i class="fas fa-minus"></i></button>' +
+                '<button onclick="miniKgReset()" style="width:26px;height:26px;border-radius:4px;border:1px solid ' + cardBorder + ';background:white;color:' + titleColor + ';cursor:pointer;font-size:11px;"><i class="fas fa-compress-arrows-alt"></i></button>' +
+                '</div>' +
+                '<div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:10px;color:#999;background:rgba(255,255,255,0.85);padding:2px 8px;border-radius:8px;pointer-events:none;">拖拽节点 · 滚轮缩放 · 点击查看详情</div>' +
+                '</div>' +
+                '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed ' + cardBorder + ';font-size:12px;color:var(--text-secondary);line-height:1.6;">' +
+                '<strong>AI 学习建议：</strong>' + advice +
+                '</div></div>';
+
+            resultArea.innerHTML = html;
+            resultArea.style.display = 'block';
+            setTimeout(() => renderMiniGraph(type), 100);
+        }
+
+        // 弹窗内迷你图谱（支持 knowledge / ability / resource 三种类型）
+        let miniKgSim, miniKgSvg, miniKgZoom, miniKgContainer;
+        function renderMiniGraph(type) {
+            const container = document.getElementById('miniKgContainer');
+            const svgEl = document.getElementById('miniKgSvg');
+            if (!container || !svgEl) return;
+            const W = container.clientWidth || 900;
+            const H = container.clientHeight || 420;
+            svgEl.setAttribute('width', W);
+            svgEl.setAttribute('height', H);
+
+            const svg = d3.select('#miniKgSvg');
+            svg.selectAll('*').remove();
+            miniKgSvg = svg;
+
+            miniKgZoom = d3.zoom().scaleExtent([0.3, 3]).on('zoom', ev => {
+                if (miniKgContainer) miniKgContainer.attr('transform', ev.transform);
+            });
+            svg.call(miniKgZoom);
+            miniKgContainer = svg.append('g');
+
+            const task = currentLearningTask;
+            const nodes = [];
+            const links = [];
+
+            // 统一配色
+            const palette = {
+                knowledge: { core: '#722ed1', ability: '#52c41a', leaf: '#faad14' },
+                ability:   { core: '#722ed1', ability: '#22c55e', leaf: '#f97316' },
+                resource:  { core: '#722ed1', ability: '#3b82f6', leaf: '#ec4899' }
+            };
+            const p = palette[type] || palette.knowledge;
+
+            if (type === 'knowledge') {
+                const kps = task ? getTaskKnowledgePoints(task) : [];
+                const aps = task ? (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean) : [];
+
+                nodes.push({ id: 'core', name: task ? task.name : '任务', type: 'core' });
+                aps.slice(0, 8).forEach((ap, i) => {
+                    nodes.push({ id: 'ab' + i, name: ap.name, type: 'ability' });
+                    links.push({ source: 'core', target: 'ab' + i });
+                });
+                kps.slice(0, 12).forEach((kp, i) => {
+                    nodes.push({ id: 'kp' + i, name: kp.name, type: 'leaf' });
+                    if (aps.length > 0) {
+                        links.push({ source: 'ab' + (i % Math.min(aps.length, 8)), target: 'kp' + i });
+                    } else {
+                        links.push({ source: 'core', target: 'kp' + i });
+                    }
+                });
+            } else if (type === 'ability') {
+                const aps = task ? (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean) : [];
+                const kps = task ? getTaskKnowledgePoints(task) : [];
+
+                nodes.push({ id: 'core', name: task ? task.name : '任务', type: 'core' });
+                aps.slice(0, 10).forEach((ap, i) => {
+                    nodes.push({ id: 'ab' + i, name: ap.name, type: 'ability' });
+                    links.push({ source: 'core', target: 'ab' + i });
+                });
+                // 能力点之间添加弱关联线，形成网状结构
+                aps.slice(0, 10).forEach((ap, i) => {
+                    if (i > 0 && i % 2 === 0 && i < aps.length - 1) {
+                        links.push({ source: 'ab' + i, target: 'ab' + (i + 1), weak: true });
+                    }
+                });
+                // 知识点挂接到能力点
+                kps.slice(0, 8).forEach((kp, i) => {
+                    nodes.push({ id: 'kp' + i, name: kp.name, type: 'leaf' });
+                    links.push({ source: 'ab' + (i % Math.min(aps.length, 10)), target: 'kp' + i });
+                });
+            } else if (type === 'resource') {
+                const resources = task ? getTaskResources(task) : [];
+                const kps = task ? getTaskKnowledgePoints(task) : [];
+                const typeColors = { video: '#ff4d4f', document: '#1677ff', link: '#52c41a', code: '#722ed1' };
+
+                nodes.push({ id: 'core', name: task ? task.name : '任务', type: 'core' });
+                resources.slice(0, 10).forEach((r, i) => {
+                    nodes.push({ id: 'res' + i, name: r.name, type: 'ability', color: typeColors[r.type] || '#3b82f6' });
+                    links.push({ source: 'core', target: 'res' + i });
+                    // 资源之间按顺序连线
+                    if (i > 0) {
+                        links.push({ source: 'res' + (i - 1), target: 'res' + i, weak: true });
+                    }
+                });
+                // 知识点挂接到资源
+                kps.slice(0, 6).forEach((kp, i) => {
+                    nodes.push({ id: 'kp' + i, name: kp.name, type: 'leaf' });
+                    links.push({ source: 'res' + (i % Math.min(resources.length, 10)), target: 'kp' + i });
+                });
+            }
+
+            const typeR = { core: 30, ability: 16, leaf: 9 };
+            const typeFont = { core: 14, ability: 11, leaf: 10 };
+
+            const simLinks = links.map(l => Object.create(l));
+            const simNodes = nodes.map(n => Object.create(n));
+
+            const linkG = miniKgContainer.append('g')
+                .selectAll('path')
+                .data(simLinks)
+                .join('path')
+                .attr('fill', 'none')
+                .attr('stroke', d => d.weak ? '#e0e0e0' : '#c8d8f0')
+                .attr('stroke-width', d => d.weak ? 1 : (d.source.type === 'core' ? 2 : 1.5))
+                .attr('stroke-dasharray', d => d.weak ? '4,3' : 'none')
+                .attr('opacity', d => d.weak ? 0.4 : 0.6);
+
+            const nodeG = miniKgContainer.append('g')
+                .selectAll('g')
+                .data(simNodes)
+                .join('g')
+                .style('cursor', 'pointer')
+                .call(d3.drag()
+                    .on('start', (ev, d) => { if (!ev.active) miniKgSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                    .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+                    .on('end', (ev, d) => { if (!ev.active) miniKgSim.alphaTarget(0); d.fx = null; d.fy = null; })
+                );
+
+            nodeG.append('circle')
+                .attr('r', d => typeR[d.type])
+                .attr('fill', d => d.color || p[d.type])
+                .attr('stroke', '#fff')
+                .attr('stroke-width', d => d.type === 'core' ? 3 : 1.5);
+
+            nodeG.append('text')
+                .attr('dy', d => typeR[d.type] + 13)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', d => typeFont[d.type])
+                .attr('fill', '#333')
+                .attr('font-weight', d => d.type === 'core' ? '600' : '400')
+                .attr('pointer-events', 'none')
+                .text(d => d.name.length > 8 ? d.name.slice(0, 7) + '…' : d.name);
+
+            nodeG.on('click', (ev, d) => {
+                if (type === 'knowledge' && d.type === 'leaf') {
+                    const kps = task ? getTaskKnowledgePoints(task) : [];
+                    const kp = kps.find(k => k.name === d.name);
+                    if (kp) showKgDetailModal({ name: kp.name, type: 'knowledge', id: kp.id });
+                }
+            });
+
+            const linkDist = type === 'ability' ? 140 : (type === 'resource' ? 130 : 120);
+            const leafDist = type === 'ability' ? 70 : (type === 'resource' ? 65 : 55);
+            const chargeCore = type === 'ability' ? -1200 : (type === 'resource' ? -1000 : -800);
+            const chargeAbility = type === 'ability' ? -350 : (type === 'resource' ? -300 : -250);
+
+            miniKgSim = d3.forceSimulation(simNodes)
+                .force('link', d3.forceLink(simLinks).id(d => d.id).distance(d => d.source.type === 'core' ? linkDist : leafDist))
+                .force('charge', d3.forceManyBody().strength(d => d.type === 'core' ? chargeCore : d.type === 'ability' ? chargeAbility : -70))
+                .force('center', d3.forceCenter(W / 2, H / 2))
+                .on('tick', () => {
+                    linkG.attr('d', d => {
+                        const mx = (d.source.x + d.target.x) / 2, my = (d.source.y + d.target.y) / 2;
+                        const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+                        return `M${d.source.x},${d.source.y} Q${mx - dy * 0.1},${my + dx * 0.1} ${d.target.x},${d.target.y}`;
+                    });
+                    nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+                });
+
+            setTimeout(() => {
+                if (miniKgSvg && miniKgZoom) {
+                    miniKgSvg.transition().duration(400).call(miniKgZoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.8).translate(-W / 2, -H / 2));
+                }
+            }, 300);
+        }
+
+        function miniKgZoomIn() {
+            if (miniKgSvg && miniKgZoom) miniKgSvg.transition().call(miniKgZoom.scaleBy, 1.3);
+        }
+        function miniKgZoomOut() {
+            if (miniKgSvg && miniKgZoom) miniKgSvg.transition().call(miniKgZoom.scaleBy, 0.75);
+        }
+        function miniKgReset() {
+            const container = document.getElementById('miniKgContainer');
+            const W = container ? container.clientWidth : 900;
+            const H = container ? container.clientHeight : 420;
+            if (miniKgSvg && miniKgZoom) {
+                miniKgSvg.transition().duration(400).call(miniKgZoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.8).translate(-W / 2, -H / 2));
             }
         }
 
@@ -4580,6 +5112,7 @@
                         html += `<span class="tl-question-num">${idx + 1}</span>`;
                         html += `<span>${q.content}</span>`;
                         html += `<span class="tl-question-score">${q.score}分</span>`;
+                        html += `<button class="ai-hint-btn" onclick="handleAiQuestionHint('${task.id}', '${q.id}')" style="margin-left:auto;"><i class="fas fa-lightbulb"></i> AI 提示</button>`;
                         html += `</div>`;
 
                         html += `<div class="tl-options">`;
@@ -5368,6 +5901,82 @@
             document.getElementById('previewModalOverlay').classList.remove('active');
         }
 
+        function showResourceDetailModal(resourceId) {
+            const resource = getResourceById(resourceId);
+            if (!resource) return;
+            const explain = getAiExplain('resource', resource.name);
+            const linkedKps = (resource.knowledgePoints || []).map(function(kpid) {
+                var kp = getKnowledgePointById(kpid);
+                return kp ? kp.name : kpid;
+            });
+            const typeLabels = { video: '视频教程', document: '文档资料', link: '在线链接', software: '软件工具', venue: '场地设备' };
+            const typeLabel = typeLabels[resource.type] || '其他资源';
+            const typeColors = { video: '#ff4d4f', document: '#1677ff', link: '#52c41a', software: '#faad14', venue: '#722ed1' };
+            const typeColor = typeColors[resource.type] || '#666';
+            const readProgress = Math.floor(Math.random() * 3) * 25;
+
+            var contentHtml = '<div style="padding:16px;">';
+            // 头部信息
+            contentHtml += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">';
+            contentHtml += '<div style="width:48px;height:48px;border-radius:10px;background:' + typeColor + '15%;color:' + typeColor + ';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">';
+            contentHtml += '<i class="fas ' + getResourceIcon(resource.type) + '"></i></div>';
+            contentHtml += '<div>';
+            contentHtml += '<div style="font-size:15px;font-weight:600;color:var(--text-primary);">' + resource.name + '</div>';
+            contentHtml += '<div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">' + typeLabel + ' · ' + (resource.size || '在线资源') + '</div>';
+            contentHtml += '</div></div>';
+
+            // 描述
+            if (resource.description) {
+                contentHtml += '<div style="margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:8px;font-size:13px;color:var(--text-secondary);line-height:1.7;">';
+                contentHtml += resource.description;
+                contentHtml += '</div>';
+            }
+
+            // 关联知识点
+            if (linkedKps.length > 0) {
+                contentHtml += '<div style="margin-bottom:16px;">';
+                contentHtml += '<div style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text-primary);"><i class="fas fa-lightbulb" style="margin-right:4px;color:#faad14;"></i>关联知识点</div>';
+                contentHtml += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+                linkedKps.forEach(function(kpName) {
+                    contentHtml += '<span style="background:#fff7e6;color:#d46b08;border:1px solid #ffd591;padding:2px 10px;border-radius:10px;font-size:12px;">' + kpName + '</span>';
+                });
+                contentHtml += '</div></div>';
+            }
+
+            // 阅读进度
+            contentHtml += '<div style="margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:8px;">';
+            contentHtml += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+            contentHtml += '<span style="font-size:13px;font-weight:500;"><i class="fas fa-eye" style="margin-right:4px;color:var(--primary-color);"></i>学习进度</span>';
+            contentHtml += '<span style="font-size:13px;font-weight:600;color:' + (readProgress >= 50 ? '#52c41a' : '#faad14') + '">' + readProgress + '%</span>';
+            contentHtml += '</div>';
+            contentHtml += '<div style="width:100%;height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden;">';
+            contentHtml += '<div style="width:' + readProgress + '%;height:100%;background:' + (readProgress >= 50 ? '#52c41a' : '#faad14') + ';border-radius:3px;"></div>';
+            contentHtml += '</div>';
+            contentHtml += '<div style="font-size:12px;color:var(--text-tertiary);margin-top:6px;">';
+            if (readProgress === 0) contentHtml += '尚未开始学习，建议尽快阅读以跟上任务进度';
+            else if (readProgress < 50) contentHtml += '学习进行中，建议继续深入阅读剩余内容';
+            else if (readProgress < 100) contentHtml += '已学习大部分内容，建议复习重点部分';
+            else contentHtml += '已完成学习，可以在任务中实践应用';
+            contentHtml += '</div></div>';
+
+            // AI 推荐理由
+            if (explain && explain.reason) {
+                contentHtml += '<div style="padding:12px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;">';
+                contentHtml += '<div style="font-weight:600;color:#7c3aed;margin-bottom:6px;font-size:13px;"><i class="fas fa-robot" style="margin-right:4px;"></i>AI 推荐理由</div>';
+                contentHtml += '<div style="font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:6px;">' + explain.reason + '</div>';
+                contentHtml += '<div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">';
+                contentHtml += '<strong>建议阅读顺序：</strong>第 ' + explain.order + ' 步 | <strong>关联：</strong>' + explain.link;
+                contentHtml += '</div></div>';
+            }
+
+            contentHtml += '</div>';
+
+            document.getElementById('previewModalTitle').textContent = '资源详情';
+            document.getElementById('previewModalContent').innerHTML = contentHtml;
+            document.getElementById('previewModalDesc').textContent = '';
+            document.getElementById('previewModalOverlay').classList.add('active');
+        }
+
         function showExternalQuizTip() {
             document.getElementById('externalQuizTipOverlay').classList.add('active');
         }
@@ -5379,23 +5988,81 @@
         function showKgDetailModal(data) {
             const overlay = document.getElementById('kgModalOverlay');
             const title = document.getElementById('kgModalTitle');
-            const badgeContainer = document.getElementById('kgModalBadgeContainer');
             const body = document.getElementById('kgModalBody');
 
             const isAbility = data.type === 'ability';
             const item = isAbility ? getAbilityPointById(data.id) : KNOWLEDGE_POINTS.find(k => k.id === data.id || k.name === data.name);
+            const explain = getAiExplain(isAbility ? 'ability' : 'knowledge', data.name);
+            const mastery = item ? (Math.floor(Math.random() * 35) + 45) : 50;
+            const relatedTasks = SCENARIO.tasks.filter(t => {
+                if (isAbility) return t.abilityPoints?.includes(data.id);
+                return t.knowledgePoints?.includes(data.id);
+            });
 
-            title.innerHTML = `<span>${data.name}</span>` + (isAbility
+            title.innerHTML = '<span>' + data.name + '</span>' + (isAbility
                 ? '<span class="kg-modal-badge badge-ability" style="margin-left:8px;"><i class="fas fa-star"></i> 能力点</span>'
                 : '<span class="kg-modal-badge badge-knowledge" style="margin-left:8px;"><i class="fas fa-lightbulb"></i> 知识点</span>');
 
             let html = '';
             if (item) {
-                html += `<p style="margin-bottom:12px;"><strong>描述：</strong>${item.description || '暂无描述'}</p>`;
-                if (item.category) html += `<p style="margin-bottom:12px;"><strong>分类：</strong>${item.category}</p>`;
-                if (isAbility && item.category) html += `<p style="margin-bottom:12px;"><strong>所属领域：</strong>${item.category}</p>`;
+                html += '<div style="margin-bottom:16px;">';
+                html += '<div style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:12px;">' + (item.description || '暂无描述') + '</div>';
+                html += '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
+                html += '<span style="background:#f5f5f5;padding:3px 10px;border-radius:4px;font-size:12px;color:var(--text-secondary);"><i class="fas fa-folder" style="margin-right:4px;"></i>' + (item.category || '未分类') + '</span>';
+                html += '<span style="background:#faf5ff;padding:3px 10px;border-radius:4px;font-size:12px;color:#7c3aed;"><i class="fas fa-layer-group" style="margin-right:4px;"></i>难度：' + (isAbility ? '中等' : '中等偏上') + '</span>';
+                html += '</div>';
+                html += '</div>';
+
+                // 掌握度
+                html += '<div style="margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:8px;">';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+                html += '<span style="font-size:13px;font-weight:500;"><i class="fas fa-chart-line" style="margin-right:4px;color:var(--primary-color);"></i>掌握度预估</span>';
+                html += '<span style="font-size:13px;font-weight:600;color:' + (mastery >= 70 ? '#52c41a' : mastery >= 50 ? '#faad14' : '#ff4d4f') + '">' + mastery + '%</span>';
+                html += '</div>';
+                html += '<div style="width:100%;height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden;">';
+                html += '<div style="width:' + mastery + '%;height:100%;background:' + (mastery >= 70 ? '#52c41a' : mastery >= 50 ? '#faad14' : '#ff4d4f') + ';border-radius:3px;transition:width 0.5s ease;"></div>';
+                html += '</div>';
+                html += '<div style="font-size:12px;color:var(--text-tertiary);margin-top:6px;">';
+                if (mastery < 50) html += '建议重点学习，这是完成本任务的重要基础';
+                else if (mastery < 70) html += '已有一定基础，建议通过任务实战进一步巩固';
+                else html += '掌握较好，可在任务中尝试更深入的应用';
+                html += '</div></div>';
+
+                // AI 解读
+                if (explain) {
+                    var levelClass = explain.level === '核心必备' ? 'core' : (explain.level === '重点掌握' ? 'important' : 'basic');
+                    html += '<div style="margin-bottom:16px;padding:12px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;">';
+                    html += '<div style="font-weight:600;color:#7c3aed;margin-bottom:8px;font-size:13px;"><i class="fas fa-robot" style="margin-right:4px;"></i>AI 任务解读</div>';
+                    html += '<div style="font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:6px;"><strong>在本任务中的应用：</strong>' + explain.apply + '</div>';
+                    html += '<div style="font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:6px;"><strong>掌握要求：</strong><span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:500;background:' + (explain.level === '核心必备' ? '#fef3c7;color:#b45309' : explain.level === '重点掌握' ? '#dbeafe;color:#1d4ed8' : '#f3f4f6;color:#4b5563') + '">' + explain.level + '</span></div>';
+                    html += '<div style="font-size:12px;color:var(--text-secondary);line-height:1.7;"><strong>关联环节：</strong>' + explain.link + '</div>';
+                    html += '</div>';
+                }
+
+                // 相关任务
+                if (relatedTasks.length > 0) {
+                    html += '<div style="margin-bottom:12px;">';
+                    html += '<div style="font-size:13px;font-weight:500;margin-bottom:8px;"><i class="fas fa-tasks" style="margin-right:4px;color:var(--primary-color);"></i>涉及该' + (isAbility ? '能力' : '知识点') + '的任务</div>';
+                    html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+                    relatedTasks.slice(0, 4).forEach(function(t) {
+                        html += '<div style="padding:8px 10px;background:#f8f9fa;border-radius:6px;font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;">';
+                        html += '<i class="fas fa-file-alt" style="color:var(--text-tertiary);"></i>' + t.name + '</div>';
+                    });
+                    html += '</div></div>';
+                }
+
+                // 学习建议
+                html += '<div style="padding:12px;background:#e6f4ff;border:1px solid #bae0ff;border-radius:8px;">';
+                html += '<div style="font-weight:500;color:#1677ff;margin-bottom:6px;font-size:13px;"><i class="fas fa-lightbulb" style="margin-right:4px;"></i>学习建议</div>';
+                html += '<div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">';
+                if (isAbility) {
+                    html += '建议通过实际项目练习来提升此项能力。可以先从简单的' + (item.category || '相关') + '任务入手，逐步挑战更复杂的场景。多参与代码审查和技术讨论，能有效加深理解。';
+                } else {
+                    html += '建议先理解核心概念，再通过配套资源中的示例代码进行实践。可以尝试用自己的话复述概念原理，并写出简单的示例程序来验证理解。';
+                }
+                html += '</div></div>';
             } else {
-                html += `<p>${data.name}</p>`;
+                html += '<p style="color:var(--text-secondary);">' + data.name + '</p>';
             }
             body.innerHTML = html;
 
@@ -5420,6 +6087,206 @@
             renderAbilities();
             renderKnowledgeTree();
             renderWeightTables();
+        }
+
+
+        // ==================== AI 辅助学习功能 ====================
+        let aiLoading = false;
+
+        function setAiLoading(loading) {
+            aiLoading = loading;
+            const outputArea = document.getElementById('aiOutputArea');
+            if (loading) {
+                outputArea.innerHTML = `
+                    <div class="ai-loading-dots">
+                        <span></span><span></span><span></span>
+                        <span style="margin-left:8px;">AI 正在思考中...</span>
+                    </div>`;
+            }
+        }
+
+        function showAiOutput(title, html) {
+            const outputArea = document.getElementById('aiOutputArea');
+            outputArea.innerHTML = `
+                <div class="ai-output-box">
+                    <div class="ai-output-title"><i class="fas fa-sparkles"></i> ${title}</div>
+                    <div>${html}</div>
+                </div>`;
+        }
+
+        function showAiScoreCard(title, items) {
+            const outputArea = document.getElementById('aiOutputArea');
+            let itemsHtml = items.map(it => `<div class="ai-score-item"><span>${it.label}</span><span style="font-weight:600;color:${it.color || '#7c3aed'};">${it.value}</span></div>`).join('');
+            outputArea.innerHTML = `
+                <div class="ai-score-card">
+                    <div class="ai-score-card-title"><i class="fas fa-sparkles"></i> ${title}</div>
+                    ${itemsHtml}
+                </div>`;
+        }
+
+        // AI 解析任务要点
+        function handleAiParseTask() {
+            if (aiLoading) return;
+            const task = currentLearningTask;
+            if (!task) { alert('请先选择一个任务'); return; }
+            setAiLoading(true);
+            setTimeout(() => {
+                setAiLoading(false);
+                const abilities = task.abilityPoints?.map(id => getAbilityPointById(id)?.name).filter(Boolean) || [];
+                const knowledges = task.knowledgePoints?.map(id => getKnowledgePointById(id)?.name).filter(Boolean) || [];
+                const deliverables = task.deliverables?.map(d => d.name) || [];
+                const html = `
+                    <ul>
+                        <li><strong>核心目标：</strong>${task.description}</li>
+                        <li><strong>关键技能：</strong>${abilities.slice(0, 4).join('、') || '暂无'}</li>
+                        <li><strong>涉及知识点：</strong>${knowledges.slice(0, 4).join('、') || '暂无'}</li>
+                        <li><strong>交付物：</strong>${deliverables.slice(0, 3).join('、') || '暂无'}</li>
+                        <li><strong>预估难度：</strong>${'★'.repeat(task.difficulty || 1)}${'☆'.repeat(5 - (task.difficulty || 1))}</li>
+                        <li><strong>AI 学习建议：</strong>建议先阅读配套资源，重点关注「${knowledges[0] || '核心知识点'}」，再进入测评环节。</li>
+                    </ul>
+                `;
+                showAiOutput('任务要点解析', html);
+            }, 1200);
+        }
+
+        // AI 薄弱点分析
+        function handleAiWeakPointAnalysis() {
+            if (aiLoading) return;
+            const task = currentLearningTask;
+            if (!task) { alert('请先选择一个任务'); return; }
+            setAiLoading(true);
+            setTimeout(() => {
+                setAiLoading(false);
+                const items = [
+                    { label: 'React 并发特性', value: '待提升', color: '#f97316' },
+                    { label: 'TypeScript 泛型', value: '良好', color: '#22c55e' },
+                    { label: '数据库索引优化', value: '薄弱', color: '#ef4444' },
+                    { label: 'RESTful API 设计', value: '优秀', color: '#22c55e' },
+                ];
+                showAiScoreCard('知识点掌握度分析', items);
+            }, 1200);
+        }
+
+        // AI 解读数据库
+        const AI_EXPLAIN_DB = {"knowledge":{"React 组件化开发":{"apply":"在本任务中，你需要使用 React 函数组件和 Hooks 构建前端界面。具体涉及：封装商品列表、商品详情、购物车等可复用组件；使用 useState/useEffect 管理组件状态；通过 Props 实现父子组件通信。","level":"核心必备","link":"前端开发环节"},"TypeScript 类型系统":{"apply":"你需要用 TypeScript 为组件定义 Props 接口、为 API 响应定义类型、使用泛型封装通用 Hook。严谨的类型定义能大幅减少运行时错误。","level":"核心必备","link":"前后端开发"},"CSS 模块化与响应式布局":{"apply":"本任务要求实现 PC/平板/手机多端适配的界面。你需要使用 Flexbox/Grid 布局，配合媒体查询实现响应式，并使用 CSS Modules 或 Tailwind 管理样式。","level":"重点掌握","link":"前端界面开发"},"RESTful API 设计规范":{"apply":"你需要设计用户认证、商品、订单等模块的 API 接口。要遵循 HTTP 方法语义，使用合适的状态码，规划清晰的 URL 结构，并用 Swagger 生成文档。","level":"核心必备","link":"后端接口开发"},"关系型数据库设计":{"apply":"你需要为电商系统设计用户、商品、订单、库存等核心数据表。要遵循三大范式，合理设计索引，规划外键关系，确保数据一致性和查询效率。","level":"核心必备","link":"数据库设计环节"},"JWT 身份认证与安全机制":{"apply":"你需要实现用户登录注册功能，使用 bcrypt 加密密码，用 JWT 签发和验证 Token，配置 Refresh Token 机制，保障用户认证安全。","level":"核心必备","link":"用户认证模块"},"Git 版本控制与团队协作":{"apply":"本任务要求你使用 Git 管理代码，遵循 Git Flow 工作流，编写规范的 Commit Message，通过 Pull Request 进行代码审查。","level":"重点掌握","link":"全程开发协作"},"软件架构模式":{"apply":"你需要为电商系统选择合适的架构方案。建议采用分层架构 + 前后端分离，根据业务复杂度考虑是否需要引入微服务或消息队列。","level":"核心必备","link":"架构设计环节"},"UML 建模与需求分析":{"apply":"你需要绘制用例图描述系统功能，绘制类图描述领域模型，绘制时序图描述核心业务流程，产出规范的需求规格说明书。","level":"核心必备","link":"需求分析环节"},"领域驱动设计（DDD）":{"apply":"你需要识别电商领域的限界上下文（如订单上下文、商品上下文），定义聚合根和实体，使用领域事件实现模块间通信。","level":"重点掌握","link":"架构设计环节"},"缓存策略与 Redis 应用":{"apply":"你需要使用 Redis 缓存热点数据（如商品列表、用户信息），配置合适的过期策略，防范缓存穿透和雪崩问题。","level":"建议了解","link":"性能优化环节"},"消息队列与异步通信":{"apply":"订单创建、库存扣减等操作可以通过消息队列异步处理，提升系统吞吐量。你需要了解 RabbitMQ 的基本使用和可靠性保证。","level":"建议了解","link":"高并发处理"},"软件测试理论与方法":{"apply":"你需要为前端组件编写单元测试，为 API 接口编写集成测试，关注测试覆盖率，建立代码质量门禁。","level":"重点掌握","link":"测试环节"},"前端性能优化":{"apply":"你需要优化页面加载速度，使用代码分割和懒加载，优化图片资源，关注 Lighthouse 评分和 Core Web Vitals 指标。","level":"重点掌握","link":"前端优化环节"},"容器化技术（Docker）":{"apply":"你需要将前后端应用容器化，编写 Dockerfile，使用 Docker Compose 编排服务，为部署上线做准备。","level":"建议了解","link":"部署环节"},"反向代理与负载均衡":{"apply":"你需要配置 Nginx 作为反向代理，将前端静态资源和后端 API 统一入口，配置 SSL 证书和缓存策略。","level":"建议了解","link":"部署环节"},"事务处理与并发控制":{"apply":"订单创建涉及多表操作（订单表、库存表、支付记录表），你需要使用数据库事务保证数据一致性，处理并发下的库存超卖问题。","level":"核心必备","link":"订单模块开发"},"CI/CD 与自动化部署":{"apply":"你需要配置 GitHub Actions 或 GitLab CI 流水线，实现代码提交后自动构建、测试、打包、部署，提升交付效率。","level":"建议了解","link":"部署环节"}},"ability":{"组件封装与复用能力":{"apply":"本任务要求你将电商系统的各个页面模块拆解为可复用的 UI 组件，如商品卡片、订单列表、用户头像等。需要设计清晰的 Props 接口，让组件在不同场景下都能灵活使用。","level":"核心必备","link":"前端界面开发"},"状态管理与数据流设计":{"apply":"你需要为电商系统设计全局状态管理方案，管理用户登录状态、购物车数据、订单信息等。要选择合适的状态管理工具，设计合理的数据流，避免不必要的渲染。","level":"核心必备","link":"前端架构设计"},"安全编码与漏洞防范":{"apply":"你需要防范 XSS、CSRF、SQL 注入等常见 Web 漏洞，正确处理用户输入，使用参数化查询，对敏感数据进行加密存储。","level":"核心必备","link":"前后端开发"},"问题排查与调试":{"apply":"开发过程中难免遇到 Bug，你需要熟练使用 Chrome DevTools、VS Code 调试器、日志分析等工具，系统化地定位和解决问题。","level":"重点掌握","link":"全程开发"},"前端框架深度应用":{"apply":"你需要深入理解 React 18 的并发特性、Hooks 原理、虚拟 DOM Diff 算法，能进行框架级优化，解决复杂场景下的渲染性能问题。","level":"核心必备","link":"前端开发"},"后端服务开发能力":{"apply":"你需要使用 Node.js + Express 搭建后端服务，实现路由、中间件、数据库集成、错误处理等功能，能独立完成后端模块开发。","level":"核心必备","link":"后端开发"},"数据库操作与优化":{"apply":"你需要熟练编写 SQL 进行数据查询和操作，掌握索引优化、事务控制、连接池配置，能分析和解决数据库性能问题。","level":"核心必备","link":"数据库开发"},"代码版本控制与协作":{"apply":"你需要使用 Git 进行分支管理、代码合并、冲突解决，遵循团队的代码审查流程，编写规范的提交信息。","level":"重点掌握","link":"团队协作"},"接口设计与文档编写":{"apply":"你需要设计符合 RESTful 规范的 API 接口，定义清晰的请求/响应格式，使用 Swagger/OpenAPI 编写可交互的接口文档。","level":"核心必备","link":"后端开发"},"数据库建模与查询优化":{"apply":"你需要根据业务需求设计规范的表结构，合理创建索引，编写高效的 SQL 查询，使用 EXPLAIN 分析和优化慢查询。","level":"核心必备","link":"数据库设计"},"技术选型与架构决策":{"apply":"你需要根据项目规模、团队能力、性能要求等因素，做出合理的技术选型和架构设计决策，能说明选型理由。","level":"核心必备","link":"架构设计"},"UML建模与可视化表达":{"apply":"你需要使用 UML 各类图表表达系统设计，将复杂的技术方案可视化呈现，让团队成员快速理解设计思路。","level":"核心必备","link":"需求分析"},"领域驱动设计实践":{"apply":"你需要理解 DDD 核心概念，能在项目中识别领域边界，应用限界上下文、聚合根、领域事件等战术模式。","level":"重点掌握","link":"架构设计"},"系统架构图绘制":{"apply":"你需要绘制清晰准确的系统架构图，包括部署架构、数据架构、技术架构等，准确表达各组件之间的关系。","level":"重点掌握","link":"架构设计"},"性能分析与调优":{"apply":"你需要使用 Lighthouse、Chrome DevTools 等工具分析性能瓶颈，针对性地实施代码分割、懒加载、缓存、查询优化等措施。","level":"重点掌握","link":"优化环节"},"测试设计与质量保障":{"apply":"你需要设计有效的测试用例覆盖正常和异常场景，编写单元测试和集成测试，关注测试覆盖率，建立质量门禁意识。","level":"重点掌握","link":"测试环节"},"容器化与运维部署":{"apply":"你需要熟练使用 Docker 进行应用容器化，编写 Dockerfile 和 Compose 配置，配置 Nginx 反向代理，搭建 CI/CD 自动化流水线。","level":"建议了解","link":"部署环节"},"业务分析与需求转化":{"apply":"你需要理解电商业务需求，将模糊的业务描述转化为清晰的技术方案和实现步骤，识别核心业务流程和边界场景。","level":"核心必备","link":"需求分析"}},"resource":{"React 18 官方文档（中文版）":{"reason":"这是 React 开发的权威参考，建议在学习任务前端部分时随时查阅。重点关注 Hooks API 和并发特性部分。","order":1,"link":"React 组件化开发"},"TypeScript 高级类型系统完全指南.pdf":{"reason":"深入理解 TypeScript 类型系统对编写高质量前端代码至关重要，建议结合组件开发同步学习。","order":2,"link":"TypeScript 类型系统"},"Ant Design 5.0 组件设计规范":{"reason":"本任务前端 UI 基于 Ant Design 5 开发，建议先熟悉组件库的基本用法和设计原则，再开始组件封装。","order":2,"link":"React 组件化开发"},"Vite 构建工具从入门到精通（视频教程）":{"reason":"项目使用 Vite 作为构建工具，建议在项目初始化阶段观看，理解配置项和插件机制。","order":1,"link":"前端工程化"},"前端性能优化实战手册 2025 版.pdf":{"reason":"前端开发完成后，使用本手册对照检查页面性能，优化 Lighthouse 评分和 Core Web Vitals。","order":4,"link":"前端性能优化"},"Node.js + Express 后端开发实战（视频课程）":{"reason":"后端开发的核心参考，建议在开始编写 API 接口前观看，掌握路由、中间件、数据库集成等基础。","order":1,"link":"后端服务开发"},"MySQL 数据库设计规范 v3.0.docx":{"reason":"数据库设计的重要参考，建议在绘制 ER 图和创建表结构前仔细阅读，遵循团队命名规范。","order":1,"link":"关系型数据库设计"},"RESTful API 设计最佳实践与案例集.pdf":{"reason":"设计 API 接口时的重要参考，建议对照本规范检查接口设计的合理性。","order":2,"link":"RESTful API 设计规范"},"Web 安全机制详解：从 JWT 到 OAuth 2.0.pdf":{"reason":"实现用户认证模块时的必读资料，重点关注 JWT 安全实践和常见漏洞防范。","order":3,"link":"JWT 身份认证"},"Redis 缓存策略与电商实战应用（视频）":{"reason":"需要优化系统性能时使用，学习 Redis 缓存设计模式和电商场景下的最佳实践。","order":5,"link":"缓存策略"},"RabbitMQ 消息队列设计与实践指南.pdf":{"reason":"处理高并发订单场景时的参考，了解消息队列的可靠性保证和电商异步场景案例。","order":5,"link":"消息队列"},"电商平台核心业务分析：订单/支付/库存.pdf":{"reason":"深入理解电商业务逻辑的重要资料，建议在需求分析阶段阅读，掌握订单状态机和库存扣减方案。","order":1,"link":"业务分析"},"Jest + React Testing Library 测试开发实战（视频）":{"reason":"为前端组件编写测试时的参考，学习组件测试、Hook 测试和 Mock 技巧。","order":4,"link":"软件测试"},"前端工程化体系建设指南.pdf":{"reason":"项目初始化阶段的重要参考，帮助配置 ESLint、Prettier、Git 工作流等工程化工具链。","order":1,"link":"Git 版本控制"},"Docker 容器化部署完全指南（视频课程）":{"reason":"部署上线前的必读资料，学习 Dockerfile 编写、Compose 编排和生产环境配置。","order":5,"link":"容器化技术"},"Nginx 反向代理与负载均衡配置手册.pdf":{"reason":"配置生产环境反向代理时的参考，学习 Location 匹配、SSL 配置和缓存策略。","order":5,"link":"反向代理"},"GitHub Actions CI/CD 流水线搭建指南.pdf":{"reason":"搭建自动化部署流水线时的参考，实现代码提交后自动构建、测试和部署。","order":5,"link":"CI/CD"},"软件架构模式：从单体到微服务演进.pdf":{"reason":"架构设计阶段的核心参考，帮助你为电商系统选择合适的架构模式和拆分策略。","order":1,"link":"软件架构模式"},"UML 建模与需求分析实战（视频教程）":{"reason":"需求分析阶段的实操指南，学习用例图、类图、时序图的绘制方法和需求分析技巧。","order":1,"link":"UML 建模"},"领域驱动设计（DDD）战略与战术模式.pdf":{"reason":"架构设计阶段的高级参考，帮助你识别领域边界，应用 DDD 战术模式设计领域模型。","order":2,"link":"领域驱动设计"},"单元测试覆盖率提升与 Mock 技巧精讲.pdf":{"reason":"编写单元测试时的进阶参考，深入学习测试替身和 Jest Mock 技巧。","order":4,"link":"软件测试"},"Webpack 与 Vite 构建优化深度解析（视频）":{"reason":"需要优化构建速度或打包体积时观看，学习 Bundle 分析和代码分割策略。","order":4,"link":"前端性能优化"},"阿里云 ECS + RDS 云服务快速入门":{"reason":"选择云部署方案时的参考，了解云服务器选购、环境配置和域名解析流程。","order":5,"link":"容器化技术"},"实训机房 B-205（高性能服务器集群）":{"reason":"本地开发环境的替代方案，如果本地环境配置困难，可以使用实训机房预装好的开发环境。","order":"-","link":"开发环境"},"Git 团队协作与代码审查规范手册.pdf":{"reason":"团队协作的规范指南，建议在整个开发过程中遵循，养成规范的 Git 使用习惯。","order":1,"link":"Git 版本控制"}}};
+
+        function getAiExplain(type, name) {
+            var data = AI_EXPLAIN_DB[type] && AI_EXPLAIN_DB[type][name];
+            if (data) return data;
+            if (type === 'knowledge') return { apply: '\u300c' + name + '\u300d\u662f\u672c\u4efb\u52a1\u6d89\u53ca\u7684\u91cd\u8981\u77e5\u8bc6\u70b9\uff0c\u5efa\u8bae\u7ed3\u5408\u4efb\u52a1\u5b9e\u9645\u9700\u6c42\u6df1\u5165\u7406\u89e3\u5176\u6838\u5fc3\u6982\u5ff5\u3002', level: '\u5efa\u8bae\u4e86\u89e3', link: '\u76f8\u5173\u4efb\u52a1\u73af\u8282' };
+            if (type === 'ability') return { apply: '\u300c' + name + '\u300d\u662f\u672c\u4efb\u52a1\u9700\u8981\u8fd0\u7528\u7684\u5173\u952e\u80fd\u529b\uff0c\u5728\u5b9e\u8df5\u4e2d\u4e0d\u65ad\u953b\u70bc\u548c\u63d0\u5347\u3002', level: '\u5efa\u8bae\u63d0\u5347', link: '\u76f8\u5173\u4efb\u52a1\u73af\u8282' };
+            return { reason: '\u300c' + name + '\u300d\u662f\u672c\u4efb\u52a1\u7684\u914d\u5957\u5b66\u4e60\u8d44\u6e90\uff0c\u5efa\u8bae\u6839\u636e\u5b66\u4e60\u8fdb\u5ea6\u5408\u7406\u5b89\u6392\u9605\u8bfb\u65f6\u95f4\u3002', order: '-', link: '\u76f8\u5173\u77e5\u8bc6\u70b9' };
+        }
+
+        function toggleAiExplain(type, id, name, containerId) {
+            var container = document.getElementById(containerId);
+            var existing = container.querySelector('.ai-explain-panel-inline, .ai-resource-explain-row');
+            if (existing) {
+                existing.remove();
+                return;
+            }
+            var explain = getAiExplain(type, name);
+            var html = '';
+            if (type === 'knowledge' || type === 'ability') {
+                var levelClass = explain.level === '核心必备' ? 'core' : (explain.level === '重点掌握' ? 'important' : 'basic');
+                html = '<div class="ai-explain-panel-inline">' +
+                    '<div class="ai-explain-title"><i class="fas fa-robot"></i> AI 解读</div>' +
+                    '<div class="ai-explain-section"><span class="ai-explain-label">在本任务中的应用：</span>' + explain.apply + '</div>' +
+                    '<div class="ai-explain-section"><span class="ai-explain-label">掌握要求：</span><span class="ai-explain-tag-2 ' + levelClass + '">' + explain.level + '</span></div>' +
+                    '<div class="ai-explain-section"><span class="ai-explain-label">关联环节：</span>' + explain.link + '</div>' +
+                    '</div>';
+            } else {
+                html = '<div class="ai-resource-explain-row">' +
+                    '<div class="ai-explain-title"><i class="fas fa-robot"></i> AI 推荐理由</div>' +
+                    '<div>' + explain.reason + '</div>' +
+                    '<div style="margin-top:4px;"><span class="ai-explain-label">建议阅读顺序：</span>第 ' + explain.order + ' 步 | <span class="ai-explain-label">关联：</span>' + explain.link + '</div>' +
+                    '</div>';
+            }
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        // AI 任务速览 — 打开全屏模态框
+        function handleAiSummary(taskId) {
+            const task = getTaskById(taskId);
+            if (!task) return;
+            const btn = document.getElementById('aiSummaryBtn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...'; }
+            setTimeout(() => {
+                const knowledges = task.knowledgePoints?.map(id => getKnowledgePointById(id)?.name).filter(Boolean) || [];
+                const abilities = task.abilityPoints?.map(id => getAbilityPointById(id)?.name).filter(Boolean) || [];
+                const deliverables = task.deliverables?.map(d => d.name) || [];
+                const evalMethods = task.evaluationMethods || [];
+                const methodLabels = { paper: '试卷测评', question_bank: '题库抽测', review: '教师评审', random_draw: '随机抽查', outcome: '成果评审', homework: '作业提交', quiz: '在线测验' };
+                const methodNames = evalMethods.map(m => methodLabels[m] || m).join('、') || '综合测评';
+                const summaryHtml = `
+                    <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:16px;margin-bottom:16px;">
+                        <div style="font-weight:600;color:#7c3aed;margin-bottom:12px;font-size:14px;display:flex;align-items:center;gap:6px;"><i class="fas fa-sparkles"></i> AI 任务速览</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-bullseye"></i> 核心目标</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${task.description}</div>
+                            </div>
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-box"></i> 关键交付物</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${deliverables.slice(0, 3).join('、') || '详见任务说明'}</div>
+                            </div>
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-clipboard-check"></i> 测评方式</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${methodNames}</div>
+                            </div>
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-clock"></i> 建议用时 / 难度</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${task.estimatedHours}课时 | ${'★'.repeat(task.difficulty || 1)}${'☆'.repeat(5 - (task.difficulty || 1))}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+                            <div style="font-size:12px;color:#9333ea;font-weight:600;margin-right:4px;align-self:center;"><i class="fas fa-lightbulb"></i> 涉及知识点：</div>
+                            ${knowledges.slice(0, 5).map(k => '<span style="background:#fff7e6;color:#d46b08;border:1px solid #ffd591;padding:2px 10px;border-radius:10px;font-size:12px;">' + k + '</span>').join('')}
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+                            <div style="font-size:12px;color:#9333ea;font-weight:600;margin-right:4px;align-self:center;"><i class="fas fa-star"></i> 需要能力：</div>
+                            ${abilities.slice(0, 5).map(a => '<span style="background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f;padding:2px 10px;border-radius:10px;font-size:12px;">' + a + '</span>').join('')}
+                        </div>
+                        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;border-top:1px dashed #e9d5ff;padding-top:10px;">
+                            <strong>AI 学习建议：</strong>建议先通过右侧「关联知识点」了解核心概念，再结合「配套资源」进行针对性学习，最后查看「学习路径」规划学习顺序。
+                        </div>
+                    </div>
+                    <div style="border-top:2px solid #f0f0f0;padding-top:16px;">
+                        <div style="font-weight:600;color:var(--text-primary);margin-bottom:12px;font-size:14px;"><i class="fas fa-file-lines" style="color:#9333ea;margin-right:6px;"></i>完整任务说明</div>
+                        <div style="font-size:14px;color:var(--text-secondary);line-height:1.8;">${task.detailedDescription || task.description || '暂无任务说明'}</div>
+                    </div>
+                `;
+                document.getElementById('aiSummaryFullscreenContent').innerHTML = summaryHtml;
+                document.getElementById('aiSummaryOverlay').classList.add('active');
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sparkles"></i> AI 摘要'; }
+            }, 800);
+        }
+
+        function closeAiSummaryFullscreen() {
+            document.getElementById('aiSummaryOverlay').classList.remove('active');
+        }
+
+        // AI 答题思路提示
+        function handleAiQuestionHint(taskId, questionId) {
+            const task = getTaskById(taskId);
+            if (!task) return;
+            const q = task.assessment?.objectiveConfig?.questions?.find(q => q.id === questionId);
+            if (!q) return;
+            const hintId = `ai-hint-${questionId}`;
+            let hintEl = document.getElementById(hintId);
+            if (hintEl) {
+                hintEl.remove();
+                return;
+            }
+            const card = document.getElementById(`q-${questionId}`);
+            if (!card) return;
+            hintEl = document.createElement('div');
+            hintEl.id = hintId;
+            hintEl.className = 'ai-hint-popup';
+            const typeName = q.type === 'single' ? '单选' : q.type === 'multiple' ? '多选' : '判断';
+            const kpName = getTaskKnowledgePoints(task)[0]?.name || '核心知识点';
+            hintEl.innerHTML = `<i class="fas fa-robot" style="color:#9333ea;margin-right:4px;"></i> <strong>AI 思路提示：</strong>这是一道${typeName}题，涉及「${kpName}」。建议从${q.type === 'judgment' ? '概念定义和核心原理' : '选项间的逻辑关系'}入手分析，先排除明显错误的选项，再对剩余选项进行仔细比对。`;
+            card.appendChild(hintEl);
         }
 
         init();

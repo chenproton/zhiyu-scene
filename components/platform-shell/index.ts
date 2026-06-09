@@ -5,7 +5,7 @@ export {
   resolvePlatformIcon,
 } from "./icons"
 
-export type {
+import type {
   PlatformCatalogItem,
   PlatformNavigationConfig,
   SideNavChild,
@@ -13,6 +13,15 @@ export type {
   TopNavItem,
   UserMenuItem,
 } from "./config"
+
+export type {
+  PlatformCatalogItem,
+  PlatformNavigationConfig,
+  SideNavChild,
+  SideNavItem,
+  TopNavItem,
+  UserMenuItem,
+}
 
 export type {
   PlatformIcon,
@@ -82,11 +91,38 @@ export const senceNavigationTemplate: PlatformNavigationConfig = {
       ],
     },
     {
-      id: "scene-evaluation",
-      label: "场景任务评价",
+      id: "teacher-grading",
+      label: "教师任务评分",
       icon: "clipboardCheck",
       href: "/approvals/grading",
-      matchers: ["/approvals/grading"],
+      matchers: ["/approvals/grading$"],
+    },
+    {
+      id: "student-assessment",
+      label: "学生任务测评",
+      icon: "graduationCap",
+      href: "/student.html",
+      matchers: ["/student.html"],
+    },
+    {
+      id: "ai-assisted",
+      label: "AI 辅助版本",
+      icon: "sparkles",
+      children: [
+        { id: "ai-assisted-scenarios", label: "场景资源编辑(AI辅助)", href: "/ai-assisted", matchers: ["/ai-assisted"] },
+        { id: "ai-assisted-grading", label: "教师任务评分(AI辅助)", href: "/ai-assisted/approvals/grading", matchers: ["/ai-assisted/approvals/grading$"] },
+        { id: "ai-assisted-simulation", label: "学生任务测评(AI辅助)", href: "/student_2.html", matchers: ["/student_2.html", "/ai-assisted/approvals/grading/simulation"] },
+      ],
+    },
+    {
+      id: "ai-first",
+      label: "AI 主导版本",
+      icon: "sparkles",
+      children: [
+        { id: "ai-first-scenarios", label: "场景资源编辑(AI主导)", href: "/ai-first", matchers: ["/ai-first"] },
+        { id: "ai-first-grading", label: "教师任务评分(AI主导)", href: "/ai-first/approvals/grading", matchers: ["/ai-first/approvals/grading$"] },
+        { id: "ai-first-simulation", label: "学生任务测评(AI主导)", href: "/student_3.html", matchers: ["/student_3.html", "/ai-first/approvals/grading/simulation"] },
+      ],
     },
   ],
 }

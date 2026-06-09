@@ -1,6 +1,14 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { AiPreScorePanel } from "@/components/ai/ai-pre-score-panel"
+import { AiCommentPanel } from "@/components/ai/ai-comment-panel"
+import { AiGenerateButton } from "@/components/ai/ai-generate-button"
+import {
+  mockAiSubjectivePreScore,
+  mockAiInitialReview,
+  mockAiComment,
+} from "@/lib/ai-mock-data"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import {
@@ -15,6 +23,7 @@ import {
   Image,
   Package,
   Save,
+  Sparkles,
   Star,
   Video,
   X,
@@ -38,6 +47,7 @@ import {
 } from "@/components/ui/dialog"
 import { studentSubmissions, students, scenarios } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
+import type { AiSubjectivePreScore, AiInitialReview, AiGeneratedComment } from "@/lib/ai-mock-data"
 import type {
   StudentSubmission,
   ObjectiveSubmissionAnswer,
@@ -84,13 +94,24 @@ function ObjectiveGradingCard({
   index,
   isGraded,
   onScoreChange,
+  aiPreScore,
+  onAiPreScoreChange,
 }: {
   answer: ObjectiveSubmissionAnswer
   index: number
   isGraded: boolean
   onScoreChange: (questionId: string, newScore: number) => void
+  aiPreScore: AiSubjectivePreScore | null
+  onAiPreScoreChange: (score: AiSubjectivePreScore | null) => void
 }) {
   const [localScore, setLocalScore] = useState(answer.score.toString())
+
+  // 同步外部 answer.score 变化
+  const prevScoreRef = useRef(answer.score)
+  if (answer.score !== prevScoreRef.current) {
+    prevScoreRef.current = answer.score
+    setLocalScore(answer.score.toString())
+  }
   const [isExpanded, setIsExpanded] = useState(answer.questionType === "text")
 
   const isSubjective = answer.questionType === "text"
@@ -301,13 +322,37 @@ function ObjectiveGradingCard({
                   <div className="text-xs text-amber-700 font-medium mb-1">学生答案</div>
                   <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{answer.studentAnswer as string}</p>
                 </div>
-                {/* 主观题评分区：0-100 标准分输入 */}
-                <SubjectiveScoreInput
-                  maxScore={answer.maxScore}
-                  actualScore={answer.score}
-                  isGraded={isGraded}
-                  onChange={(actual) => onScoreChange(answer.questionId, actual)}
-                />
+                {/* 主观题评分区 + AI 预评分 */}
+                <div className="bg-gray-50 rounded-lg border border-gray-100 p-3 space-y-3">
+                  <SubjectiveScoreInput
+                    maxScore={answer.maxScore}
+                    actualScore={answer.score}
+                    isGraded={isGraded}
+                    onChange={(actual) => onScoreChange(answer.questionId, actual)}
+                  />
+                  {!isGraded && (
+                    <>
+                      {aiPreScore ? (
+                        <AiPreScorePanel
+                          key={`pre-${aiPreScore.suggestedScore}-${aiPreScore.confidence}`}
+                          preScore={aiPreScore}
+                          onAdopt={(score) => onScoreChange(answer.questionId, (score / 100) * answer.maxScore)}
+                          onDismiss={() => onAiPreScoreChange(null)}
+                        />
+                      ) : (
+                        <div className="flex justify-end">
+                          <AiGenerateButton
+                            onClick={() => {
+                              setTimeout(() => onAiPreScoreChange(mockAiSubjectivePreScore()), 800)
+                            }}
+                            label="AI 预评分"
+                            size="sm"
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             )}
 
@@ -639,7 +684,7 @@ function SubjectiveScoreInput({
   }
 
   return (
-    <div className="bg-gray-50 rounded-lg px-3 py-2.5">
+    <div>
       <div className="flex items-center gap-2 mb-1">
         <span className="text-xs text-gray-500">标准评分</span>
         <Input
@@ -743,11 +788,15 @@ function HomeworkEvalPointTable({
   evalPointScores,
   isGraded,
   onChange,
+  aiInitialReviews,
+  onAiInitialReviewChange,
 }: {
   evalPoints: TaskEvalPoint[]
   evalPointScores: EvalPointScoreRecord[]
   isGraded: boolean
   onChange: (record: EvalPointScoreRecord) => void
+  aiInitialReviews?: Record<string, AiInitialReview>
+  onAiInitialReviewChange?: (evalPointId: string, review: AiInitialReview | null) => void
 }) {
   const getDeduction = (ep: TaskEvalPoint) => {
     const record = evalPointScores.find((s) => s.evalPointId === ep.id)
@@ -785,37 +834,71 @@ function HomeworkEvalPointTable({
         const record = evalPointScores.find((s) => s.evalPointId === ep.id)
         const deduction = getDeduction(ep)
         const hasScore = !!record
+        const aiReview = aiInitialReviews?.[ep.id]
         return (
-          <div
-            key={ep.id}
-            className={cn(
-              "grid grid-cols-[1fr_100px_80px] gap-3 px-3 py-3 rounded-lg border items-center transition-colors",
-              hasScore ? "bg-white border-gray-200" : "bg-amber-50/40 border-amber-200"
-            )}
-          >
-            <div className="min-w-0">
-              <div className="text-sm font-medium text-gray-800">{ep.name}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{ep.desc}</div>
+          <div key={ep.id} className="space-y-2">
+            <div
+              className={cn(
+                "grid grid-cols-[1fr_100px_80px] gap-3 px-3 py-3 rounded-lg border items-center transition-colors",
+                hasScore ? "bg-white border-gray-200" : "bg-amber-50/40 border-amber-200"
+              )}
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-medium text-gray-800">{ep.name}</div>
+                  {!isGraded && !aiReview && (
+                    <AiGenerateButton
+                      onClick={() => {
+                        setTimeout(() => {
+                          onAiInitialReviewChange?.(ep.id, mockAiInitialReview(ep.name))
+                        }, 800)
+                      }}
+                      label="AI"
+                      size="sm"
+                      className="h-6 text-[10px] px-1.5"
+                    />
+                  )}
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">{ep.desc}</div>
+              </div>
+              <div className="flex items-center justify-center gap-1">
+                <Input
+                  type="number"
+                  min={0}
+                  max={ep.maxScore}
+                  step={0.5}
+                  value={deduction}
+                  onChange={(e) => handleDeductionChange(ep, e.target.value)}
+                  disabled={isGraded}
+                  className="w-16 text-right h-8 text-sm font-semibold"
+                />
+                <span className="text-xs text-gray-400">分</span>
+              </div>
+              <div className="text-right text-sm text-gray-500">
+                <span className={cn("font-medium", hasScore ? "text-gray-700" : "text-amber-600")}>
+                  {record?.score ?? "-"}
+                </span>
+                <span className="text-gray-400"> / {ep.maxScore}</span>
+              </div>
             </div>
-            <div className="flex items-center justify-center gap-1">
-              <Input
-                type="number"
-                min={0}
-                max={ep.maxScore}
-                step={0.5}
-                value={deduction}
-                onChange={(e) => handleDeductionChange(ep, e.target.value)}
-                disabled={isGraded}
-                className="w-16 text-right h-8 text-sm font-semibold"
+            {aiReview && (
+              <AiPreScorePanel
+                key={`hw-review-${ep.id}-${aiReview.suggestedScore}`}
+                initialReview={aiReview}
+                onAdopt={(score) => {
+                  onChange({
+                    evalPointId: ep.id,
+                    evalPointName: ep.name,
+                    weight: ep.weight,
+                    maxScore: ep.maxScore,
+                    score: (score / 100) * ep.maxScore,
+                    comment: "",
+                  })
+                  onAiInitialReviewChange?.(ep.id, null)
+                }}
+                onDismiss={() => onAiInitialReviewChange?.(ep.id, null)}
               />
-              <span className="text-xs text-gray-400">分</span>
-            </div>
-            <div className="text-right text-sm text-gray-500">
-              <span className={cn("font-medium", hasScore ? "text-gray-700" : "text-amber-600")}>
-                {record?.score ?? "-"}
-              </span>
-              <span className="text-gray-400"> / {ep.maxScore}</span>
-            </div>
+            )}
           </div>
         )
       })}
@@ -836,13 +919,26 @@ function EvalPointGradingCard({
   scoreRecord,
   isGraded,
   onChange,
+  aiInitialReview,
+  onAiInitialReviewChange,
+  canAiReview = true,
 }: {
   evalPoint: TaskEvalPoint
   scoreRecord?: EvalPointScoreRecord
   isGraded: boolean
   onChange: (record: EvalPointScoreRecord) => void
+  aiInitialReview?: AiInitialReview | null
+  onAiInitialReviewChange?: (evalPointId: string, review: AiInitialReview | null) => void
+  canAiReview?: boolean
 }) {
   const [comment, setComment] = useState(scoreRecord?.comment || "")
+
+  // 同步外部 scoreRecord.comment 变化
+  const prevCommentRef = useRef(scoreRecord?.comment || "")
+  if ((scoreRecord?.comment || "") !== prevCommentRef.current) {
+    prevCommentRef.current = scoreRecord?.comment || ""
+    setComment(scoreRecord?.comment || "")
+  }
 
   const handleScoreChange = (actualScore: number) => {
     onChange({
@@ -905,6 +1001,39 @@ function EvalPointGradingCard({
             />
           </div>
         </div>
+
+        {/* AI 初评建议 */}
+        {!isGraded && (
+          <>
+            {aiInitialReview ? (
+              <AiPreScorePanel
+                key={`review-${evalPoint.id}-${aiInitialReview.suggestedScore}`}
+                initialReview={aiInitialReview}
+                onAdopt={(score) => {
+                  handleScoreChange((score / 100) * evalPoint.maxScore)
+                  onAiInitialReviewChange?.(evalPoint.id, null)
+                }}
+                onDismiss={() => onAiInitialReviewChange?.(evalPoint.id, null)}
+              />
+            ) : (
+              <div className="flex justify-end">
+                <AiGenerateButton
+                  onClick={() => {
+                    if (!canAiReview) {
+                      alert("请先补充学生口头回答记录，再进行智能评分")
+                      return
+                    }
+                    setTimeout(() => {
+                      onAiInitialReviewChange?.(evalPoint.id, mockAiInitialReview(evalPoint.name))
+                    }, 800)
+                  }}
+                  label="AI 建议"
+                  size="sm"
+                />
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   )
@@ -941,6 +1070,21 @@ export default function GradingDetailPage() {
   const [previewAttachment, setPreviewAttachment] = useState<SubmissionAttachment | null>(null)
   const [questionFilter, setQuestionFilter] = useState<"all" | "pending">("all")
 
+  // AI states
+  const [aiComment, setAiComment] = useState<AiGeneratedComment | null>(null)
+  const [aiCommentLoading, setAiCommentLoading] = useState(false)
+  const [aiPreScore, setAiPreScore] = useState<AiSubjectivePreScore | null>(null)
+  const [aiInitialReviews, setAiInitialReviews] = useState<Record<string, AiInitialReview>>({})
+  const [aiScoreLoading, setAiScoreLoading] = useState(false)
+  const [aiScorePreviewOpen, setAiScorePreviewOpen] = useState(false)
+  const [aiScorePreview, setAiScorePreview] = useState<{
+    assessmentForm: string
+    objectiveAnswers?: ObjectiveSubmissionAnswer[]
+    evalPointScores?: EvalPointScoreRecord[]
+    teacherComment: string
+    projectedTotal: number
+  } | null>(null)
+
   if (!submission) {
     return (
       <div className="max-w-5xl mx-auto py-12 text-center">
@@ -948,7 +1092,7 @@ export default function GradingDetailPage() {
         <h2 className="text-lg font-medium text-gray-700">未找到提交记录</h2>
         <p className="text-sm text-gray-500 mt-1">该评分记录不存在或已被删除</p>
         <Button className="mt-4" asChild>
-          <Link href="/approvals/grading">
+          <Link href="/ai-assisted/approvals/grading">
             <ArrowLeft className="mr-2 h-4 w-4" />
             返回列表
           </Link>
@@ -1002,7 +1146,7 @@ export default function GradingDetailPage() {
     submission.assessmentForm === "题库" ||
     submission.assessmentForm === "随堂测"
   const autoTotal = isObjectiveAssessment
-    ? autoObjectiveScore + subjectiveQuestionScore + (submission.assessmentForm === "试卷" ? 0 : evalPointTotal)
+    ? autoObjectiveScore + subjectiveQuestionScore + evalPointTotal
     : evalPointTotal
 
   // 最终总分（教师可手动覆盖）
@@ -1030,6 +1174,85 @@ export default function GradingDetailPage() {
     )
   }
 
+  const handleAiScore = () => {
+    if (submission.assessmentForm === "现场问答") {
+      const hasOralAnswer = drawnQuestions.some((q) => q.studentOralAnswer?.trim())
+      if (!hasOralAnswer) {
+        alert("请先补充学生口头回答记录，再进行智能评分")
+        return
+      }
+    }
+
+    setAiScoreLoading(true)
+    setTimeout(() => {
+      let previewObjectiveAnswers: ObjectiveSubmissionAnswer[] | undefined
+      let previewEvalPointScores: EvalPointScoreRecord[] | undefined
+
+      if (isObjectiveAssessment) {
+        previewObjectiveAnswers = objectiveAnswers.map((a) => {
+          if (a.questionType === "text") {
+            return { ...a, score: Math.max(0, Math.min(a.maxScore, Math.round(a.maxScore * (0.6 + Math.random() * 0.35)))) }
+          }
+          return a
+        })
+      }
+
+      if (["作业", "成果评价", "现场评审", "现场问答"].includes(submission.assessmentForm)) {
+        previewEvalPointScores = evalPoints.map((ep) => {
+          const ratio = submission.assessmentForm === "作业" ? 0.85 + Math.random() * 0.12 : 0.7 + Math.random() * 0.25
+          const score = Math.max(0, Math.min(ep.maxScore, Math.round(ep.maxScore * ratio * 10) / 10))
+          const comment = score >= ep.maxScore * 0.9
+            ? "表现优秀，达到预期目标。"
+            : score >= ep.maxScore * 0.7
+            ? "表现良好，仍有提升空间。"
+            : "需要加强练习，重点关注薄弱环节。"
+          return {
+            evalPointId: ep.id,
+            evalPointName: ep.name,
+            weight: ep.weight,
+            maxScore: ep.maxScore,
+            score,
+            comment,
+          }
+        })
+      }
+
+      const comment = mockAiComment(student?.name || "学生")
+
+      let projectedTotal = 0
+      if (isObjectiveAssessment && previewObjectiveAnswers) {
+        const objScore = previewObjectiveAnswers.reduce((sum, a) => sum + a.score, 0)
+        const evalScore = previewEvalPointScores ? previewEvalPointScores.reduce((sum, e) => sum + e.score, 0) : 0
+        projectedTotal = objScore + evalScore
+      } else if (previewEvalPointScores) {
+        projectedTotal = previewEvalPointScores.reduce((sum, e) => sum + e.score, 0)
+      }
+
+      setAiScorePreview({
+        assessmentForm: submission.assessmentForm,
+        objectiveAnswers: previewObjectiveAnswers,
+        evalPointScores: previewEvalPointScores,
+        teacherComment: comment.fullComment,
+        projectedTotal: Math.min(projectedTotal, submission.maxScore),
+      })
+      setAiScorePreviewOpen(true)
+      setAiScoreLoading(false)
+    }, 1200)
+  }
+
+  const applyAiScorePreview = () => {
+    if (!aiScorePreview) return
+    if (aiScorePreview.objectiveAnswers) {
+      setObjectiveAnswers(aiScorePreview.objectiveAnswers)
+    }
+    if (aiScorePreview.evalPointScores) {
+      setEvalPointScores(aiScorePreview.evalPointScores)
+    }
+    setTeacherComment(aiScorePreview.teacherComment)
+    setAiScorePreviewOpen(false)
+    setAiScorePreview(null)
+  }
+
   const handleSubmitGrading = () => {
     setIsSubmitted(true)
     setSubmission((prev) =>
@@ -1051,16 +1274,28 @@ export default function GradingDetailPage() {
   }
 
   const allEvalPointsScored =
-    submission.assessmentForm === "试卷" || evalPoints.length === 0 || evalPoints.every((ep) => evalPointScores.some((s) => s.evalPointId === ep.id))
+    evalPoints.length === 0 || evalPoints.every((ep) => evalPointScores.some((s) => s.evalPointId === ep.id))
 
   const canSubmit = !isGraded && allEvalPointsScored
+
+  const handleAiInitialReviewChange = (evalPointId: string, review: AiInitialReview | null) => {
+    setAiInitialReviews((prev) => {
+      const next = { ...prev }
+      if (review) {
+        next[evalPointId] = { ...review, evalPointId: evalPointId }
+      } else {
+        delete next[evalPointId]
+      }
+      return next
+    })
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* 顶部导航栏 - 紧凑 */}
       <div className="bg-white border-b px-4 py-2 flex items-center gap-3 shrink-0">
         <Button variant="ghost" size="sm" asChild className="h-8">
-          <Link href="/approvals/grading">
+          <Link href="/ai-assisted/approvals/grading">
             <ArrowLeft className="mr-1 h-4 w-4" />
             返回
           </Link>
@@ -1073,6 +1308,15 @@ export default function GradingDetailPage() {
           <Badge variant="outline" className="text-xs ml-1">{submission.assessmentForm}</Badge>
         </div>
         <div className="flex-1" />
+        {!isGraded && (
+          <AiGenerateButton
+            onClick={handleAiScore}
+            loading={aiScoreLoading}
+            label="智能评分"
+            size="sm"
+            className="h-7 text-xs"
+          />
+        )}
         {isGraded && (
           <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 gap-1 text-xs">
             <CheckCircle2 className="h-3 w-3" />
@@ -1096,23 +1340,25 @@ export default function GradingDetailPage() {
                     <p className="text-xs text-gray-400">
                       共 {objectiveAnswers.length} 题
                       （客观{objectiveAnswers.filter(a => a.questionType !== "text").length} / 主观{objectiveAnswers.filter(a => a.questionType === "text").length}）
-                      {evalPoints.length > 0 && submission.assessmentForm !== "试卷" ? ` · ${evalPoints.length} 个评价点` : ""}
+                      {evalPoints.length > 0 ? ` · ${evalPoints.length} 个评价点` : ""}
                     </p>
                   </div>
                 </div>
                 {/* 最终总分 - 教师可直接修改 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">最终总分</span>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={submission.maxScore}
-                    value={manualTotal !== null ? manualTotal : autoTotal}
-                    onChange={(e) => setManualTotal(parseFloat(e.target.value) || 0)}
-                    disabled={isGraded}
-                    className="w-20 text-right h-10 text-lg font-bold text-blue-600"
-                  />
-                  <span className="text-lg text-gray-400">/ {submission.maxScore}</span>
+                <div className="flex flex-col items-end gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">最终总分</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={submission.maxScore}
+                      value={manualTotal !== null ? manualTotal : autoTotal}
+                      onChange={(e) => setManualTotal(parseFloat(e.target.value) || 0)}
+                      disabled={isGraded}
+                      className="w-20 text-right h-10 text-lg font-bold text-blue-600"
+                    />
+                    <span className="text-lg text-gray-400">/ {submission.maxScore}</span>
+                  </div>
                 </div>
               </div>
               {/* 分项得分 */}
@@ -1131,7 +1377,15 @@ export default function GradingDetailPage() {
                     <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-200 bg-amber-50">待评分</Badge>
                   )}
                 </div>
-
+                {evalPoints.length > 0 && (submission.assessmentForm === "试卷" || submission.assessmentForm === "随堂测") && (
+                  <>
+                    <div className="h-3 w-px bg-gray-200" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-500">综合评价</span>
+                      <span className="font-medium text-gray-700">{evalPointTotal} / {evalPointMaxTotal}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -1165,10 +1419,12 @@ export default function GradingDetailPage() {
                     index={questionFilter === "all" ? idx : objectiveAnswers.indexOf(answer)}
                     isGraded={isGraded}
                     onScoreChange={handleObjectiveScoreChange}
+                    aiPreScore={aiPreScore}
+                    onAiPreScoreChange={setAiPreScore}
                   />
                 ))}
               </div>
-              {/* 综合评价点已移除（试卷类型不再显示） */}
+              {/* 评价点已移除：试卷类型不再显示综合评价点 */}
             </div>
           </div>
         )}
@@ -1321,13 +1577,16 @@ export default function GradingDetailPage() {
               </div>
               <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 {evalPoints.length > 0 ? (
-                  evalPoints.map((ep) => (
+                  evalPoints.map((ep) =>(
                     <EvalPointGradingCard
                       key={ep.id}
                       evalPoint={ep}
                       scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
                       isGraded={isGraded}
                       onChange={handleEvalPointScoreChange}
+                      aiInitialReview={aiInitialReviews[ep.id]}
+                      onAiInitialReviewChange={handleAiInitialReviewChange}
+                      canAiReview={submission.assessmentForm !== "现场问答" || drawnQuestions.some((q) => q.studentOralAnswer?.trim())}
                     />
                   ))
                 ) : (
@@ -1437,6 +1696,8 @@ export default function GradingDetailPage() {
                     evalPointScores={evalPointScores}
                     isGraded={isGraded}
                     onChange={handleEvalPointScoreChange}
+                    aiInitialReviews={aiInitialReviews}
+                    onAiInitialReviewChange={handleAiInitialReviewChange}
                   />
                 ) : evalPoints.length > 0 ? (
                   evalPoints.map((ep) => (
@@ -1446,6 +1707,9 @@ export default function GradingDetailPage() {
                       scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
                       isGraded={isGraded}
                       onChange={handleEvalPointScoreChange}
+                      aiInitialReview={aiInitialReviews[ep.id]}
+                      onAiInitialReviewChange={handleAiInitialReviewChange}
+                      canAiReview={submission.assessmentForm !== "现场问答" || drawnQuestions.some((q) => q.studentOralAnswer?.trim())}
                     />
                   ))
                 ) : (
@@ -1500,6 +1764,9 @@ export default function GradingDetailPage() {
                       scoreRecord={evalPointScores.find((s) => s.evalPointId === ep.id)}
                       isGraded={isGraded}
                       onChange={handleEvalPointScoreChange}
+                      aiInitialReview={aiInitialReviews[ep.id]}
+                      onAiInitialReviewChange={handleAiInitialReviewChange}
+                      canAiReview={submission.assessmentForm !== "现场问答" || drawnQuestions.some((q) => q.studentOralAnswer?.trim())}
                     />
                   ))
                 ) : (
@@ -1513,6 +1780,37 @@ export default function GradingDetailPage() {
           </div>
         )}
       </div>
+
+      {/* AI 评语面板 */}
+      {aiComment && !isGraded && (
+        <div className="shrink-0 z-50">
+          <AiCommentPanel
+            comment={aiComment}
+            studentName={student?.name}
+            overallScore={finalTotal}
+            maxScore={submission.maxScore}
+            onAdopt={(comment) => {
+              setTeacherComment(comment)
+              setAiComment(null)
+            }}
+            onRegenerateWithTone={(tone) => {
+              setAiCommentLoading(true)
+              setTimeout(() => {
+                const newComment = mockAiComment(student?.name || "学生")
+                const toneLabels: Record<string, string> = {
+                  encouraging: "\n\n【鼓励型评语】已调整语气，更加侧重肯定学生的努力和进步，增强激励效果。",
+                  strict: "\n\n【严格型评语】已调整语气，更加侧重指出问题和改进空间，标准更为严格。",
+                  neutral: "\n\n【平和型评语】已调整语气，保持客观中立，平衡肯定与建议。",
+                }
+                newComment.fullComment = newComment.fullComment + toneLabels[tone]
+                setAiComment(newComment)
+                setAiCommentLoading(false)
+              }, 1200)
+            }}
+            loading={aiCommentLoading}
+          />
+        </div>
+      )}
 
       {/* 底部评分汇总栏 - 悬浮固定 */}
       <div className="bg-white border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 py-2.5 shrink-0 z-50">
@@ -1535,13 +1833,27 @@ export default function GradingDetailPage() {
               className="resize-none text-sm min-h-[36px] py-2"
             />
           </div>
+          {!isGraded && (
+            <AiGenerateButton
+              onClick={() => {
+                setAiCommentLoading(true)
+                setTimeout(() => {
+                  setAiComment(mockAiComment(student?.name || "学生"))
+                  setAiCommentLoading(false)
+                }, 1200)
+              }}
+              loading={aiCommentLoading}
+              label="AI 生成评语"
+              size="sm"
+            />
+          )}
           {isGraded && submission.gradedAt && (
             <div className="text-xs text-gray-400 shrink-0">
               {submission.gradedAt} · {submission.gradedBy}
             </div>
           )}
           <Button variant="outline" size="sm" asChild className="shrink-0">
-            <Link href="/approvals/grading">取消</Link>
+            <Link href="/ai-assisted/approvals/grading">取消</Link>
           </Button>
           {!isGraded && (
             <Button size="sm" onClick={() => setIsSubmitDialogOpen(true)} disabled={!canSubmit} className="shrink-0 gap-1">
@@ -1557,6 +1869,103 @@ export default function GradingDetailPage() {
           )}
         </div>
       </div>
+
+      {/* AI 智能评分预览确认 */}
+      <Dialog open={aiScorePreviewOpen} onOpenChange={setAiScorePreviewOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              AI 智能评分结果预览
+            </DialogTitle>
+            <DialogDescription>
+              AI 已生成评分建议，预览后点击确认即可填充到评分表单，取消则保留原内容。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto py-4 space-y-4">
+            {aiScorePreview && (
+              <>
+                <div className="flex items-center gap-4 bg-purple-50 rounded-lg p-3">
+                  <div className="text-center flex-1">
+                    <div className="text-2xl font-bold text-purple-700">{aiScorePreview.projectedTotal}</div>
+                    <div className="text-xs text-gray-500">预测总分</div>
+                  </div>
+                  <div className="w-px h-10 bg-purple-200" />
+                  <div className="text-center flex-1">
+                    <div className="text-2xl font-bold text-gray-700">{submission.maxScore}</div>
+                    <div className="text-xs text-gray-500">满分</div>
+                  </div>
+                </div>
+
+                {aiScorePreview.objectiveAnswers && aiScorePreview.objectiveAnswers.some(a => a.questionType === "text") && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 border-b">题目得分变化</div>
+                    <div className="divide-y divide-gray-100">
+                      {aiScorePreview.objectiveAnswers.filter(a => a.questionType === "text").map((a, idx) => {
+                        const old = objectiveAnswers.find(o => o.questionId === a.questionId)
+                        return (
+                          <div key={a.questionId} className="px-3 py-2 flex items-center justify-between text-sm">
+                            <span className="text-gray-700 truncate flex-1">{idx + 1}. {a.questionName || "主观题"}</span>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="text-gray-400">{old?.score ?? "-"} 分</span>
+                              <span className="text-gray-300">→</span>
+                              <span className="font-medium text-purple-700">{a.score} 分</span>
+                              <span className="text-gray-400">/ {a.maxScore}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {aiScorePreview.evalPointScores && aiScorePreview.evalPointScores.length > 0 && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 border-b">
+                      {submission.assessmentForm === "作业" ? "评价点扣分与得分" : "评价点评分"}
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                      {aiScorePreview.evalPointScores.map((record) => {
+                        const ep = evalPoints.find((e) => e.id === record.evalPointId)
+                        const old = evalPointScores.find((s) => s.evalPointId === record.evalPointId)
+                        const deduction = ep ? Math.max(0, ep.maxScore - record.score) : 0
+                        return (
+                          <div key={record.evalPointId} className="px-3 py-2.5">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium text-gray-700">{record.evalPointName}</span>
+                              <div className="flex items-center gap-2 text-xs">
+                                {submission.assessmentForm === "作业" && (
+                                  <span className="text-amber-600">扣 {deduction.toFixed(1)} 分</span>
+                                )}
+                                <span className="text-gray-400">{old?.score ?? "-"} →</span>
+                                <span className="font-medium text-purple-700">{record.score}</span>
+                                <span className="text-gray-400">/ {record.maxScore}</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500">{record.comment}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 border-b">教师评语</div>
+                  <div className="p-3 text-sm text-gray-700 whitespace-pre-line">{aiScorePreview.teacherComment}</div>
+                </div>
+              </>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setAiScorePreviewOpen(false)}>取消</Button>
+            <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white" onClick={applyAiScorePreview}>
+              <CheckCircle2 className="h-4 w-4 mr-1" />
+              确认应用
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 提交确认对话框 */}
       <Dialog open={isSubmitDialogOpen} onOpenChange={setIsSubmitDialogOpen}>

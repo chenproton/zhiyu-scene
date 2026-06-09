@@ -29,6 +29,7 @@ interface ScenarioListProps {
   onWithdrawApproval?: (scenario: Scenario) => void
   onViewRejectReason?: (scenario: Scenario) => void
   className?: string
+  basePath?: string
 }
 
 export function ScenarioList({
@@ -42,6 +43,7 @@ export function ScenarioList({
   onWithdrawApproval,
   onViewRejectReason,
   className,
+  basePath = "/scenarios",
 }: ScenarioListProps) {
   if (scenarios.length === 0) return null
 
@@ -109,7 +111,7 @@ export function ScenarioList({
               </div>
               <div className="col-span-2">
                 <PrdAnnotation data={getAnnotation("list-link-name")} className="block">
-                  <Link href={`/scenarios/${scenario.id}/edit`} className="block">
+                  <Link href={`${basePath}/${scenario.id}/edit`} className="block">
                     <p className="text-sm font-medium text-slate-900 line-clamp-1 hover:text-primary">{scenario.name}</p>
                   </Link>
                 </PrdAnnotation>
@@ -126,7 +128,7 @@ export function ScenarioList({
               <div className="col-span-1 text-center">
                 <PrdAnnotation data={getAnnotation("list-link-tasks")}>
                   <Link
-                    href={`/scenarios/${scenario.id}/edit/tasks`}
+                    href={`${basePath}/${scenario.id}/edit/tasks`}
                     className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
                   >
                     {scenario.tasks.length}
@@ -137,7 +139,7 @@ export function ScenarioList({
                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm z-10 px-2 py-1 rounded-lg shadow-sm border border-slate-100">
                   <PrdAnnotation data={getAnnotation("row-action-view")}>
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-                      <Link href={`/scenarios/${scenario.id}/edit`}>
+                      <Link href={`${basePath}/${scenario.id}/edit`}>
                         <Eye className="mr-1 h-3 w-3" />
                         查看详情
                       </Link>
@@ -145,7 +147,7 @@ export function ScenarioList({
                   </PrdAnnotation>
                   <PrdAnnotation data={getAnnotation("row-action-edit")}>
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-                      <Link href={`/scenarios/${scenario.id}/edit`}>
+                      <Link href={`${basePath}/${scenario.id}/edit`}>
                         <Pencil className="mr-1 h-3 w-3" />
                         编辑
                       </Link>
@@ -153,7 +155,7 @@ export function ScenarioList({
                   </PrdAnnotation>
                   <PrdAnnotation data={getAnnotation("row-action-tasks")}>
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-                      <Link href={`/scenarios/${scenario.id}/edit/tasks`}>
+                      <Link href={`${basePath}/${scenario.id}/edit/tasks`}>
                         <GitBranch className="mr-1 h-3 w-3" />
                         编排任务
                       </Link>

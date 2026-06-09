@@ -79,6 +79,7 @@ import {
   Layers,
   BookOpen,
   Pencil,
+  Loader2,
 } from "lucide-react"
 import NextLink from "next/link"
 import { useParams, useRouter } from "next/navigation"
@@ -98,6 +99,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -109,6 +111,19 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import { AiGenerateButton } from "@/components/ai/ai-generate-button"
+import { AiGenerateDialog } from "@/components/ai/ai-generate-dialog"
+import { AiConfidenceBadge } from "@/components/ai/ai-confidence-badge"
+import {
+  mockTaskChainSuggestion,
+  mockAiGeneratedQuestions,
+  mockAiOnsiteQuestions,
+  mockAiEvalPointSuggestions,
+  mockAiRubricGeneration,
+  mockAiKnowledgeAbilityRecommendation,
+  mockAiResourceRecommendations,
+  mockScenarioBackgroundGeneration,
+} from "@/lib/ai-mock-data"
 import { PrdAnnotation } from "@/components/prd-annotation"
 import { getAnnotation } from "@/lib/prd-annotations"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
@@ -466,7 +481,7 @@ const mockDefaultEvalPoints: EvalPoint[] = [
   { id: "ep-mock-14", name: "协作能力强，能有效推动团队目标达成", desc: "", subType: "collaboration", knowledgePointIds: ["kp-7"], abilityPointIds: ["ab-7"], scoringMethod: "level", gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)), weight: 10 },
 ]
 
-function makeDefaultTaskState(count: number, index: number): TaskState {
+function makeDefaultTaskState(count: number, index: number, emptyEval = false): TaskState {
   return {
     description: "",
     descriptionPdf: null,
@@ -475,36 +490,36 @@ function makeDefaultTaskState(count: number, index: number): TaskState {
     abilityPoints: [],
     abilityLevelMappings: [],
     resources: [],
-    evaluationMethods: ["random_draw", "review", "paper", "question_bank"],
-    methodWeights: { random_draw: 25, review: 25, paper: 25, question_bank: 25 },
-    randomDrawQuestions: allQuestions.slice(0, 2).map(q => q.id),
+    evaluationMethods: emptyEval ? [] : ["random_draw", "review", "paper", "question_bank"],
+    methodWeights: emptyEval ? {} : { random_draw: 25, review: 25, paper: 25, question_bank: 25 },
+    randomDrawQuestions: emptyEval ? [] : allQuestions.slice(0, 2).map(q => q.id),
     randomDrawCustomQuestions: [],
     randomDrawSelectedIds: [],
-    randomDrawEvalPoints: [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1], mockDefaultEvalPoints[7], mockDefaultEvalPoints[8]],
+    randomDrawEvalPoints: emptyEval ? [] : [mockDefaultEvalPoints[0], mockDefaultEvalPoints[1], mockDefaultEvalPoints[7], mockDefaultEvalPoints[8]],
     randomDrawScoreType: "eval_points",
     randomDrawRubricId: null,
-    reviewEvalPoints: [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3], mockDefaultEvalPoints[4], mockDefaultEvalPoints[5], mockDefaultEvalPoints[6], mockDefaultEvalPoints[9]],
+    reviewEvalPoints: emptyEval ? [] : [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3], mockDefaultEvalPoints[4], mockDefaultEvalPoints[5], mockDefaultEvalPoints[6], mockDefaultEvalPoints[9]],
     reviewScoreType: "eval_points",
     reviewRubricId: null,
-    paperIds: [paperMocks[0].id],
-    paperWeights: { [paperMocks[0].id]: 100 },
-    paperEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
-    questionBankQuestions: allQuestions.slice(0, 2).map(q => q.id),
-    questionBankEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
-    outcomeEvalPoints: [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3]],
+    paperIds: emptyEval ? [] : [paperMocks[0].id],
+    paperWeights: emptyEval ? {} : { [paperMocks[0].id]: 100 },
+    paperEvalPoints: emptyEval ? [] : [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
+    questionBankQuestions: emptyEval ? [] : allQuestions.slice(0, 2).map(q => q.id),
+    questionBankEvalPoints: emptyEval ? [] : [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
+    outcomeEvalPoints: emptyEval ? [] : [mockDefaultEvalPoints[2], mockDefaultEvalPoints[3]],
     outcomeScoreType: "eval_points",
     outcomeRubricId: null,
-    homeworkEvalPoints: [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
+    homeworkEvalPoints: emptyEval ? [] : [mockDefaultEvalPoints[3], mockDefaultEvalPoints[4]],
     homeworkScoreType: "eval_points",
     homeworkRubricId: null,
-    quizQuestions: allQuestions.slice(0, 2).map(q => q.id),
-    quizEvalPoints: [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
+    quizQuestions: emptyEval ? [] : allQuestions.slice(0, 2).map(q => q.id),
+    quizEvalPoints: emptyEval ? [] : [mockDefaultEvalPoints[5], mockDefaultEvalPoints[6]],
     weight: count > 0 ? Math.floor(100 / count) + (index < 100 % count ? 1 : 0) : 0,
     locked: false,
     gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)),
     scoringConfig: { teacherBackground: "", scorerCount: 1, requiresEnterpriseMentor: false },
     evalObject: "individual",
-    evalSubjects: JSON.parse(JSON.stringify(defaultEvalSubjects)),
+    evalSubjects: emptyEval ? [] : JSON.parse(JSON.stringify(defaultEvalSubjects)),
     methodEvalObjects: {},
     methodEvalSubjects: {},
   }
@@ -650,6 +665,35 @@ export default function TasksEditPage() {
   const [isWeightConfigOpen, setIsWeightConfigOpen] = useState(false)
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
   const [deleteConfirmTask, setDeleteConfirmTask] = useState<{ id: string; name: string } | null>(null)
+
+  // AI states
+  const [aiTaskChainOpen, setAiTaskChainOpen] = useState(false)
+  const [aiTaskChainLoading, setAiTaskChainLoading] = useState(false)
+  const [aiTaskChainResult, setAiTaskChainResult] = useState<ReturnType<typeof mockTaskChainSuggestion> | null>(null)
+  const [aiTaskChainSelected, setAiTaskChainSelected] = useState<Set<number>>(new Set())
+  const [aiTaskChainInputOpen, setAiTaskChainInputOpen] = useState(false)
+  const [aiTaskChainInput, setAiTaskChainInput] = useState("")
+  const [aiGenerateOpen, setAiGenerateOpen] = useState(false)
+  const [aiGenerateLoading, setAiGenerateLoading] = useState(false)
+  const [aiGeneratedContent, setAiGeneratedContent] = useState({ content: "", confidence: "medium" as "high" | "medium" | "low", reasoning: "" })
+  const [aiKpRecommendOpen, setAiKpRecommendOpen] = useState(false)
+  const [aiKpRecommendLoading, setAiKpRecommendLoading] = useState(false)
+  const [aiKpRecommendResult, setAiKpRecommendResult] = useState<ReturnType<typeof mockAiKnowledgeAbilityRecommendation> | null>(null)
+  const [aiResourceRecommendOpen, setAiResourceRecommendOpen] = useState(false)
+  const [aiResourceRecommendLoading, setAiResourceRecommendLoading] = useState(false)
+  const [aiResourceRecommendResult, setAiResourceRecommendResult] = useState<ReturnType<typeof mockAiResourceRecommendations> | null>(null)
+  const [aiEvalPointOpen, setAiEvalPointOpen] = useState(false)
+  const [aiEvalPointLoading, setAiEvalPointLoading] = useState(false)
+  const [aiEvalPointResult, setAiEvalPointResult] = useState<ReturnType<typeof mockAiEvalPointSuggestions> | null>(null)
+  const [aiRubricOpen, setAiRubricOpen] = useState(false)
+  const [aiRubricLoading, setAiRubricLoading] = useState(false)
+  const [aiRubricResult, setAiRubricResult] = useState<ReturnType<typeof mockAiRubricGeneration> | null>(null)
+  const [aiQuestionGenOpen, setAiQuestionGenOpen] = useState(false)
+  const [aiQuestionGenLoading, setAiQuestionGenLoading] = useState(false)
+  const [aiQuestionGenResult, setAiQuestionGenResult] = useState<ReturnType<typeof mockAiGeneratedQuestions> | null>(null)
+  const [aiOnsiteQaOpen, setAiOnsiteQaOpen] = useState(false)
+  const [aiOnsiteQaLoading, setAiOnsiteQaLoading] = useState(false)
+  const [aiOnsiteQaResult, setAiOnsiteQaResult] = useState<ReturnType<typeof mockAiOnsiteQuestions> | null>(null)
 
   const posAbilities = useMemo(() =>
     positionAbilities.filter(a => a.positionId === existingScenario?.positionId),
@@ -813,7 +857,7 @@ export default function TasksEditPage() {
           <div className="flex items-center gap-4">
             <PrdAnnotation data={getAnnotation("editor-step2-back")}>
               <Button variant="ghost" size="sm" asChild>
-                <NextLink href={`/scenarios/${scenarioId}/edit`}>
+                <NextLink href={`/ai-assisted/scenarios/${scenarioId}/edit`}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   返回上一步
                 </NextLink>
@@ -839,7 +883,7 @@ export default function TasksEditPage() {
               </Button>
             </PrdAnnotation>
             <PrdAnnotation data={getAnnotation("editor-step2-finish")}>
-              <Button onClick={() => router.push("/")}>
+              <Button onClick={() => router.push("/ai-assisted")}>
                 完成配置
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -927,8 +971,219 @@ export default function TasksEditPage() {
                 配置任务权重
               </Button>
             </PrdAnnotation>
+            <AiGenerateButton
+              onClick={() => {
+                setAiTaskChainInput("")
+                setAiTaskChainInputOpen(true)
+              }}
+              loading={aiTaskChainLoading}
+              label="AI 建议任务链"
+            />
           </div>
         </div>
+
+        {/* AI Task Chain Input Dialog */}
+        <Dialog open={aiTaskChainInputOpen} onOpenChange={setAiTaskChainInputOpen}>
+          <DialogContent className="sm:max-w-[520px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-500" />
+                AI 建议任务链
+              </DialogTitle>
+              <DialogDescription>
+                请描述您想要的任务链方向和要求，AI 将据此生成建议
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="grid gap-2">
+                <Label htmlFor="task-chain-desc">任务描述及方向</Label>
+                <Textarea
+                  id="task-chain-desc"
+                  value={aiTaskChainInput}
+                  onChange={(e) => setAiTaskChainInput(e.target.value)}
+                  placeholder="例如：希望任务链从前端基础开始，逐步过渡到全栈开发，最后以项目实战收尾..."
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setAiTaskChainInputOpen(false)}>
+                取消
+              </Button>
+              <Button
+                onClick={() => {
+                  setAiTaskChainInputOpen(false)
+                  setAiTaskChainOpen(true)
+                  setAiTaskChainLoading(true)
+                  setTimeout(() => {
+                    const result = mockTaskChainSuggestion(
+                      existingScenario?.name || "",
+                      existingScenario?.positionName || ""
+                    )
+                    setAiTaskChainResult(result)
+                    setAiTaskChainSelected(new Set(result.tasks.map((_, i) => i)))
+                    setAiTaskChainLoading(false)
+                  }, 1200)
+                }}
+                disabled={!aiTaskChainInput.trim()}
+                className="bg-purple-600 hover:bg-purple-700 text-white gap-1"
+              >
+                <Sparkles className="h-4 w-4" />
+                开始生成
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* AI Task Chain Inline Panel */}
+        {aiTaskChainOpen && (
+          <div className="mb-4 border rounded-xl bg-white shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-purple-50/50">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-purple-500" />
+                <span className="text-sm font-medium text-gray-800">AI 任务链结构建议</span>
+                <span className="text-xs text-gray-500">AI 根据场景主题和目标岗位分析了建议的任务链结构</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {!aiTaskChainLoading && aiTaskChainResult && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => {
+                      if (!aiTaskChainResult) return
+                      const allSelected = aiTaskChainSelected.size === aiTaskChainResult.tasks.length
+                      if (allSelected) {
+                        setAiTaskChainSelected(new Set())
+                      } else {
+                        setAiTaskChainSelected(new Set(aiTaskChainResult.tasks.map((_, i) => i)))
+                      }
+                    }}>
+                      {aiTaskChainSelected.size === aiTaskChainResult.tasks.length ? '取消全选' : '全选'}
+                    </Button>
+                    <Button size="sm" disabled={aiTaskChainSelected.size === 0} onClick={() => {
+                      if (!aiTaskChainResult) return
+                      const selectedTasks = aiTaskChainResult.tasks.filter((_, i) => aiTaskChainSelected.has(i))
+                      let insertOffset = 0
+                      selectedTasks.forEach((t, i) => {
+                        const newTask = {
+                          id: `task-ai-${Date.now()}-${i}`,
+                          name: t.name,
+                          code: `T-AI-${String(tasks.length + insertOffset + 1).padStart(3, "0")}`,
+                          order: tasks.length + insertOffset + 1,
+                          description: t.description,
+                          estimatedHours: t.estimatedHours,
+                          taskType: t.type,
+                          difficulty: t.difficulty as 1|2|3|4|5,
+                          background: t.description,
+                          dependencies: [] as string[],
+                          resources: [] as string[],
+                          deliverables: [] as any[],
+                          knowledgePoints: [] as string[],
+                          abilityPoints: [] as string[],
+                          assessment: null,
+                        }
+                        setTasks(prev => [...prev, newTask])
+                        setTaskStates(prev => ({
+                          ...prev,
+                          [newTask.id]: makeDefaultTaskState(tasks.length + selectedTasks.length, tasks.length + insertOffset, true),
+                        }))
+                        insertOffset++
+                      })
+                      setAiTaskChainOpen(false)
+                      setAiTaskChainSelected(new Set())
+                    }}>
+                      <Check className="h-4 w-4 mr-1" />
+                      采纳选中 ({aiTaskChainSelected.size})
+                    </Button>
+                  </>
+                )}
+                <Button variant="ghost" size="sm" onClick={() => setAiTaskChainOpen(false)}><X className="h-4 w-4" /></Button>
+              </div>
+            </div>
+            <div className="p-4">
+              {aiTaskChainLoading ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <div className="h-8 w-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                  <p className="text-sm text-gray-500">AI 正在分析最佳任务链结构...</p>
+                </div>
+              ) : aiTaskChainResult ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 bg-purple-50 rounded-lg p-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-700">{aiTaskChainResult.taskCount}</div>
+                      <div className="text-xs text-gray-500">建议任务数</div>
+                    </div>
+                    <div className="w-px h-10 bg-purple-200" />
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-700">{aiTaskChainResult.assessmentCount}</div>
+                      <div className="text-xs text-gray-500">考核任务</div>
+                    </div>
+                    <div className="w-px h-10 bg-purple-200" />
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-700">{aiTaskChainResult.trainingCount}</div>
+                      <div className="text-xs text-gray-500">训练任务</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 overflow-x-auto pb-2">
+                    {aiTaskChainResult.tasks.map((t, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "shrink-0 w-56 border rounded-lg p-3 hover:border-purple-300 transition-colors cursor-pointer relative",
+                          aiTaskChainSelected.has(i) ? "bg-purple-50/50 border-purple-300" : "bg-gray-50/30"
+                        )}
+                        onClick={() => {
+                          setAiTaskChainSelected(prev => {
+                            const next = new Set(prev)
+                            if (next.has(i)) next.delete(i)
+                            else next.add(i)
+                            return next
+                          })
+                        }}
+                      >
+                        <div className="absolute top-2 left-2">
+                          <Checkbox
+                            checked={aiTaskChainSelected.has(i)}
+                            onCheckedChange={(checked) => {
+                              setAiTaskChainSelected(prev => {
+                                const next = new Set(prev)
+                                if (checked) next.add(i)
+                                else next.delete(i)
+                                return next
+                              })
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 mb-2 pl-6">
+                          <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs flex items-center justify-center font-medium shrink-0">{i + 1}</span>
+                          <span className="font-medium text-sm text-gray-800 truncate flex-1">{t.name}</span>
+                          <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full shrink-0", t.type === "assessment" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700")}>
+                            {t.type === "assessment" ? "考核" : "训练"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-2 line-clamp-2 pl-6">{t.description}</p>
+                        <div className="flex items-center justify-between text-xs text-gray-400 pl-6">
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, si) => (
+                              <Star key={si} className={cn("h-3 w-3", si < t.difficulty ? "fill-amber-400 text-amber-400" : "text-gray-200")} />
+                            ))}
+                          </div>
+                          <span>{t.estimatedHours} 小时</span>
+                        </div>
+                        <div className="flex justify-center mt-2">
+                          {i < aiTaskChainResult.tasks.length - 1 ? (
+                            <ArrowRight className="h-3 w-3 text-purple-300 rotate-90" />
+                          ) : (
+                            <div className="h-3 w-3" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        )}
 
         {/* Task List with unified horizontal scroll */}
         <div className="overflow-x-auto pb-2">
@@ -1044,6 +1299,7 @@ export default function TasksEditPage() {
           </div>
         </div>
       </div>
+
 
       {/* Add Task Dialog */}
       <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
@@ -1213,6 +1469,8 @@ export default function TasksEditPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+
     </div>
   )
 }
@@ -1264,6 +1522,75 @@ function EditCardDialog({
 
   // For evaluation full-screen dialog
   const [evalDialogOpen, setEvalDialogOpen] = useState(false)
+
+  // AI Feature states
+  const [aiQuestionGenOpen, setAiQuestionGenOpen] = useState(false)
+  const [aiQuestionGenLoading, setAiQuestionGenLoading] = useState(false)
+  const [aiQuestionGenResult, setAiQuestionGenResult] = useState<ReturnType<typeof mockAiGeneratedQuestions> | null>(null)
+  const [aiQGenKp, setAiQGenKp] = useState("")
+  const [aiQGenType, setAiQGenType] = useState("single")
+  const [aiQGenCount, setAiQGenCount] = useState(3)
+  const [aiAdoptedQuestionIds, setAiAdoptedQuestionIds] = useState<Set<string>>(new Set())
+
+  const [aiOnsiteQaOpen, setAiOnsiteQaOpen] = useState(false)
+  const [aiOnsiteQaLoading, setAiOnsiteQaLoading] = useState(false)
+  const [aiOnsiteQaResult, setAiOnsiteQaResult] = useState<ReturnType<typeof mockAiOnsiteQuestions> | null>(null)
+  const [aiOsqDirection, setAiOsqDirection] = useState("前端开发")
+  const [aiOsqMajor, setAiOsqMajor] = useState("前端开发")
+  const [aiOsqDifficulty, setAiOsqDifficulty] = useState(2)
+
+  const [aiEvalPointOpen, setAiEvalPointOpen] = useState(false)
+  const [aiEvalPointLoading, setAiEvalPointLoading] = useState(false)
+  const [aiEvalPointResult, setAiEvalPointResult] = useState<ReturnType<typeof mockAiEvalPointSuggestions> | null>(null)
+  const [aiEvalPointTargetField, setAiEvalPointTargetField] = useState<string | null>(null)
+
+  const [aiRubricOpen, setAiRubricOpen] = useState(false)
+  const [aiRubricLoading, setAiRubricLoading] = useState(false)
+  const [aiRubricResult, setAiRubricResult] = useState<ReturnType<typeof mockAiRubricGeneration> | null>(null)
+  const [aiRubricTargetPointId, setAiRubricTargetPointId] = useState<string | null>(null)
+
+  // Unified AI preview dialog for header buttons
+  type AiPreviewType = "description" | "knowledge" | "ability" | "resources" | "evaluation" | "evaluationRules"
+  const [aiPreviewOpen, setAiPreviewOpen] = useState(false)
+  const [aiPreviewType, setAiPreviewType] = useState<AiPreviewType | null>(null)
+  const [aiPreviewLoading, setAiPreviewLoading] = useState(false)
+  const [aiPreviewData, setAiPreviewData] = useState<any>(null)
+
+  // Inline AI progress for tab buttons
+  const [aiProgress, setAiProgress] = useState(0)
+  const [aiLoading, setAiLoading] = useState(false)
+
+  const runAiSimulation = (onComplete: () => void) => {
+    setAiLoading(true)
+    setAiProgress(0)
+    let p = 0
+    const interval = setInterval(() => {
+      p += Math.floor(Math.random() * 15) + 10
+      if (p >= 100) {
+        p = 100
+        clearInterval(interval)
+        setAiProgress(100)
+        setTimeout(() => {
+          setAiLoading(false)
+          setAiProgress(0)
+          onComplete()
+        }, 200)
+      } else {
+        setAiProgress(p)
+      }
+    }, 150)
+  }
+
+  const runAiPreview = (type: AiPreviewType, generate: () => any) => {
+    setAiPreviewType(type)
+    setAiPreviewOpen(true)
+    setAiPreviewLoading(true)
+    setAiPreviewData(null)
+    runAiSimulation(() => {
+      setAiPreviewData(generate())
+      setAiPreviewLoading(false)
+    })
+  }
 
   // For scoring config
   const [selectedGradeTaskId, setSelectedGradeTaskId] = useState(taskId)
@@ -3687,6 +4014,18 @@ function EditCardDialog({
                   <Button onClick={handleAddRdq}>
                     <Plus className="h-4 w-4 mr-1" />新增现场问答题
                   </Button>
+                  <AiGenerateButton
+                    onClick={() => {
+                      setAiOnsiteQaLoading(true)
+                      setAiOnsiteQaOpen(true)
+                      setTimeout(() => {
+                        setAiOnsiteQaResult(mockAiOnsiteQuestions(aiOsqDirection, aiOsqMajor, aiOsqDifficulty))
+                        setAiOnsiteQaLoading(false)
+                      }, 1000)
+                    }}
+                    loading={aiOnsiteQaLoading}
+                    label="AI 生成问答题"
+                  />
                 </div>
 
                 <div className="flex gap-4 flex-1 min-h-0">
@@ -4245,6 +4584,55 @@ function EditCardDialog({
 
             return (
               <div className="space-y-4">
+                <div className="border rounded-xl p-4 bg-purple-50/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-4 w-4 text-purple-500" />
+                    <span className="text-sm font-medium">AI 智能出题</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">知识点</Label>
+                      <Select value={aiQGenKp} onValueChange={setAiQGenKp}>
+                        <SelectTrigger className="mt-1 text-sm h-9"><SelectValue placeholder="选择知识点" /></SelectTrigger>
+                        <SelectContent>
+                          {knowledgePoints.map(kp => <SelectItem key={kp.id} value={kp.name}>{kp.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">题型</Label>
+                      <Select value={aiQGenType} onValueChange={setAiQGenType}>
+                        <SelectTrigger className="mt-1 text-sm h-9"><SelectValue placeholder="选择题型" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="single">单选题</SelectItem>
+                          <SelectItem value="multiple">多选题</SelectItem>
+                          <SelectItem value="judgment">判断题</SelectItem>
+                          <SelectItem value="short_answer">简答题</SelectItem>
+                          <SelectItem value="fill_blank">填空题</SelectItem>
+                          <SelectItem value="essay">论述题</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">出题数量</Label>
+                      <Input type="number" value={aiQGenCount} onChange={e => setAiQGenCount(Math.max(1, parseInt(e.target.value) || 1))} className="mt-1 text-sm h-9" min={1} max={10} />
+                    </div>
+                    <div className="flex items-end">
+                      <AiGenerateButton
+                        onClick={() => {
+                          setAiQuestionGenLoading(true)
+                          setAiQuestionGenOpen(true)
+                          setTimeout(() => {
+                            setAiQuestionGenResult(mockAiGeneratedQuestions(aiQGenKp || "React", aiQGenType, aiQGenCount))
+                            setAiQuestionGenLoading(false)
+                          }, 1000)
+                        }}
+                        loading={aiQuestionGenLoading}
+                        label="AI 生成题目"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <QuestionSelectorPanel field="questionBankQuestions" selectedIds={state.questionBankQuestions} />
                 <div className="border rounded-xl p-4">
                   <p className="text-sm font-medium mb-3">抽题规则</p>
@@ -4405,6 +4793,55 @@ function EditCardDialog({
           if (methodKey === "quiz") {
             return (
               <div className="space-y-4">
+                <div className="border rounded-xl p-4 bg-purple-50/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-4 w-4 text-purple-500" />
+                    <span className="text-sm font-medium">AI 智能出题</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">知识点</Label>
+                      <Select value={aiQGenKp} onValueChange={setAiQGenKp}>
+                        <SelectTrigger className="mt-1 text-sm h-9"><SelectValue placeholder="选择知识点" /></SelectTrigger>
+                        <SelectContent>
+                          {knowledgePoints.map(kp => <SelectItem key={kp.id} value={kp.name}>{kp.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">题型</Label>
+                      <Select value={aiQGenType} onValueChange={setAiQGenType}>
+                        <SelectTrigger className="mt-1 text-sm h-9"><SelectValue placeholder="选择题型" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="single">单选题</SelectItem>
+                          <SelectItem value="multiple">多选题</SelectItem>
+                          <SelectItem value="judgment">判断题</SelectItem>
+                          <SelectItem value="short_answer">简答题</SelectItem>
+                          <SelectItem value="fill_blank">填空题</SelectItem>
+                          <SelectItem value="essay">论述题</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">出题数量</Label>
+                      <Input type="number" value={aiQGenCount} onChange={e => setAiQGenCount(Math.max(1, parseInt(e.target.value) || 1))} className="mt-1 text-sm h-9" min={1} max={10} />
+                    </div>
+                    <div className="flex items-end">
+                      <AiGenerateButton
+                        onClick={() => {
+                          setAiQuestionGenLoading(true)
+                          setAiQuestionGenOpen(true)
+                          setTimeout(() => {
+                            setAiQuestionGenResult(mockAiGeneratedQuestions(aiQGenKp || "React", aiQGenType, aiQGenCount))
+                            setAiQuestionGenLoading(false)
+                          }, 1000)
+                        }}
+                        loading={aiQuestionGenLoading}
+                        label="AI 生成题目"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <QuestionSelectorPanel field="quizQuestions" selectedIds={state.quizQuestions} />
                 <div className="border rounded-xl p-4">
                   <p className="text-sm font-medium mb-3">抽题规则</p>
@@ -5177,6 +5614,37 @@ function EditCardDialog({
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-medium">评价量规配置表</p>
                       <div className="flex items-center gap-2">
+                        <AiGenerateButton
+                          onClick={() => {
+                            setAiEvalPointLoading(true)
+                            setAiEvalPointOpen(true)
+                            setAiEvalPointTargetField(info.field)
+                            setTimeout(() => {
+                              const kps = task.knowledgePoints || []
+                              const abs = task.abilityPoints || []
+                              setAiEvalPointResult(mockAiEvalPointSuggestions(kps, abs))
+                              setAiEvalPointLoading(false)
+                            }, 1000)
+                          }}
+                          loading={aiEvalPointLoading}
+                          label="AI 推荐评价点"
+                          size="sm"
+                        />
+                        <AiGenerateButton
+                          onClick={() => {
+                            setAiRubricLoading(true)
+                            setAiRubricOpen(true)
+                            setAiEvalPointTargetField(info.field)
+                            setTimeout(() => {
+                              const firstPoint = info.points[0]
+                              setAiRubricResult(mockAiRubricGeneration(firstPoint?.name || "评价维度"))
+                              setAiRubricLoading(false)
+                            }, 1000)
+                          }}
+                          loading={aiRubricLoading}
+                          label="AI 生成量规"
+                          size="sm"
+                        />
                         <PrdAnnotation data={getAnnotation("eval-rule-onekey-split")}>
                           <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => {
                             const count = info.points.length
@@ -6431,6 +6899,311 @@ function EditCardDialog({
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* AI Question Generation Dialog */}
+            <Dialog open={aiQuestionGenOpen} onOpenChange={setAiQuestionGenOpen}>
+              <DialogContent className="sm:max-w-[800px] max-h-[85vh] overflow-hidden flex flex-col">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-500" />
+                    AI 智能出题结果
+                  </DialogTitle>
+                  <DialogDescription>AI 已根据您设定的条件生成题目，请查看并选择采纳</DialogDescription>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto py-4 space-y-3">
+                  {aiQuestionGenLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3">
+                      <div className="h-8 w-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                      <p className="text-sm text-gray-500">AI 正在生成题目...</p>
+                    </div>
+                  ) : aiQuestionGenResult ? (
+                    <>
+                      {aiQuestionGenResult.map(q => (
+                        <div key={q.id} className={cn("border rounded-lg p-4 hover:border-purple-300 transition-colors", aiAdoptedQuestionIds.has(q.id) && "bg-green-50/50 border-green-200")}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline" className="text-[10px]">{questionTypeLabels[q.type] || q.type}</Badge>
+                                <Badge className="text-[10px] bg-purple-50 text-purple-700 border-purple-200">知识点：{q.knowledgePointTag}</Badge>
+                                <span className="text-xs text-gray-400">{q.score} 分</span>
+                                {aiAdoptedQuestionIds.has(q.id) && <Badge className="text-[10px] bg-green-50 text-green-700 border-green-200">已采纳</Badge>}
+                              </div>
+                              <p className="text-sm text-gray-800 mb-2">{q.content}</p>
+                              {q.options && (
+                                <div className="space-y-1 mb-2">
+                                  {q.options.map((opt, idx) => (
+                                    <div key={idx} className="text-xs text-gray-600 flex items-center gap-1.5">
+                                      <span className="w-4 h-4 rounded-full bg-gray-100 text-gray-500 text-[10px] flex items-center justify-center">{String.fromCharCode(65 + idx)}</span>
+                                      {opt}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              <p className="text-xs text-gray-500">答案：{q.answer}</p>
+                            </div>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] shrink-0" disabled={aiAdoptedQuestionIds.has(q.id)} onClick={() => setAiAdoptedQuestionIds(prev => new Set([...prev, q.id]))}>
+                              {aiAdoptedQuestionIds.has(q.id) ? "已采纳" : "采纳"}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  ) : null}
+                </div>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setAiQuestionGenOpen(false)}>关闭</Button>
+                  {!aiQuestionGenLoading && aiQuestionGenResult && (
+                    <Button size="sm" onClick={() => {
+                      setAiAdoptedQuestionIds(new Set(aiQuestionGenResult.map(q => q.id)))
+                    }}>
+                      <Check className="h-4 w-4 mr-1" />
+                      采纳全部
+                    </Button>
+                  )}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* AI Onsite QA Dialog */}
+            <Dialog open={aiOnsiteQaOpen} onOpenChange={setAiOnsiteQaOpen}>
+              <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden flex flex-col">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-500" />
+                    AI 现场问答生成
+                  </DialogTitle>
+                  <DialogDescription>AI 已根据方向、专业和难度生成现场问答题目</DialogDescription>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto py-4 space-y-3">
+                  {aiOnsiteQaLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3">
+                      <div className="h-8 w-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                      <p className="text-sm text-gray-500">AI 正在生成现场问答题...</p>
+                    </div>
+                  ) : aiOnsiteQaResult ? (
+                    aiOnsiteQaResult.map((q, idx) => (
+                      <div key={q.id} className="border rounded-lg p-4 hover:border-purple-300 transition-colors">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm font-medium text-gray-800">{q.name}</span>
+                          <Badge variant="outline" className="text-[10px]">难度 {q.difficulty}</Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">{q.description}</p>
+                        <div className="mb-2">
+                          <p className="text-xs text-gray-500 mb-1">答题要点</p>
+                          <ul className="space-y-1">
+                            {q.answerPoints.map((ap, i) => (
+                              <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                                <Check className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                {ap}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {q.applicableMajors.map(m => (
+                            <Badge key={m} variant="secondary" className="text-[10px]">{m}</Badge>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-end gap-2 mt-3">
+                          <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => {
+                            const newQ = { id: `rdq-ai-${Date.now()}-${idx}`, name: q.name, description: q.description, answer: q.answerPoints.join("；"), major: q.applicableMajors.join("、") }
+                            updateState({ randomDrawCustomQuestions: [...state.randomDrawCustomQuestions, newQ], randomDrawSelectedIds: [...state.randomDrawSelectedIds, newQ.id] })
+                          }}>
+                            采纳
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  ) : null}
+                </div>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setAiOnsiteQaOpen(false)}>关闭</Button>
+                  {!aiOnsiteQaLoading && aiOnsiteQaResult && (
+                    <Button size="sm" onClick={() => {
+                      const newQs = aiOnsiteQaResult.map((q, idx) => ({
+                        id: `rdq-ai-${Date.now()}-${idx}`,
+                        name: q.name,
+                        description: q.description,
+                        answer: q.answerPoints.join("；"),
+                        major: q.applicableMajors.join("、"),
+                      }))
+                      updateState({
+                        randomDrawCustomQuestions: [...state.randomDrawCustomQuestions, ...newQs],
+                        randomDrawSelectedIds: [...state.randomDrawSelectedIds, ...newQs.map(q => q.id)],
+                      })
+                      setAiOnsiteQaOpen(false)
+                    }}>
+                      <Check className="h-4 w-4 mr-1" />
+                      采纳全部
+                    </Button>
+                  )}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* AI Eval Point Dialog */}
+            <Dialog open={aiEvalPointOpen} onOpenChange={setAiEvalPointOpen}>
+              <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden flex flex-col">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-500" />
+                    AI 评价点智能推荐
+                  </DialogTitle>
+                  <DialogDescription>AI 根据已配置的知识点和能力点推荐评价点</DialogDescription>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto py-4 space-y-3">
+                  {aiEvalPointLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3">
+                      <div className="h-8 w-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                      <p className="text-sm text-gray-500">AI 正在分析并推荐评价点...</p>
+                    </div>
+                  ) : aiEvalPointResult ? (
+                    aiEvalPointResult.map(ep => (
+                      <div key={ep.id} className="border rounded-lg p-4 hover:border-purple-300 transition-colors">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium text-gray-800">{ep.name}</span>
+                              <Badge variant="outline" className={cn("text-[10px]", evalSubTypeColors[ep.subType as EvalSubType])}>{evalSubTypeLabels[ep.subType as EvalSubType] || ep.subType}</Badge>
+                              <span className="text-xs text-gray-400">建议权重 {ep.suggestedWeight}%</span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-2">{ep.desc}</p>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {ep.knowledgePointIds.map(kpid => {
+                                const kp = knowledgePoints.find(k => k.id === kpid)
+                                return kp ? <Badge key={kpid} variant="secondary" className="text-[10px]">{kp.name}</Badge> : null
+                              })}
+                              {ep.abilityPointIds.map(abid => {
+                                const ab = abilityPoints.find(a => a.id === abid)
+                                return ab ? <Badge key={abid} variant="secondary" className="text-[10px]">{ab.name}</Badge> : null
+                              })}
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" className="h-7 text-[11px] shrink-0" onClick={() => {
+                            if (aiEvalPointTargetField) {
+                              addEvalPoint(aiEvalPointTargetField as unknown as EvalPointField, {
+                                name: ep.name,
+                                desc: ep.desc,
+                                subType: ep.subType as EvalSubType,
+                                weight: ep.suggestedWeight,
+                                knowledgePointIds: ep.knowledgePointIds,
+                                abilityPointIds: ep.abilityPointIds,
+                              })
+                            }
+                          }}>
+                            采纳
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  ) : null}
+                </div>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setAiEvalPointOpen(false)}>关闭</Button>
+                  {!aiEvalPointLoading && aiEvalPointResult && (
+                    <Button size="sm" onClick={() => {
+                      if (aiEvalPointTargetField) {
+                        aiEvalPointResult?.forEach(ep => {
+                          addEvalPoint(aiEvalPointTargetField! as unknown as EvalPointField, {
+                            name: ep.name,
+                            desc: ep.desc,
+                            subType: ep.subType as EvalSubType,
+                            weight: ep.suggestedWeight,
+                            knowledgePointIds: ep.knowledgePointIds,
+                            abilityPointIds: ep.abilityPointIds,
+                          })
+                        })
+                      }
+                      setAiEvalPointOpen(false)
+                    }}>
+                      <Check className="h-4 w-4 mr-1" />
+                      采纳全部
+                    </Button>
+                  )}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* AI Rubric Dialog */}
+            <Dialog open={aiRubricOpen} onOpenChange={setAiRubricOpen}>
+              <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden flex flex-col">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-500" />
+                    AI 量规生成结果
+                  </DialogTitle>
+                  <DialogDescription>AI 已基于评价维度生成量规等级描述和评分规则</DialogDescription>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto py-4 space-y-4">
+                  {aiRubricLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3">
+                      <div className="h-8 w-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                      <p className="text-sm text-gray-500">AI 正在生成量规...</p>
+                    </div>
+                  ) : aiRubricResult ? (
+                    <div className="space-y-4">
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-purple-800 mb-1">评价维度：{aiRubricResult.evalPointName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-2">等级描述</p>
+                        <div className="space-y-2">
+                          {aiRubricResult.gradeDescriptions.map(gd => (
+                            <div key={gd.grade} className="border rounded-lg p-3">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-[10px]">{gd.grade}</Badge>
+                                <span className="text-xs text-gray-500">{gd.minScore}-{gd.maxScore} 分</span>
+                              </div>
+                              <p className="text-xs text-gray-700">{gd.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {aiRubricResult.scoringRules && (
+                        <div>
+                          <p className="text-sm font-medium mb-2">评分规则参考</p>
+                          <ul className="space-y-1">
+                            {aiRubricResult.scoringRules.map((sr, i) => (
+                              <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                                <span className="w-1 h-1 rounded-full bg-gray-400 mt-1.5 shrink-0" />
+                                {sr}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => {
+                          if (aiEvalPointTargetField) {
+                            const points = (state as any)[aiEvalPointTargetField] as EvalPoint[]
+                            const targetPoint = points.find((p: EvalPoint) => !p.gradeMapping || p.gradeMapping.length === 0)
+                            if (targetPoint && aiRubricResult) {
+                              const newGm = aiRubricResult.gradeDescriptions.map((gd, idx) => ({
+                                id: `gm-${Date.now()}-${idx}`,
+                                grade: gd.grade,
+                                minScore: gd.minScore,
+                                maxScore: gd.maxScore,
+                                remark: gd.description,
+                                color: ["bg-green-500", "bg-blue-500", "bg-yellow-500", "bg-red-500"][idx] || "bg-gray-500",
+                              }))
+                              updateState({
+                                [aiEvalPointTargetField]: points.map((p: EvalPoint) => p.id === targetPoint.id ? { ...p, gradeMapping: newGm } : p)
+                              } as any)
+                            }
+                          }
+                          setAiRubricOpen(false)
+                        }}>
+                          应用到首个评价维度
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setAiRubricOpen(false)}>关闭</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         )
       }
@@ -6465,22 +7238,315 @@ function EditCardDialog({
         "flex flex-col overflow-hidden",
         dialogSizeClass
       )}>
-        <DialogHeader>
-          <PrdAnnotation data={getAnnotation(`editor-card-${config.type}`)}>
-            <DialogTitle className="flex items-center gap-2">
-              <div className="p-1.5 bg-primary/10 rounded">{config.icon}</div>
-              {config.title}
-            </DialogTitle>
-          </PrdAnnotation>
-          <DialogDescription>任务：{task.name}</DialogDescription>
+        <DialogHeader className="flex-row items-start justify-between space-y-0">
+          <div className="space-y-1.5">
+            <PrdAnnotation data={getAnnotation(`editor-card-${config.type}`)}>
+              <DialogTitle className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded">{config.icon}</div>
+                {config.title}
+              </DialogTitle>
+            </PrdAnnotation>
+            <DialogDescription>任务：{task.name}</DialogDescription>
+          </div>
+          {cardType === "description" && (
+            <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 h-8 text-xs shrink-0" disabled={aiLoading} onClick={() => runAiPreview("description", () => mockScenarioBackgroundGeneration({}))}>
+              {aiLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
+              生成任务说明
+            </Button>
+          )}
+          {cardType === "knowledge" && (
+            <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 h-8 text-xs shrink-0" disabled={aiLoading} onClick={() => runAiPreview("knowledge", () => {
+              const rec = mockAiKnowledgeAbilityRecommendation("")
+              const ids = rec.knowledgePoints.map(kp => kp.id).filter(id => knowledgePoints.some(k => k.id === id))
+              return { ids }
+            })}>
+              {aiLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
+              智能关联知识点
+            </Button>
+          )}
+          {cardType === "ability" && (
+            <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 h-8 text-xs shrink-0" disabled={aiLoading} onClick={() => runAiPreview("ability", () => {
+              const rec = mockAiKnowledgeAbilityRecommendation("")
+              const ids = rec.abilityPoints.map(ab => ab.id).filter(id => abilityPoints.some(a => a.id === id))
+              return { ids }
+            })}>
+              {aiLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
+              智能关联能力点
+            </Button>
+          )}
+          {cardType === "resources" && (
+            <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 h-8 text-xs shrink-0" disabled={aiLoading} onClick={() => runAiPreview("resources", () => {
+              const shuffled = [...learningResources].sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 4) + 2)
+              return { resources: shuffled }
+            })}>
+              {aiLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
+              智能关联资源
+            </Button>
+          )}
+          {cardType === "evaluation" && (
+            <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 h-8 text-xs shrink-0" disabled={aiLoading} onClick={() => runAiPreview("evaluation", () => {
+              const available = evaluationMethodOptions.filter(o => o.available).map(o => o.key)
+              const count = Math.floor(Math.random() * 3) + 2
+              const shuffled = [...available].sort(() => Math.random() - 0.5).slice(0, count)
+              return { methods: shuffled }
+            })}>
+              {aiLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
+              智能推荐测评形式
+            </Button>
+          )}
+          {cardType === "evaluationRules" && (
+            <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 h-8 text-xs shrink-0" disabled={aiLoading} onClick={() => runAiPreview("evaluationRules", () => {
+              const kpIds = state.knowledgePoints.length > 0 ? state.knowledgePoints : knowledgePoints.slice(0, 3).map(k => k.id)
+              const abIds = state.abilityPoints.length > 0 ? state.abilityPoints : abilityPoints.slice(0, 3).map(a => a.id)
+              const suggestions = mockAiEvalPointSuggestions(kpIds, abIds)
+              const makePoints = (prefix: string) => suggestions.slice(0, Math.floor(Math.random() * 3) + 2).map((s, i) => ({
+                id: `ep-ai-${prefix}-${Date.now()}-${i}`,
+                name: s.name,
+                desc: s.desc,
+                subType: s.subType as EvalSubType,
+                types: [s.subType as EvalSubType],
+                knowledgePointIds: s.knowledgePointIds,
+                abilityPointIds: s.abilityPointIds,
+                scoringMethod: "level" as const,
+                gradeMapping: JSON.parse(JSON.stringify(defaultGradeMapping)) as GradeMapping[],
+                weight: s.suggestedWeight,
+              }))
+              const updates: Partial<TaskState> = {}
+              if (state.evaluationMethods.includes("random_draw")) {
+                updates.randomDrawEvalPoints = makePoints("rd")
+                const aiQuestions = [
+                  { id: `ai-rdq-${Date.now()}-1`, name: "请简述本任务涉及的核心技术架构选型思路", description: "考察学生对技术架构的理解，包括前后端分离、数据库选型、缓存策略等方面的思考。", answer: "需包含前后端分离架构、数据库选型理由、缓存策略设计", major: "全栈开发" },
+                  { id: `ai-rdq-${Date.now()}-2`, name: "如何保障本任务中用户数据的安全性？", description: "考察学生对 Web 安全的认知，包括认证授权、数据加密、输入校验等方面。", answer: "需包含 JWT 认证、密码加密、SQL 注入防范、XSS 防护", major: "全栈开发" },
+                  { id: `ai-rdq-${Date.now()}-3`, name: "请描述本任务中遇到的最难点及解决方案", description: "考察学生的问题分析与解决能力，以及对项目中关键技术难点的理解。", answer: "需结合实际难点，描述分析过程与解决方案", major: "全栈开发" },
+                ]
+                updates.randomDrawCustomQuestions = aiQuestions
+                updates.randomDrawSelectedIds = aiQuestions.map(q => q.id)
+              }
+              if (state.evaluationMethods.includes("review")) updates.reviewEvalPoints = makePoints("rv")
+              if (state.evaluationMethods.includes("paper")) updates.paperEvalPoints = makePoints("pp")
+              if (state.evaluationMethods.includes("question_bank")) updates.questionBankEvalPoints = makePoints("qb")
+              if (state.evaluationMethods.includes("outcome")) updates.outcomeEvalPoints = makePoints("oc")
+              if (state.evaluationMethods.includes("homework")) updates.homeworkEvalPoints = makePoints("hw")
+              if (state.evaluationMethods.includes("quiz")) updates.quizEvalPoints = makePoints("qz")
+              return { updates }
+            })}>
+              {aiLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
+              智能配置测评资源与评价标准
+            </Button>
+          )}
         </DialogHeader>
-        <div className={cn("flex-1 py-4", isFullScreen ? "overflow-hidden" : "overflow-y-auto")}>{renderContent()}</div>
+        <div className={cn("flex-1 py-4", isFullScreen ? "overflow-hidden" : "overflow-y-auto")}>
+          {aiLoading && (
+            <div className="mb-3 px-1">
+              <div className="flex items-center justify-between text-xs text-purple-700 mb-1">
+                <span>AI 生成中...</span>
+                <span>{aiProgress}%</span>
+              </div>
+              <div className="w-full bg-purple-100 rounded-full h-2">
+                <div className="bg-purple-600 h-2 rounded-full transition-all" style={{ width: `${aiProgress}%` }} />
+              </div>
+            </div>
+          )}
+          {renderContent()}
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>取消</Button>
           <Button onClick={handleSave}>保存</Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* AI Preview Dialog */}
+      <Dialog open={aiPreviewOpen} onOpenChange={setAiPreviewOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              {aiPreviewType === "description" && "AI 生成任务说明"}
+              {aiPreviewType === "knowledge" && "AI 智能关联知识点"}
+              {aiPreviewType === "ability" && "AI 智能关联能力点"}
+              {aiPreviewType === "resources" && "AI 智能关联资源"}
+              {aiPreviewType === "evaluation" && "AI 智能推荐测评形式"}
+              {aiPreviewType === "evaluationRules" && "AI 智能配置评价标准"}
+            </DialogTitle>
+            <DialogDescription>
+              AI 生成结果如下，确认后将应用到当前任务，取消则保留原内容。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto py-4">
+            {aiPreviewLoading ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="h-8 w-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                <p className="text-sm text-gray-500">AI 正在生成推荐内容...</p>
+              </div>
+            ) : aiPreviewData ? (
+              <div className="space-y-3">
+                {aiPreviewType === "description" && (
+                  <div className="border rounded-lg p-4 bg-gray-50/50">
+                    <p className="text-sm text-gray-700 whitespace-pre-line">{aiPreviewData.content}</p>
+                    {aiPreviewData.confidence && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <span className="text-xs text-gray-500">AI 置信度:</span>
+                        <span className={cn(
+                          "text-xs px-2 py-0.5 rounded-full",
+                          aiPreviewData.confidence === "high" ? "bg-green-50 text-green-700" :
+                          aiPreviewData.confidence === "medium" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700"
+                        )}>
+                          {aiPreviewData.confidence === "high" ? "高" : aiPreviewData.confidence === "medium" ? "中" : "低"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {aiPreviewType === "knowledge" && (
+                  <>
+                    {aiPreviewData.ids.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">未推荐到有效知识点</p>
+                    ) : (
+                      aiPreviewData.ids.map((id: string) => {
+                        const kp = knowledgePoints.find(k => k.id === id)
+                        return kp ? (
+                          <div key={id} className="flex items-center justify-between border rounded-lg p-3">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{kp.name}</p>
+                              <p className="text-xs text-gray-500">{kp.category}</p>
+                            </div>
+                            <Badge variant="secondary" className="text-[10px]">推荐</Badge>
+                          </div>
+                        ) : null
+                      })
+                    )}
+                  </>
+                )}
+                {aiPreviewType === "ability" && (
+                  <>
+                    {aiPreviewData.ids.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">未推荐到有效能力点</p>
+                    ) : (
+                      aiPreviewData.ids.map((id: string) => {
+                        const ab = abilityPoints.find(a => a.id === id)
+                        return ab ? (
+                          <div key={id} className="flex items-center justify-between border rounded-lg p-3">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{ab.name}</p>
+                              <p className="text-xs text-gray-500">{ab.domain} · {ab.requiredLevel}</p>
+                            </div>
+                            <Badge variant="secondary" className="text-[10px]">推荐</Badge>
+                          </div>
+                        ) : null
+                      })
+                    )}
+                  </>
+                )}
+                {aiPreviewType === "resources" && (
+                  <>
+                    {aiPreviewData.resources.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">未推荐到有效资源</p>
+                    ) : (
+                      aiPreviewData.resources.map((r: any) => (
+                        <div key={r.id} className="flex items-center justify-between border rounded-lg p-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{r.name}</p>
+                            <p className="text-xs text-gray-500">{r.type} · {r.size}</p>
+                          </div>
+                          <Badge variant="secondary" className="text-[10px]">推荐</Badge>
+                        </div>
+                      ))
+                    )}
+                  </>
+                )}
+                {aiPreviewType === "evaluation" && (
+                  <div className="flex flex-wrap gap-2">
+                    {aiPreviewData.methods.map((key: string) => {
+                      const opt = evaluationMethodOptions.find(o => o.key === key)
+                      return opt ? (
+                        <Badge key={key} variant="outline" className={cn("px-2 py-1 text-xs", opt.color)}>
+                          {opt.label}
+                        </Badge>
+                      ) : null
+                    })}
+                  </div>
+                )}
+                {aiPreviewType === "evaluationRules" && (
+                  <>
+                    {Object.entries(aiPreviewData.updates as Partial<TaskState>).length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">未生成评价点</p>
+                    ) : (
+                      Object.entries(aiPreviewData.updates as Partial<TaskState>).map(([field, points]) => {
+                        const methodKey = field.replace("EvalPoints", "")
+                        const methodLabel = evaluationMethodOptions.find(o => o.key === methodKey)?.label || methodKey
+                        const pts = (points as any[]) || []
+                        return (
+                          <div key={field} className="border rounded-lg p-3">
+                            <p className="text-xs font-medium text-gray-700 mb-2">{methodLabel} · 新增 {pts.length} 个评价点</p>
+                            <div className="space-y-2">
+                              {pts.map((p: any, idx: number) => (
+                                <div key={p.id} className="bg-gray-50 rounded p-2">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xs font-medium text-gray-800">{idx + 1}. {p.name}</span>
+                                    <Badge variant="outline" className={cn("text-[10px]", evalSubTypeColors[p.subType as EvalSubType])}>{evalSubTypeLabels[p.subType as EvalSubType]}</Badge>
+                                  </div>
+                                  <p className="text-xs text-gray-600">{p.desc}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </>
+                )}
+              </div>
+            ) : null}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setAiPreviewOpen(false)}>取消</Button>
+            {!aiPreviewLoading && aiPreviewData && (
+              <Button
+                size="sm"
+                variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
+                onClick={() => {
+                  if (!aiPreviewData) return
+                  if (aiPreviewType === "description") {
+                    updateState({ description: aiPreviewData.content })
+                  } else if (aiPreviewType === "knowledge") {
+                    const current = new Set(state.knowledgePoints)
+                    aiPreviewData.ids.forEach((id: string) => current.add(id))
+                    updateState({ knowledgePoints: Array.from(current) })
+                  } else if (aiPreviewType === "ability") {
+                    const current = new Set(state.abilityPoints)
+                    aiPreviewData.ids.forEach((id: string) => current.add(id))
+                    updateState({ abilityPoints: Array.from(current) })
+                  } else if (aiPreviewType === "resources") {
+                    const current = new Set(state.resources)
+                    aiPreviewData.resources.forEach((r: any) => current.add(r.id))
+                    updateState({ resources: Array.from(current) })
+                  } else if (aiPreviewType === "evaluation") {
+                    const current = new Set(state.evaluationMethods)
+                    aiPreviewData.methods.forEach((m: string) => current.add(m))
+                    updateState({ evaluationMethods: Array.from(current) })
+                  } else if (aiPreviewType === "evaluationRules") {
+                    const updates: Partial<TaskState> = {}
+                    Object.entries(aiPreviewData.updates as Partial<TaskState>).forEach(([field, points]) => {
+                      const key = field as keyof TaskState
+                      const existing = (state as any)[key] as any[] || []
+                      updates[key] = [...existing, ...(points as any[])] as any
+                    })
+                    updateState(updates)
+                  }
+                  setAiPreviewOpen(false)
+                  setAiPreviewData(null)
+                  setAiPreviewType(null)
+                }}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                确认应用
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
+
   )
 }
 

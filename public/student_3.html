@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>场景详情 - 实践场景学习平台</title>
+    <title>场景详情 - AI 智能学习模式</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -1746,6 +1746,53 @@
         .tl-side-resource-name { font-size: 13px; color: var(--text-primary); flex: 1; }
         .tl-side-resource-meta { font-size: 11px; color: var(--text-tertiary); }
 
+        .ai-explain-btn-inline {
+            width: 18px; height: 18px; border-radius: 50%;
+            border: none; background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white; cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; font-size: 9px;
+            margin-left: 4px; flex-shrink: 0; vertical-align: middle;
+            opacity: 0.7; transition: opacity 0.2s;
+        }
+        .ai-explain-btn-inline:hover { opacity: 1; }
+        .ai-explain-panel-inline {
+            width: 100%; margin-top: 6px; padding: 10px 12px;
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 8px; font-size: 12px; color: var(--text-secondary);
+            line-height: 1.7; animation: aiFadeIn 0.3s ease;
+        }
+        .ai-explain-panel-inline .ai-explain-title {
+            font-weight: 600; color: #7c3aed; margin-bottom: 6px;
+            display: flex; align-items: center; gap: 4px; font-size: 12px;
+        }
+        .ai-explain-panel-inline .ai-explain-section {
+            margin-bottom: 6px;
+        }
+        .ai-explain-panel-inline .ai-explain-section:last-child { margin-bottom: 0; }
+        .ai-explain-panel-inline .ai-explain-label {
+            font-weight: 500; color: var(--text-primary); font-size: 12px;
+        }
+        .ai-explain-tag-2 {
+            display: inline-block; padding: 1px 6px; border-radius: 4px;
+            font-size: 11px; margin-right: 4px; font-weight: 500;
+        }
+        .ai-explain-tag-2.core { background: #fef3c7; color: #b45309; }
+        .ai-explain-tag-2.important { background: #dbeafe; color: #1d4ed8; }
+        .ai-explain-tag-2.basic { background: #f3f4f6; color: #4b5563; }
+        .ai-resource-explain-row {
+            margin-top: 8px; padding: 8px 10px;
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 6px; font-size: 12px; line-height: 1.6;
+        }
+        .ai-resource-explain-row .ai-explain-title {
+            font-weight: 600; color: #7c3aed; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 4px; font-size: 12px;
+        }
+        @keyframes aiFadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .tl-header {
             background: var(--bg-white);
             border-bottom: 1px solid #f0f0f0;
@@ -2623,6 +2670,564 @@
             white-space: pre-line;
         }
 
+
+        /* ====== AI-first 智能学习模式样式 ====== */
+        .ai-first-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+        }
+        .ai-first-header-bar {
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+            border: 1px solid #e9d5ff;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ai-first-header-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 16px; font-weight: 600; color: #7c3aed;
+        }
+        .ai-first-header-desc {
+            font-size: 12px; color: var(--text-secondary); margin-top: 2px;
+        }
+
+        .ai-nav-steps {
+            display: flex; flex-direction: column; gap: 0;
+            margin-bottom: 16px;
+        }
+        .ai-nav-step {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .ai-nav-step:hover { background: #faf5ff; }
+        .ai-nav-step.active { background: #f3e8ff; border: 1px solid #d8b4fe; }
+        .ai-nav-step-connector {
+            position: absolute; left: 25px; top: 44px; width: 2px; height: 20px;
+            background: #e9d5ff;
+        }
+        .ai-nav-step-num {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #e9d5ff; color: #7c3aed;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 600; flex-shrink: 0;
+        }
+        .ai-nav-step.active .ai-nav-step-num {
+            background: linear-gradient(135deg, #9333ea, #7c3aed); color: white;
+        }
+        .ai-nav-step.completed .ai-nav-step-num {
+            background: #22c55e; color: white;
+        }
+        .ai-nav-step-content { flex: 1; }
+        .ai-nav-step-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+        .ai-nav-step-desc { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+        .ai-chat-entry {
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+            border: 1px solid #e9d5ff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ai-chat-entry:hover {
+            border-color: #a855f7;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+            transform: translateY(-1px);
+        }
+        .ai-chat-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 16px; flex-shrink: 0;
+        }
+        .ai-chat-text { flex: 1; }
+        .ai-chat-text-title { font-weight: 500; font-size: 14px; color: var(--text-primary); }
+        .ai-chat-text-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+        .ai-analysis-card {
+            background: var(--bg-white);
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .ai-analysis-card-header {
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 600; font-size: 13px; color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        .ai-analysis-card-header i { color: #9333ea; }
+
+        .ai-radar-placeholder {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #9333ea 0deg 120deg,
+                #a855f7 120deg 200deg,
+                #c4b5fd 200deg 280deg,
+                #e9d5ff 280deg 360deg
+            );
+            margin: 0 auto 10px;
+            position: relative;
+        }
+        .ai-radar-placeholder::after {
+            content: '';
+            position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
+            background: white; border-radius: 50%;
+        }
+        .ai-radar-labels {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+            font-size: 11px;
+        }
+        .ai-radar-label { display: flex; align-items: center; gap: 4px; }
+        .ai-radar-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+        .ai-progress-item {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px;
+        }
+        .ai-progress-item:last-child { margin-bottom: 0; }
+        .ai-progress-label { font-size: 12px; color: var(--text-secondary); width: 60px; }
+        .ai-progress-track {
+            flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden;
+        }
+        .ai-progress-fill {
+            height: 100%; border-radius: 3px; transition: width 0.5s;
+        }
+        .ai-progress-value { font-size: 11px; color: var(--text-tertiary); width: 32px; text-align: right; }
+
+        .ai-insight-item {
+            display: flex; align-items: flex-start; gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #f0f0f0;
+            font-size: 12px;
+        }
+        .ai-insight-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .ai-insight-icon { color: #9333ea; font-size: 12px; margin-top: 2px; }
+        .ai-insight-text { color: var(--text-secondary); line-height: 1.5; }
+
+        .ai-report-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 3000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .ai-report-overlay.active { display: flex; }
+        .ai-report-box {
+            background: white; border-radius: 16px;
+            width: 720px; max-width: 95vw; max-height: 90vh;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.4s ease;
+        }
+        .ai-report-header {
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white;
+            padding: 20px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .ai-report-header-title { font-size: 18px; font-weight: 600; }
+        .ai-report-header-desc { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+        .ai-report-close {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: none; background: rgba(255,255,255,0.2); color: white;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .ai-report-close:hover { background: rgba(255,255,255,0.35); }
+        .ai-report-body {
+            flex: 1; overflow-y: auto; padding: 24px;
+        }
+        .ai-report-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+            margin-bottom: 20px;
+        }
+        .ai-report-stat {
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 10px; padding: 16px; text-align: center;
+        }
+        .ai-report-stat-value { font-size: 24px; font-weight: 700; color: #7c3aed; }
+        .ai-report-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+        .ai-guide-dialog {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%);
+            background: white; border-radius: 12px; padding: 16px 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            border: 1px solid #e9d5ff;
+            z-index: 85;
+            max-width: 600px; width: 90vw;
+            transition: transform 0.4s ease;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .ai-guide-dialog.show { transform: translateX(-50%) translateY(0); }
+        .ai-guide-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 14px; flex-shrink: 0;
+        }
+        .ai-guide-content { flex: 1; }
+        .ai-guide-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .ai-guide-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .ai-guide-btn {
+            padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;
+            border: 1px solid #d8b4fe; background: #faf5ff; color: #7c3aed;
+            transition: all 0.2s;
+        }
+        .ai-guide-btn:hover { background: #f3e8ff; }
+        .ai-guide-btn.primary {
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white; border: none;
+        }
+        .ai-guide-btn.primary:hover { opacity: 0.9; }
+
+        .ai-guide-highlight {
+            animation: aiHighlightPulse 2s ease-in-out 3;
+            border-radius: 8px;
+        }
+        @keyframes aiHighlightPulse {
+            0% { box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(147, 51, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(147, 51, 234, 0); }
+        }
+        .ai-typing-indicator {
+            display: flex; align-items: center; gap: 4px;
+            padding: 10px 14px; background: #faf5ff;
+            border-radius: 12px; border: 1px solid #e9d5ff;
+            font-size: 12px; color: #7c3aed;
+            width: fit-content; margin-bottom: 10px;
+        }
+        .ai-typing-indicator span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #a855f7; animation: aiTypingBounce 1.4s infinite ease-in-out both;
+        }
+        .ai-typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .ai-typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes aiTypingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+        .ai-learning-progress {
+            position: fixed; top: 56px; left: 0; right: 0;
+            height: 3px; background: #f0f0f0; z-index: 90;
+        }
+        .ai-learning-progress-fill {
+            height: 100%; background: linear-gradient(90deg, #9333ea, #a855f7);
+            transition: width 0.5s ease; width: 0%;
+        }
+        .ai-chat-bubble-left {
+            display: flex; align-items: flex-start; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .ai-chat-bubble-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 12px; flex-shrink: 0;
+        }
+        .ai-chat-bubble-text {
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 12px; border-top-left-radius: 2px;
+            padding: 10px 14px; font-size: 12px; color: var(--text-secondary);
+            line-height: 1.6; max-width: 80%;
+        }
+        .ai-step-complete-toast {
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #9333ea, #7c3aed); color: white;
+            padding: 10px 20px; border-radius: 24px; font-size: 13px;
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+            z-index: 200; transition: transform 0.4s ease;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .ai-step-complete-toast.show { transform: translateX(-50%) translateY(0); }
+        .ai-report-suggestion-card {
+            background: #faf5ff; border: 1px solid #e9d5ff;
+            border-radius: 10px; padding: 14px; margin-top: 10px;
+        }
+        .ai-report-suggestion-card-title {
+            font-weight: 600; color: #7c3aed; font-size: 13px;
+            margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+        }
+
+        .ai-guide-dialog-large {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120%);
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+            border: 1px solid #e9d5ff;
+            z-index: 85;
+            width: 560px;
+            max-width: 92vw;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 580px;
+        }
+        .ai-guide-dialog-large.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .ai-guide-dialog-large.collapsed {
+            max-height: 56px;
+            overflow: hidden;
+            cursor: pointer;
+            width: 420px;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.35s ease, width 0.35s ease;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 0;
+        }
+        .ai-guide-dialog-large.collapsed .ai-guide-dialog-header {
+            border-radius: 16px 0 0 16px;
+            padding: 0;
+            justify-content: center;
+            gap: 0;
+            flex-shrink: 0;
+            width: 56px;
+            height: 56px;
+        }
+        .ai-guide-dialog-large.collapsed .ai-guide-dialog-header-title,
+        .ai-guide-dialog-large.collapsed .ai-guide-dialog-header-step,
+        .ai-guide-dialog-large.collapsed .ai-guide-dialog-close {
+            display: none;
+        }
+        .ai-guide-dialog-large.collapsed .ai-guide-messages {
+            display: none;
+        }
+        .ai-guide-dialog-large.collapsed .ai-guide-input-area {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            padding: 0 12px;
+            border-top: none;
+            height: 56px;
+            background: white;
+            border-radius: 0 16px 16px 0;
+        }
+        .ai-guide-dialog-large.collapsed .ai-guide-input-row {
+            margin-bottom: 0;
+            width: 100%;
+        }
+        .ai-guide-dialog-large.collapsed .ai-guide-next-row {
+            display: none;
+        }
+        .ai-guide-dialog-header {
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .ai-guide-dialog-header-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+        }
+        .ai-guide-dialog-header-title {
+            font-weight: 600; font-size: 14px; flex: 1;
+        }
+        .ai-guide-dialog-header-step {
+            font-size: 12px; opacity: 0.85;
+            background: rgba(255,255,255,0.15);
+            padding: 2px 10px; border-radius: 10px;
+        }
+        .ai-guide-dialog-close {
+            width: 28px; height: 28px; border-radius: 50%;
+            border: none; background: transparent; color: white;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+        }
+        .ai-guide-dialog-close:hover { background: rgba(255,255,255,0.2); }
+
+        .ai-action-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px;
+            border: 1px solid #d8b4fe;
+            border-radius: 8px;
+            background: #faf5ff;
+            color: #7c3aed;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+        .ai-action-btn:hover { background: #f3e8ff; border-color: #a855f7; transform: translateX(2px); }
+        .ai-action-btn i { font-size: 14px; }
+        .ai-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .ai-guide-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #fafafa;
+        }
+        .ai-guide-msg-ai {
+            display: flex; align-items: flex-start; gap: 8px;
+            max-width: 88%;
+        }
+        .ai-guide-msg-ai-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 12px; flex-shrink: 0;
+        }
+        .ai-guide-msg-ai-bubble {
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+            border-radius: 12px;
+            border-top-left-radius: 2px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .ai-guide-msg-user {
+            display: flex; align-items: flex-start; gap: 8px;
+            align-self: flex-end;
+            max-width: 80%;
+        }
+        .ai-guide-msg-user-bubble {
+            background: #f0f7ff;
+            border: 1px solid #bae0ff;
+            border-radius: 12px;
+            border-top-right-radius: 2px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .ai-guide-msg-user-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #e6f4ff;
+            display: flex; align-items: center; justify-content: center;
+            color: #1677ff; font-size: 12px; flex-shrink: 0;
+        }
+        .ai-guide-suggested-q {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            margin-top: 6px;
+        }
+        .ai-guide-suggested-q-btn {
+            padding: 5px 12px; border-radius: 14px;
+            border: 1px solid #d8b4fe; background: white;
+            color: #7c3aed; font-size: 12px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ai-guide-suggested-q-btn:hover {
+            background: #f3e8ff; border-color: #a855f7;
+        }
+        .ai-guide-input-area {
+            padding: 10px 14px;
+            border-top: 1px solid #f0f0f0;
+            background: white;
+            flex-shrink: 0;
+        }
+        .ai-guide-input-row {
+            display: flex; gap: 8px; margin-bottom: 8px;
+        }
+        .ai-guide-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .ai-guide-input:focus {
+            border-color: #a855f7;
+        }
+        .ai-guide-send-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            transition: transform 0.2s;
+        }
+        .ai-guide-send-btn:hover { transform: scale(1.08); }
+        .ai-guide-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .ai-guide-next-row {
+            display: flex; justify-content: center;
+            padding-top: 6px;
+            border-top: 1px dashed #f0f0f0;
+        }
+        .ai-guide-confirm-btn {
+            padding: 8px 24px;
+            border-radius: 20px;
+            border: none;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+        }
+        .ai-guide-confirm-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+        }
+        .ai-guide-confirm-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .ai-guide-confirm-btn.confirmed {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+        }
+        .ai-guide-typing {
+            display: flex; align-items: center; gap: 4px;
+            padding: 8px 14px;
+            font-size: 12px; color: #7c3aed;
+        }
+        .ai-guide-typing span {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: #a855f7; animation: aiTypingBounce 1.4s infinite ease-in-out both;
+        }
+        .ai-guide-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .ai-guide-typing span:nth-child(3) { animation-delay: 0.4s; }
+        .ai-guide-close {
+            width: 24px; height: 24px; border-radius: 50%;
+            border: none; background: transparent; color: var(--text-tertiary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+        }
+        .ai-guide-close:hover { background: #f0f0f0; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
@@ -2875,6 +3480,13 @@
                     <i class="fas fa-arrow-left"></i>
                     返回场景
                 </button>
+                <div class="ai-first-header-bar" id="aiFirstHeaderBar">
+                    <div>
+                        <div class="ai-first-header-title"><i class="fas fa-robot"></i> AI 智能学习模式</div>
+                        <div class="ai-first-header-desc">AI 将为你定制个性化学习路径，实时分析学习状态</div>
+                    </div>
+                    <span class="ai-first-badge"><i class="fas fa-bolt"></i> AI 主导</span>
+                </div>
                 <div class="tl-title-row">
                     <h2 class="tl-task-name" id="tlTaskName" data-annotation-title="任务名称" data-annotation-content="场景编辑——步骤 2 任务链配置——任务名称">任务名称</h2>
                     <div class="tl-task-meta" id="tlTaskMeta">
@@ -2894,9 +3506,14 @@
                         <div class="tl-panel-header">
                             <i class="fas fa-book-open"></i>
                             <span>任务说明</span>
-                            <button class="tl-fullscreen-btn" onclick="openTaskDescFullscreen()">
-                                <i class="fas fa-expand"></i> 全屏查看
-                            </button>
+                            <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+                                <button class="ai-hint-btn" onclick="handleAiSummary(currentTaskId)" id="aiSummaryBtn" style="margin-left:0;">
+                                    <i class="fas fa-sparkles"></i> AI 摘要
+                                </button>
+                                <button class="tl-fullscreen-btn" onclick="openTaskDescFullscreen()">
+                                    <i class="fas fa-expand"></i> 全屏查看
+                                </button>
+                            </div>
                         </div>
                         <div class="tl-panel-body">
                             <div class="tl-task-desc" id="tlTaskDesc" data-annotation-title="任务说明" data-annotation-content="场景编辑——步骤 2 任务链配置——任务说明（富文本/PDF）"></div>
@@ -2918,26 +3535,82 @@
                     </div>
                 </div>
 
-                <!-- 右侧列 -->
+                <!-- 右侧列：AI 智能分析 + 基础关联信息面板 -->
                 <div class="tl-right">
-                    <div class="tl-side-panel">
+                    <div class="tl-side-panel" style="min-height: auto;">
                         <div class="tl-side-tabs">
-                            <div class="tl-side-tab active" data-side-tab="knowledge" onclick="switchSideTab('knowledge')">
-                                <i class="fas fa-lightbulb"></i> 关联知识点
+                            <div class="tl-side-tab active" data-side-tab="ai-analysis" onclick="switchAiAnalysisTab('ai-analysis')">
+                                <i class="fas fa-chart-pie"></i> AI 分析
+                            </div>
+                            <div class="tl-side-tab" data-side-tab="knowledge" onclick="switchSideTab('knowledge')">
+                                <i class="fas fa-lightbulb"></i> 知识点
                             </div>
                             <div class="tl-side-tab" data-side-tab="ability" onclick="switchSideTab('ability')">
-                                <i class="fas fa-star"></i> 关联能力点
+                                <i class="fas fa-star"></i> 能力点
                             </div>
                             <div class="tl-side-tab" data-side-tab="resource" onclick="switchSideTab('resource')">
-                                <i class="fas fa-folder-open"></i> 配套资源
+                                <i class="fas fa-folder-open"></i> 资源
                             </div>
                         </div>
-                        <div class="tl-side-body" id="tlSideBody"></div>
+                        <div class="tl-side-body" id="aiAnalysisBody">
+                            <!-- 内容由 JS 渲染 -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+
+
+    <!-- AI 学习进度条 -->
+    <div class="ai-learning-progress" id="aiLearningProgress">
+        <div class="ai-learning-progress-fill" id="aiLearningProgressFill"></div>
+    </div>
+
+    <!-- AI 步骤完成提示 -->
+    <div class="ai-step-complete-toast" id="aiStepCompleteToast">
+        <i class="fas fa-check-circle"></i>
+        <span id="aiStepCompleteText">步骤完成</span>
+    </div>
+    <!-- AI 学习报告弹窗 -->
+    <div class="ai-report-overlay" id="aiReportOverlay" onclick="if(event.target===this)closeAiReport()">
+        <div class="ai-report-box">
+            <div class="ai-report-header">
+                <div>
+                    <div class="ai-report-header-title"><i class="fas fa-robot"></i> AI 学习报告</div>
+                    <div class="ai-report-header-desc">基于你的答题表现，AI 生成的个性化学习分析</div>
+                </div>
+                <button class="ai-report-close" onclick="closeAiReport()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="ai-report-body" id="aiReportBody">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 对话式导学对话框 -->
+    <div class="ai-guide-dialog-large" id="aiGuideDialog" onclick="if(this.classList.contains('collapsed'))expandAiGuide()">
+        <div class="ai-guide-dialog-header">
+            <div class="ai-guide-dialog-header-avatar"><i class="fas fa-robot"></i></div>
+            <div class="ai-guide-dialog-header-title">AI 学习伴侣</div>
+            <div class="ai-guide-dialog-header-step" id="aiGuideStepBadge">步骤 1/5</div>
+            <button class="ai-guide-dialog-close" onclick="event.stopPropagation(); dismissAiGuide()"><i class="fas fa-chevron-down"></i></button>
+        </div>
+        <div class="ai-guide-messages" id="aiGuideMessages">
+            <!-- 消息动态渲染 -->
+        </div>
+        <div class="ai-guide-input-area">
+            <div class="ai-guide-input-row">
+                <input type="text" class="ai-guide-input" id="aiGuideInput" placeholder="向 AI 提问或表达你的需求..." onkeydown="if(event.key==='Enter')handleAiUserMessage()">
+                <button class="ai-guide-send-btn" id="aiGuideSendBtn" onclick="handleAiUserMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="ai-guide-next-row">
+                <button class="ai-guide-confirm-btn" id="aiGuideConfirmBtn" onclick="confirmStepAndNext()">
+                    <i class="fas fa-check-circle"></i> 我已了解本步骤，进入下一步
+                </button>
+            </div>
+        </div>
+    </div>
     </main>
 
     <!-- 学测模式选择弹窗 -->
@@ -2979,6 +3652,34 @@
             <div class="preview-modal-body" style="overflow-y:auto;">
                 <div id="taskDescFullscreenContent"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- AI 摘要全屏弹窗 -->
+    <div class="preview-modal-overlay" id="aiSummaryOverlay" onclick="if(event.target===this)closeAiSummaryFullscreen()">
+        <div class="preview-modal-box" style="width:900px;max-width:95vw;height:90vh;">
+            <div class="preview-modal-header">
+                <div class="preview-modal-title"><i class="fas fa-sparkles" style="color:#9333ea;margin-right:8px;"></i>AI 任务摘要与完整说明</div>
+                <button class="preview-modal-close" onclick="closeAiSummaryFullscreen()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-modal-body" style="overflow-y:auto;">
+                <div id="aiSummaryFullscreenContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 总结所有弹窗（带进度条） -->
+    <div class="preview-modal-overlay" id="summaryProgressOverlay" style="z-index:110;" onclick="if(event.target===this)closeSummaryModal()">
+        <div class="preview-modal-box" style="width:960px;max-width:95vw;text-align:center;padding:40px 30px;position:relative;">
+            <button onclick="closeSummaryModal()" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:none;background:#f5f5f5;color:#999;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.2s;" onmouseover="this.style.background='#e0e0e0';this.style.color='#666';" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';"><i class="fas fa-times"></i></button>
+            <div id="summaryProgressIcon" style="font-size:48px;color:#9333ea;margin-bottom:16px;"><i class="fas fa-brain"></i></div>
+            <div id="summaryProgressTitle" style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">AI 正在总结中...</div>
+            <div id="summaryProgressDesc" style="font-size:13px;color:var(--text-secondary);margin-bottom:24px;">正在分析关联内容并生成知识图谱摘要</div>
+            <div style="width:100%;height:8px;background:#f0e6ff;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+                <div id="summaryProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,#9333ea,#7c3aed);border-radius:4px;transition:width 0.3s ease;"></div>
+            </div>
+            <div id="summaryProgressPercent" style="font-size:13px;color:#9333ea;font-weight:600;">0%</div>
+            <div id="summaryResultArea" style="display:none;margin-top:24px;text-align:left;"></div>
         </div>
     </div>
 
@@ -4368,45 +5069,321 @@
             const activeTab = document.querySelector(`.tl-side-tab[data-side-tab="${tab}"]`);
             if (activeTab) activeTab.classList.add('active');
 
-            const body = document.getElementById('tlSideBody');
+            const body = document.getElementById('aiAnalysisBody');
             const task = currentLearningTask;
-            if (!task) { body.innerHTML = ''; return; }
+            if (!task) { if (body) body.innerHTML = ''; return; }
+
+            const summaryBtnHtml = (label, type) => `
+                <div style="margin-bottom:12px;">
+                    <button class="ai-action-btn" style="width:100%;justify-content:center;" onclick="showSummaryModal('${type}')">
+                        <i class="fas fa-wand-magic-sparkles"></i> ${label}
+                    </button>
+                </div>`;
 
             if (tab === 'knowledge') {
                 const kps = getTaskKnowledgePoints(task);
                 if (kps.length === 0) {
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联知识点</div>';
                 } else {
-                    body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + kps.map(kp =>
-                        `<span class="tl-side-tag knowledge" onclick="alert('参考标准的知识点展示弹窗样式即可')">${kp.name}</span>`
-                    ).join('') + '</div>';
+                    body.innerHTML = summaryBtnHtml('总结所有知识点', 'knowledge') +
+                        '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + kps.map(kp => {
+                        const safeName = (kp.name || '').replace(/'/g, '\\&#39;');
+                        return '<div class="ai-kp-item" id="ai-kp-wrap-' + kp.id + '" style="display:inline-flex;align-items:center;flex-wrap:wrap;">' +
+                            '<span class="tl-side-tag knowledge">' + kp.name +
+                            '<button class="ai-explain-btn-inline" onclick="event.stopPropagation();toggleAiExplain(\'knowledge\',\'' + kp.id + '\',\'' + safeName + '\',\'ai-kp-wrap-' + kp.id + '\')" title="AI 解读"><i class="fas fa-robot"></i></button>' +
+                            '</span></div>';
+                    }).join('') + '</div>';
                 }
             } else if (tab === 'ability') {
                 const aps = (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean);
                 if (aps.length === 0) {
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无关联能力点</div>';
                 } else {
-                    body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + aps.map(ap =>
-                        `<span class="tl-side-tag ability" onclick="alert('参考标准的能力点展示弹窗样式即可')">${ap.name}</span>`
-                    ).join('') + '</div>';
+                    body.innerHTML = summaryBtnHtml('总结所有能力点', 'ability') +
+                        '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + aps.map(ap => {
+                        const safeName = (ap.name || '').replace(/'/g, '\\&#39;');
+                        return '<div class="ai-kp-item" id="ai-ab-wrap-' + ap.id + '" style="display:inline-flex;align-items:center;flex-wrap:wrap;">' +
+                            '<span class="tl-side-tag ability">' + ap.name +
+                            '<button class="ai-explain-btn-inline" onclick="event.stopPropagation();toggleAiExplain(\'ability\',\'' + ap.id + '\',\'' + safeName + '\',\'ai-ab-wrap-' + ap.id + '\')" title="AI 解读"><i class="fas fa-robot"></i></button>' +
+                            '</span></div>';
+                    }).join('') + '</div>';
                 }
             } else if (tab === 'resource') {
                 const resources = getTaskResources(task);
                 if (resources.length === 0) {
                     body.innerHTML = '<div class="tl-side-empty"><i class="fas fa-inbox"></i>暂无配套资源</div>';
                 } else {
-                    body.innerHTML = resources.map(r => `
-                        <div class="tl-side-resource-item" onclick="alert('参考标准的资源展示弹窗样式即可')">
-                            <div class="tl-side-resource-icon ${getResourceIconClass(r.type)}" style="background:${r.type==='video'?'#fff2f0':r.type==='document'?'#e6f4ff':'#f5f5f5'};color:${r.type==='video'?'#ff4d4f':r.type==='document'?'#1677ff':'#666'}">
-                                <i class="fas ${getResourceIcon(r.type)}"></i>
-                            </div>
-                            <div style="flex:1;min-width:0;">
-                                <div class="tl-side-resource-name">${r.name}</div>
-                                <div class="tl-side-resource-meta">${r.size || '在线资源'}</div>
-                            </div>
-                        </div>
-                    `).join('');
+                    body.innerHTML = summaryBtnHtml('总结所有资源', 'resource') +
+                        resources.map(r => {
+                        const safeName = (r.name || '').replace(/'/g, '\\&#39;');
+                        return '<div class="tl-side-resource-item" id="ai-res-wrap-' + r.id + '" style="flex-wrap:wrap;">' +
+                            '<div style="display:flex;align-items:center;gap:10px;width:100%;">' +
+                            '<div class="tl-side-resource-icon ' + getResourceIconClass(r.type) + '" style="background:' + (r.type==='video'?'#fff2f0':r.type==='document'?'#e6f4ff':'#f5f5f5') + ';color:' + (r.type==='video'?'#ff4d4f':r.type==='document'?'#1677ff':'#666') + '">' +
+                            '<i class="fas ' + getResourceIcon(r.type) + '"></i></div>' +
+                            '<div style="flex:1;min-width:0;">' +
+                            '<div class="tl-side-resource-name">' + r.name + '</div>' +
+                            '<div class="tl-side-resource-meta">' + (r.size || '在线资源') + '</div></div>' +
+                            '<button class="ai-explain-btn-inline" onclick="event.stopPropagation();toggleAiExplain(\'resource\',\'' + r.id + '\',\'' + safeName + '\',\'ai-res-wrap-' + r.id + '\')" title="AI 推荐理由"><i class="fas fa-robot"></i></button>' +
+                            '</div></div>';
+                    }).join('');
                 }
+            }
+        }
+
+        // 总结所有弹窗（10秒进度条）
+        function closeSummaryModal() {
+            document.getElementById('summaryProgressOverlay').classList.remove('active');
+        }
+
+        function showSummaryModal(type) {
+            const overlay = document.getElementById('summaryProgressOverlay');
+            const bar = document.getElementById('summaryProgressBar');
+            const percent = document.getElementById('summaryProgressPercent');
+            const title = document.getElementById('summaryProgressTitle');
+            const desc = document.getElementById('summaryProgressDesc');
+            const icon = document.getElementById('summaryProgressIcon');
+            const resultArea = document.getElementById('summaryResultArea');
+
+            const labels = { knowledge: '知识点', ability: '能力点', resource: '资源' };
+            const label = labels[type] || type;
+
+            title.textContent = 'AI 正在总结所有' + label + '...';
+            desc.textContent = '正在分析关联内容并生成知识图谱摘要，请稍候';
+            icon.innerHTML = '<i class="fas fa-brain"></i>';
+            bar.style.width = '0%';
+            percent.textContent = '0%';
+            resultArea.style.display = 'none';
+            resultArea.innerHTML = '';
+            overlay.classList.add('active');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                bar.style.width = progress + '%';
+                percent.textContent = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showSummaryResult(type, label);
+                    }, 300);
+                }
+            }, 1000);
+        }
+
+        function showSummaryResult(type, label) {
+            const title = document.getElementById('summaryProgressTitle');
+            const desc = document.getElementById('summaryProgressDesc');
+            const icon = document.getElementById('summaryProgressIcon');
+            const resultArea = document.getElementById('summaryResultArea');
+            const task = currentLearningTask;
+
+            title.textContent = label + '总结完成';
+            desc.textContent = '以下是由 AI 生成的' + label + '关联图谱摘要';
+            icon.innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e;"></i>';
+
+            const cardBg = type === 'knowledge' ? '#faf5ff' : type === 'ability' ? '#f0fdf4' : '#eff6ff';
+            const cardBorder = type === 'knowledge' ? '#e9d5ff' : type === 'ability' ? '#bbf7d0' : '#bfdbfe';
+            const titleColor = type === 'knowledge' ? '#7c3aed' : type === 'ability' ? '#15803d' : '#1d4ed8';
+            const titleIcon = type === 'knowledge' ? 'fa-sitemap' : type === 'ability' ? 'fa-star' : 'fa-folder-open';
+            const advice = type === 'knowledge'
+                ? '建议按照节点关联度依次学习，核心知识点（紫色大节点）需要深入理解并能在实践中灵活运用。'
+                : type === 'ability'
+                ? '建议针对得分较低的能力项，通过配套资源进行针对性练习，并在任务实践中重点突破。'
+                : '建议按照推荐顺序依次阅读，视频资源适合快速入门，文档资源适合深度学习，代码示例建议动手实践。';
+
+            const html = '<div style="background:' + cardBg + ';border:1px solid ' + cardBorder + ';border-radius:8px;padding:12px;text-align:left;">' +
+                '<div style="font-weight:600;color:' + titleColor + ';margin-bottom:8px;font-size:14px;"><i class="fas ' + titleIcon + '" style="margin-right:6px;"></i>' + label + '图谱摘要</div>' +
+                '<div id="miniKgContainer" style="width:100%;height:420px;background:white;border-radius:6px;border:1px solid ' + cardBorder + ';position:relative;overflow:hidden;">' +
+                '<svg id="miniKgSvg"></svg>' +
+                '<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;">' +
+                '<button onclick="miniKgZoomIn()" style="width:26px;height:26px;border-radius:4px;border:1px solid ' + cardBorder + ';background:white;color:' + titleColor + ';cursor:pointer;font-size:11px;"><i class="fas fa-plus"></i></button>' +
+                '<button onclick="miniKgZoomOut()" style="width:26px;height:26px;border-radius:4px;border:1px solid ' + cardBorder + ';background:white;color:' + titleColor + ';cursor:pointer;font-size:11px;"><i class="fas fa-minus"></i></button>' +
+                '<button onclick="miniKgReset()" style="width:26px;height:26px;border-radius:4px;border:1px solid ' + cardBorder + ';background:white;color:' + titleColor + ';cursor:pointer;font-size:11px;"><i class="fas fa-compress-arrows-alt"></i></button>' +
+                '</div>' +
+                '<div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:10px;color:#999;background:rgba(255,255,255,0.85);padding:2px 8px;border-radius:8px;pointer-events:none;">拖拽节点 · 滚轮缩放 · 点击查看详情</div>' +
+                '</div>' +
+                '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed ' + cardBorder + ';font-size:12px;color:var(--text-secondary);line-height:1.6;">' +
+                '<strong>AI 学习建议：</strong>' + advice +
+                '</div></div>';
+
+            resultArea.innerHTML = html;
+            resultArea.style.display = 'block';
+            setTimeout(() => renderMiniGraph(type), 100);
+        }
+
+        // 弹窗内迷你图谱（支持 knowledge / ability / resource 三种类型）
+        let miniKgSim, miniKgSvg, miniKgZoom, miniKgContainer;
+        function renderMiniGraph(type) {
+            const container = document.getElementById('miniKgContainer');
+            const svgEl = document.getElementById('miniKgSvg');
+            if (!container || !svgEl) return;
+            const W = container.clientWidth || 900;
+            const H = container.clientHeight || 420;
+            svgEl.setAttribute('width', W);
+            svgEl.setAttribute('height', H);
+
+            const svg = d3.select('#miniKgSvg');
+            svg.selectAll('*').remove();
+            miniKgSvg = svg;
+
+            miniKgZoom = d3.zoom().scaleExtent([0.3, 3]).on('zoom', ev => {
+                if (miniKgContainer) miniKgContainer.attr('transform', ev.transform);
+            });
+            svg.call(miniKgZoom);
+            miniKgContainer = svg.append('g');
+
+            const task = currentLearningTask;
+            const nodes = [];
+            const links = [];
+
+            const palette = {
+                knowledge: { core: '#722ed1', ability: '#52c41a', leaf: '#faad14' },
+                ability:   { core: '#722ed1', ability: '#22c55e', leaf: '#f97316' },
+                resource:  { core: '#722ed1', ability: '#3b82f6', leaf: '#ec4899' }
+            };
+            const p = palette[type] || palette.knowledge;
+
+            if (type === 'knowledge') {
+                const kps = task ? getTaskKnowledgePoints(task) : [];
+                const aps = task ? (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean) : [];
+
+                nodes.push({ id: 'core', name: task ? task.name : '任务', type: 'core' });
+                aps.slice(0, 8).forEach((ap, i) => {
+                    nodes.push({ id: 'ab' + i, name: ap.name, type: 'ability' });
+                    links.push({ source: 'core', target: 'ab' + i });
+                });
+                kps.slice(0, 12).forEach((kp, i) => {
+                    nodes.push({ id: 'kp' + i, name: kp.name, type: 'leaf' });
+                    if (aps.length > 0) {
+                        links.push({ source: 'ab' + (i % Math.min(aps.length, 8)), target: 'kp' + i });
+                    } else {
+                        links.push({ source: 'core', target: 'kp' + i });
+                    }
+                });
+            } else if (type === 'ability') {
+                const aps = task ? (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean) : [];
+                const kps = task ? getTaskKnowledgePoints(task) : [];
+
+                nodes.push({ id: 'core', name: task ? task.name : '任务', type: 'core' });
+                aps.slice(0, 10).forEach((ap, i) => {
+                    nodes.push({ id: 'ab' + i, name: ap.name, type: 'ability' });
+                    links.push({ source: 'core', target: 'ab' + i });
+                });
+                aps.slice(0, 10).forEach((ap, i) => {
+                    if (i > 0 && i % 2 === 0 && i < aps.length - 1) {
+                        links.push({ source: 'ab' + i, target: 'ab' + (i + 1), weak: true });
+                    }
+                });
+                kps.slice(0, 8).forEach((kp, i) => {
+                    nodes.push({ id: 'kp' + i, name: kp.name, type: 'leaf' });
+                    links.push({ source: 'ab' + (i % Math.min(aps.length, 10)), target: 'kp' + i });
+                });
+            } else if (type === 'resource') {
+                const resources = task ? getTaskResources(task) : [];
+                const kps = task ? getTaskKnowledgePoints(task) : [];
+                const typeColors = { video: '#ff4d4f', document: '#1677ff', link: '#52c41a', code: '#722ed1' };
+
+                nodes.push({ id: 'core', name: task ? task.name : '任务', type: 'core' });
+                resources.slice(0, 10).forEach((r, i) => {
+                    nodes.push({ id: 'res' + i, name: r.name, type: 'ability', color: typeColors[r.type] || '#3b82f6' });
+                    links.push({ source: 'core', target: 'res' + i });
+                    if (i > 0) {
+                        links.push({ source: 'res' + (i - 1), target: 'res' + i, weak: true });
+                    }
+                });
+                kps.slice(0, 6).forEach((kp, i) => {
+                    nodes.push({ id: 'kp' + i, name: kp.name, type: 'leaf' });
+                    links.push({ source: 'res' + (i % Math.min(resources.length, 10)), target: 'kp' + i });
+                });
+            }
+
+            const typeR = { core: 30, ability: 16, leaf: 9 };
+            const typeFont = { core: 14, ability: 11, leaf: 10 };
+
+            const simLinks = links.map(l => Object.create(l));
+            const simNodes = nodes.map(n => Object.create(n));
+
+            const linkG = miniKgContainer.append('g')
+                .selectAll('path')
+                .data(simLinks)
+                .join('path')
+                .attr('fill', 'none')
+                .attr('stroke', d => d.weak ? '#e0e0e0' : '#c8d8f0')
+                .attr('stroke-width', d => d.weak ? 1 : (d.source.type === 'core' ? 2 : 1.5))
+                .attr('stroke-dasharray', d => d.weak ? '4,3' : 'none')
+                .attr('opacity', d => d.weak ? 0.4 : 0.6);
+
+            const nodeG = miniKgContainer.append('g')
+                .selectAll('g')
+                .data(simNodes)
+                .join('g')
+                .style('cursor', 'pointer')
+                .call(d3.drag()
+                    .on('start', (ev, d) => { if (!ev.active) miniKgSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                    .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+                    .on('end', (ev, d) => { if (!ev.active) miniKgSim.alphaTarget(0); d.fx = null; d.fy = null; })
+                );
+
+            nodeG.append('circle')
+                .attr('r', d => typeR[d.type])
+                .attr('fill', d => d.color || p[d.type])
+                .attr('stroke', '#fff')
+                .attr('stroke-width', d => d.type === 'core' ? 3 : 1.5);
+
+            nodeG.append('text')
+                .attr('dy', d => typeR[d.type] + 13)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', d => typeFont[d.type])
+                .attr('fill', '#333')
+                .attr('font-weight', d => d.type === 'core' ? '600' : '400')
+                .attr('pointer-events', 'none')
+                .text(d => d.name.length > 8 ? d.name.slice(0, 7) + '…' : d.name);
+
+            nodeG.on('click', (ev, d) => {
+                if (type === 'knowledge' && d.type === 'leaf') {
+                    const kps = task ? getTaskKnowledgePoints(task) : [];
+                    const kp = kps.find(k => k.name === d.name);
+                    if (kp) showKgDetailModal({ name: kp.name, type: 'knowledge', id: kp.id });
+                }
+            });
+
+            const linkDist = type === 'ability' ? 140 : (type === 'resource' ? 130 : 120);
+            const leafDist = type === 'ability' ? 70 : (type === 'resource' ? 65 : 55);
+            const chargeCore = type === 'ability' ? -1200 : (type === 'resource' ? -1000 : -800);
+            const chargeAbility = type === 'ability' ? -350 : (type === 'resource' ? -300 : -250);
+
+            miniKgSim = d3.forceSimulation(simNodes)
+                .force('link', d3.forceLink(simLinks).id(d => d.id).distance(d => d.source.type === 'core' ? linkDist : leafDist))
+                .force('charge', d3.forceManyBody().strength(d => d.type === 'core' ? chargeCore : d.type === 'ability' ? chargeAbility : -70))
+                .force('center', d3.forceCenter(W / 2, H / 2))
+                .on('tick', () => {
+                    linkG.attr('d', d => {
+                        const mx = (d.source.x + d.target.x) / 2, my = (d.source.y + d.target.y) / 2;
+                        const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+                        return `M${d.source.x},${d.source.y} Q${mx - dy * 0.1},${my + dx * 0.1} ${d.target.x},${d.target.y}`;
+                    });
+                    nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+                });
+
+            setTimeout(() => {
+                if (miniKgSvg && miniKgZoom) {
+                    miniKgSvg.transition().duration(400).call(miniKgZoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.8).translate(-W / 2, -H / 2));
+                }
+            }, 300);
+        }
+
+        function miniKgZoomIn() {
+            if (miniKgSvg && miniKgZoom) miniKgSvg.transition().call(miniKgZoom.scaleBy, 1.3);
+        }
+        function miniKgZoomOut() {
+            if (miniKgSvg && miniKgZoom) miniKgSvg.transition().call(miniKgZoom.scaleBy, 0.75);
+        }
+        function miniKgReset() {
+            const container = document.getElementById('miniKgContainer');
+            const W = container ? container.clientWidth : 900;
+            const H = container ? container.clientHeight : 420;
+            if (miniKgSvg && miniKgZoom) {
+                miniKgSvg.transition().duration(400).call(miniKgZoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.8).translate(-W / 2, -H / 2));
             }
         }
 
@@ -4978,6 +5955,8 @@
             quizSubmitted[taskId] = true;
             renderAssessmentPanel(task);
             renderSubmissionBar(task);
+            // AI-first 模式：提交后自动弹出 AI 报告
+            setTimeout(() => showAiLearningReport(taskId), 600);
         }
 
         // 渲染底部提交栏
@@ -5420,6 +6399,756 @@
             renderAbilities();
             renderKnowledgeTree();
             renderWeightTables();
+        }
+
+
+        // ==================== AI-first 智能学习模式（对话式导学） ====================
+        let aiGuideShown = false;
+        let aiCurrentStep = 0;
+        let aiLearningProgress = 0;
+        let aiChatHistory = []; // {role:'ai'|'user', content, suggestedQs?}
+        let aiStepConfirmed = [false, false, false, false, false];
+        let aiIsTyping = false;
+
+        const aiGuideSteps = [
+            {
+                title: '欢迎',
+                text: '你好！我是你的 AI 学习伴侣。在这个智能学习模式中，我会全程陪伴你完成本任务的学习与测评。\n\n右侧的「AI 分析」面板会实时展示你的知识点掌握度和能力预估，你可以随时查看，不用刻意等待我的引导。\n\n我们的导学主要分为两个环节：**任务说明查看** 和 **任务测评**。你可以随时向我提问，我会根据你的需求提供帮助。当我们充分交流、你完全理解当前步骤后，点击底部的「我已了解本步骤，进入下一步」即可继续。\n\n准备好了吗？让我们开始吧！',
+                suggestedQs: ['这个任务主要学什么？', '我需要准备什么？', '大概要花多长时间？'],
+                onEnter: null
+            },
+            {
+                title: '任务说明',
+                text: '第一步：请仔细阅读左侧的「任务说明」，了解核心学习目标、涉及的知识点和能力点，以及最终的交付标准。\n\n右侧的「AI 分析」面板会同步展示你的知识点掌握情况，「学习路径」Tab 也有推荐的学习路线，你可以随时查看参考。\n\n如果你觉得任务说明太长，可以在任务说明面板中点击「AI 摘要」按钮，我会为你提炼关键要点。\n\n有任何不理解的地方，随时在这里问我！',
+                suggestedQs: ['能帮我总结一下任务要点吗？', '这个任务最难的部分是什么？', '我需要掌握哪些前置知识？'],
+                onEnter: 'scrollToLearningPanel'
+            },
+            {
+                title: '任务测评',
+                text: '第二步：实践出真知，现在进入测评环节！\n\n请下滑到「任务测评」区域，认真完成每一道题目。做题时可以先独立思考，如果遇到卡壳的地方，每道题旁边都有「AI 提示」按钮，我会给你思路引导（但不会直接告诉答案哦）。\n\n答完所有题目后，点击「确认答案」提交。我会立即分析你的答题情况，生成一份包含综合等级、能力分析、错题解析和改进建议的详细学习报告。\n\n关于答题策略或题目类型有任何问题，随时问我！',
+                suggestedQs: ['测评有多少道题？', '答错了可以重新答吗？', '每道题都有 AI 提示吗？'],
+                onEnter: 'scrollToAssessment'
+            }
+        ];
+
+        function showAiGuide() {
+            const dialog = document.getElementById('aiGuideDialog');
+            dialog.classList.add('show');
+        }
+        function dismissAiGuide() {
+            const dialog = document.getElementById('aiGuideDialog');
+            dialog.classList.add('collapsed');
+        }
+        function expandAiGuide() {
+            const dialog = document.getElementById('aiGuideDialog');
+            dialog.classList.remove('collapsed');
+        }
+
+        function addAiMessage(text, suggestedQs) {
+            const container = document.getElementById('aiGuideMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'ai-guide-msg-ai';
+            let qsHtml = '';
+            if (suggestedQs && suggestedQs.length > 0) {
+                qsHtml = `<div class="ai-guide-suggested-q">` +
+                    suggestedQs.map(q => `<button class="ai-guide-suggested-q-btn" onclick="sendAiQuickQuestion('${q.replace(/'/g, "\'")}')">${q}</button>`).join('') +
+                    `</div>`;
+            }
+            msgDiv.innerHTML = `
+                <div class="ai-guide-msg-ai-avatar"><i class="fas fa-robot"></i></div>
+                <div class="ai-guide-msg-ai-bubble">${text.replace(/\n/g, '<br>')}${qsHtml}</div>
+            `;
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addUserMessage(text) {
+            const container = document.getElementById('aiGuideMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'ai-guide-msg-user';
+            msgDiv.innerHTML = `
+                <div class="ai-guide-msg-user-bubble">${text}</div>
+                <div class="ai-guide-msg-user-avatar"><i class="fas fa-user"></i></div>
+            `;
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showAiTyping() {
+            const container = document.getElementById('aiGuideMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'aiTypingIndicator';
+            typingDiv.className = 'ai-guide-typing';
+            typingDiv.innerHTML = `<span></span><span></span><span></span> AI 正在思考...`;
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        function hideAiTyping() {
+            const el = document.getElementById('aiTypingIndicator');
+            if (el) el.remove();
+        }
+
+        function renderStepToChat(stepIdx) {
+            const step = aiGuideSteps[stepIdx];
+            if (!step) return;
+            document.getElementById('aiGuideStepBadge').textContent = '步骤 ' + (stepIdx + 1) + '/' + aiGuideSteps.length + ' · ' + step.title;
+            addAiMessage(step.text, step.suggestedQs);
+            executeStepAction(step.onEnter);
+            updateAiProgress();
+            // 重置确认按钮
+            const btn = document.getElementById('aiGuideConfirmBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> 我已了解本步骤，进入下一步';
+            btn.classList.remove('confirmed');
+            // 步骤 1（任务说明）自动展示 AI 任务速览
+            if (stepIdx === 1 && currentLearningTask) {
+                setTimeout(() => {
+                    const task = currentLearningTask;
+                    const knowledges = task.knowledgePoints?.map(id => getKnowledgePointById(id)?.name).filter(Boolean) || [];
+                    const abilities = task.abilityPoints?.map(id => getAbilityPointById(id)?.name).filter(Boolean) || [];
+                    const deliverables = task.deliverables?.map(d => d.name) || [];
+                    const evalMethods = task.evaluationMethods || [];
+                    const methodLabels = { paper: '试卷测评', question_bank: '题库抽测', review: '教师评审', random_draw: '随机抽查', outcome: '成果评审', homework: '作业提交', quiz: '在线测验' };
+                    const methodNames = evalMethods.map(m => methodLabels[m] || m).join('、') || '综合测评';
+                    const overviewText = '根据任务分析，我为你整理了以下速览：\n\n' +
+                        '🎯 **核心目标**：' + task.description + '\n' +
+                        '📦 **关键交付物**：' + (deliverables.slice(0, 3).join('、') || '详见任务说明') + '\n' +
+                        '📋 **测评方式**：' + methodNames + '\n' +
+                        '⏱️ **建议用时**：' + task.estimatedHours + '课时 | 难度：' + '★'.repeat(task.difficulty || 1) + '☆'.repeat(5 - (task.difficulty || 1)) + '\n\n' +
+                        '💡 **重点知识点**：' + knowledges.slice(0, 4).join('、') + '\n' +
+                        '⭐ **核心能力**：' + abilities.slice(0, 4).join('、') + '\n\n' +
+                        '你可以点击右侧「关联知识点」标签查看每个知识点的 AI 解读，也可以随时向我提问！';
+                    addAiMessage(overviewText, ['查看重点知识点解读', '这个任务最难的部分是什么？']);
+                }, 1200);
+            }
+            // 步骤 2（任务测评）前增加阶段二过渡引导
+            if (stepIdx === 2 && currentLearningTask) {
+                setTimeout(() => {
+                    const task = currentLearningTask;
+                    const kps = getTaskKnowledgePoints(task);
+                    const coreKps = kps.filter(kp => {
+                        const exp = getAiExplain('knowledge', kp.name);
+                        return exp && exp.level === '核心必备';
+                    });
+                    const kpNames = coreKps.slice(0, 3).map(k => k.name).join('、') || kps.slice(0, 3).map(k => k.name).join('、');
+                    const transitionText = '在开始进入测评之前，建议你快速回顾一下本任务的核心知识点：\n\n' +
+                        '🔑 **核心必备**：' + kpNames + '\n\n' +
+                        '你可以点击右侧「知识点」标签，查看每个知识点的 AI 解读，了解它们在任务中的具体应用场景。' +
+                        (coreKps.length > 0 ? '\n\n我已为你高亮了重点知识点，快去查看吧！' : '');
+                    addAiMessage(transitionText, ['查看知识点 AI 解读', '直接开始测评']);
+                    // 自动切换到知识点标签并高亮核心知识点
+                    switchSideTab('knowledge');
+                    setTimeout(() => {
+                        coreKps.forEach(kp => {
+                            const wrap = document.getElementById('ai-kp-wrap-' + kp.id);
+                            if (wrap) {
+                                wrap.querySelector('.tl-side-tag')?.classList.add('ai-guide-highlight');
+                                setTimeout(() => wrap.querySelector('.tl-side-tag')?.classList.remove('ai-guide-highlight'), 5000);
+                            }
+                        });
+                    }, 300);
+                }, 1200);
+            }
+        }
+
+        function confirmStepAndNext() {
+            if (aiCurrentStep >= aiGuideSteps.length - 1) {
+                // 最后一步确认后直接结束
+                finishAiGuide();
+                return;
+            }
+            aiStepConfirmed[aiCurrentStep] = true;
+            aiCurrentStep++;
+            renderStepToChat(aiCurrentStep);
+        }
+
+        function handleAiUserMessage() {
+            const dialog = document.getElementById('aiGuideDialog');
+            if (dialog.classList.contains('collapsed')) expandAiGuide();
+            const input = document.getElementById('aiGuideInput');
+            const text = input.value.trim();
+            if (!text || aiIsTyping) return;
+            input.value = '';
+            addUserMessage(text);
+            aiIsTyping = true;
+            document.getElementById('aiGuideSendBtn').disabled = true;
+            showAiTyping();
+
+            // 模拟 AI 思考延迟
+            setTimeout(() => {
+                hideAiTyping();
+                const reply = generateAiReply(text, aiCurrentStep);
+                addAiMessage(reply.text, reply.suggestedQs);
+                aiIsTyping = false;
+                document.getElementById('aiGuideSendBtn').disabled = false;
+            }, 800 + Math.random() * 600);
+        }
+
+        function sendAiQuickQuestion(text) {
+            document.getElementById('aiGuideInput').value = text;
+            handleAiUserMessage();
+        }
+
+        function generateAiReply(userText, stepIdx) {
+            const lower = userText.toLowerCase();
+            const task = currentLearningTask;
+            const kps = task ? getTaskKnowledgePoints(task) : [];
+            const abilities = task ? (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean) : [];
+
+            // 根据用户输入关键词匹配回复
+            if (lower.includes('时间') || lower.includes('多久') || lower.includes('多长') || lower.includes('课时')) {
+                return {
+                    text: `本任务预估需要 ${task?.estimatedHours || 8} 课时完成。建议分 ${Math.ceil((task?.estimatedHours || 8) / 2)} 次进行，每次专注学习 1-2 小时效果最佳。\n\n如果你的基础较好，可以适当加快进度；如果某些知识点不熟悉，建议多预留一些时间进行巩固。`,
+                    suggestedQs: ['时间不够怎么办？', '可以分几天完成吗？']
+                };
+            }
+            if (lower.includes('难度') || lower.includes('难吗') || lower.includes('简单')) {
+                const diff = task?.difficulty || 3;
+                const diffText = diff >= 4 ? '较高' : diff >= 3 ? '中等' : '适中';
+                return {
+                    text: `本任务难度等级为 ${'★'.repeat(diff)}${'☆'.repeat(5 - diff)}（${diffText}）。\n\n主要挑战在于${abilities[0]?.name || '核心技能'}的灵活运用。建议先充分阅读配套资源，遇到困难随时向我提问。`,
+                    suggestedQs: ['有哪些难点？', '新手能完成吗？']
+                };
+            }
+            if (lower.includes('总结') || lower.includes('要点') || lower.includes('概括') || lower.includes('摘要')) {
+                return {
+                    text: `好的，我来为你总结本任务的核心要点：\n\n1. **核心目标**：${task?.description || '完成指定学习任务'}\n2. **关键知识点**：${kps.slice(0, 3).map(k => k.name).join('、') || '详见任务说明'}\n3. **重点能力**：${abilities.slice(0, 2).map(a => a.name).join('、') || '综合应用'}\n4. **交付要求**：${task?.deliverables?.map(d => d.name).slice(0, 2).join('、') || '按任务要求提交'}\n\n你可以点击任务说明面板上的「AI 摘要」按钮，获取更详细的结构化摘要。`,
+                    suggestedQs: ['能更详细一点吗？', '有没有学习技巧？']
+                };
+            }
+            if (lower.includes('资源') || lower.includes('材料') || lower.includes('资料') || lower.includes('推荐')) {
+                const resources = task ? getTaskResources(task) : [];
+                return {
+                    text: `根据本任务内容，我推荐你优先学习以下资源：\n\n${resources.slice(0, 3).map((r, i) => `${i + 1}. **${r.name}** — ${r.description?.substring(0, 40) || '配套资源'}...`).join('\n')}\n\n你可以切换到右侧「资源」Tab 查看完整列表，或直接点击资源名称预览。`,
+                    suggestedQs: ['还有别的资源吗？', '哪个资源最重要？']
+                };
+            }
+            if (lower.includes('薄弱') || lower.includes('弱点') || lower.includes('不足') || lower.includes('提升')) {
+                return {
+                    text: `根据 AI 分析，你可能需要重点关注的方面：\n\n• **${kps[0]?.name || '核心概念'}**：这是本任务的基础，务必扎实掌握\n• **${abilities[0]?.name || '关键能力'}**：实践应用中容易出现问题的地方\n\n建议策略：先通过「AI 分析」面板查看详细掌握度，然后针对性阅读相关资源，最后通过测评检验效果。`,
+                    suggestedQs: ['怎么补强？', '有练习题吗？']
+                };
+            }
+            if (lower.includes('提示') || lower.includes('帮助') || lower.includes('怎么做') || lower.includes('思路')) {
+                return {
+                    text: `没问题！我会尽力帮助你。\n\n如果是关于**任务内容**的问题，建议先阅读左侧的任务说明，或点击「AI 摘要」快速获取要点。\n\n如果是关于**测评答题**的问题，每道题旁边都有「AI 提示」按钮，可以提供解题思路。\n\n如果是关于**学习方法**的问题，我可以根据你的具体情况给出个性化建议。\n\n请具体描述你遇到的困难，我会更有针对性地帮助你！`,
+                    suggestedQs: ['任务说明看不懂', '不知道怎么答题', '时间不够用']
+                };
+            }
+            // 通用回复
+            const genericReplies = [
+                { text: `收到！关于这个问题，我建议你从以下几个方面思考：\n\n首先，回顾任务说明中的核心目标；其次，结合右侧「AI 分析」面板中的能力评估；最后，如果有具体卡点，随时继续向我提问。\n\n还有什么想了解的吗？`, suggestedQs: ['能举个例子吗？', '还有别的建议吗？'] },
+                { text: `好的，我理解你的需求。在这个学习阶段，最重要的是保持耐心和系统性。\n\n建议你按照当前的步骤稳步推进，遇到不理解的概念及时提问。我可以帮你解释专业术语、梳理逻辑关系、推荐针对性资源。\n\n随时告诉我你的困惑！`, suggestedQs: ['术语不懂', '逻辑理不清', '资源太多看不过来'] },
+                { text: `没问题！学习就是一个不断发现和解决问题的过程。\n\n你可以尝试：1）先通读一遍任务说明建立整体认知；2）针对不懂的部分标记出来；3）通过测评发现自己的薄弱点；4）根据 AI 报告针对性复习。\n\n需要我详细展开哪一步吗？`, suggestedQs: ['怎么建立整体认知？', '怎么标记不懂的地方？', '报告怎么看？'] }
+            ];
+            return genericReplies[Math.floor(Math.random() * genericReplies.length)];
+        }
+
+        function startAiGuidedLearning() {
+            aiCurrentStep = 0;
+            aiStepConfirmed = aiGuideSteps.map(() => false);
+            // 清空消息区
+            document.getElementById('aiGuideMessages').innerHTML = '';
+            renderStepToChat(0);
+            showAiGuide();
+        }
+
+        function aiSummaryGuide() {
+            if (currentTaskId) handleAiSummary(currentTaskId);
+            const panel = document.getElementById('learningPanel');
+            if (panel) {
+                panel.classList.add('ai-guide-highlight');
+                panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => panel.classList.remove('ai-guide-highlight'), 6000);
+            }
+            addAiMessage('AI 摘要已生成！请查看左侧任务说明区域的高亮摘要内容。阅读完毕后，如果你已经充分理解了本步骤，可以点击底部的「我已了解本步骤，进入下一步」继续。', ['摘要内容还有不懂的', '能再详细解释一下吗？']);
+        }
+
+        function finishAiGuide() {
+            aiStepConfirmed[aiCurrentStep] = true;
+            addAiMessage('太棒了！AI 导学已全部完成。接下来你可以按照提示继续学习和测评。祝你学习顺利，有任何问题随时找我！', ['我想重新看某一步', '开始测评']);
+            setTimeout(() => {
+                dismissAiGuide();
+                aiCurrentStep = 0;
+                showStepToast('AI 导学完成，祝你学习顺利！');
+                updateAiProgress(100);
+            }, 1500);
+        }
+
+        function showStepToast(msg) {
+            const toast = document.getElementById('aiStepCompleteToast');
+            document.getElementById('aiStepCompleteText').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function updateAiProgress(pct) {
+            if (pct !== undefined) {
+                aiLearningProgress = pct;
+            } else {
+                aiLearningProgress = Math.min(100, Math.round((aiCurrentStep / (aiGuideSteps.length - 1)) * 100));
+            }
+            const fill = document.getElementById('aiLearningProgressFill');
+            if (fill) fill.style.width = aiLearningProgress + '%';
+        }
+
+        function executeStepAction(actionName) {
+            if (!actionName) return;
+            setTimeout(() => {
+                if (actionName === 'scrollToLearningPanel') {
+                    const panel = document.getElementById('learningPanel');
+                    if (panel) {
+                        panel.classList.add('ai-guide-highlight');
+                        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => panel.classList.remove('ai-guide-highlight'), 5000);
+                    }
+                } else if (actionName === 'highlightAnalysisPanel') {
+                    switchAiAnalysisTab('ai-analysis');
+                    const panel = document.querySelector('.tl-right .tl-side-panel');
+                    if (panel) {
+                        panel.classList.add('ai-guide-highlight');
+                        setTimeout(() => panel.classList.remove('ai-guide-highlight'), 5000);
+                    }
+                } else if (actionName === 'scrollToAssessment') {
+                    const panel = document.getElementById('assessmentPanel');
+                    if (panel) {
+                        panel.style.display = 'block';
+                        panel.classList.add('ai-guide-highlight');
+                        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => panel.classList.remove('ai-guide-highlight'), 5000);
+                    }
+                }
+            }, 400);
+        }
+
+        function switchToAiPathTab() {
+            switchAiAnalysisTab('ai-path');
+        }
+
+        function expandAssessment() {
+            const task = currentLearningTask;
+            if (task) {
+                const methods = task.evaluationMethods || [];
+                methods.forEach(m => {
+                    if (m === 'paper' || m === 'question_bank' || m === 'quiz') {
+                        quizExpanded[`${task.id}-${m}`] = true;
+                    }
+                });
+                renderAssessmentPanel(task);
+                const panel = document.getElementById('assessmentPanel');
+                if (panel) {
+                    panel.style.display = 'block';
+                    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        // 在 showTaskLearningView 中延迟显示 AI 引导
+        const originalShowTaskLearningView = showTaskLearningView;
+        showTaskLearningView = function(taskId, mode) {
+            originalShowTaskLearningView(taskId, mode);
+            aiLearningProgress = 0;
+            updateAiProgress(0);
+            if (!aiGuideShown) {
+                aiGuideShown = true;
+                setTimeout(() => {
+                    startAiGuidedLearning();
+                }, 1200);
+            }
+            setTimeout(() => renderAiAnalysisPanel(), 300);
+        };
+
+        function switchAiAnalysisTab(tab) {
+            document.querySelectorAll('.tl-side-tab').forEach(t => t.classList.remove('active'));
+            const activeTab = document.querySelector(`.tl-side-tab[data-side-tab="${tab}"]`);
+            if (activeTab) activeTab.classList.add('active');
+            if (tab === 'ai-analysis') renderAiAnalysisPanel();
+        }
+        // 使 switchSideTab 也能被外部调用渲染基础内容
+        window.switchSideTab = switchSideTab;
+
+        function renderAiAnalysisPanel() {
+            const body = document.getElementById('aiAnalysisBody');
+            if (!body) return;
+            const task = currentLearningTask;
+            const kps = task ? getTaskKnowledgePoints(task) : [];
+            const abilities = task ? (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean) : [];
+
+            body.innerHTML = `
+                <div class="ai-analysis-card">
+                    <div class="ai-analysis-card-header"><i class="fas fa-chart-pie"></i> 能力掌握度预估</div>
+                    <div class="ai-radar-placeholder"></div>
+                    <div class="ai-radar-labels">
+                        <div class="ai-radar-label"><span class="ai-radar-dot" style="background:#9333ea;"></span> 优秀</div>
+                        <div class="ai-radar-label"><span class="ai-radar-dot" style="background:#a855f7;"></span> 良好</div>
+                        <div class="ai-radar-label"><span class="ai-radar-dot" style="background:#c4b5fd;"></span> 一般</div>
+                        <div class="ai-radar-label"><span class="ai-radar-dot" style="background:#e9d5ff;"></span> 待提升</div>
+                    </div>
+                </div>
+                <div class="ai-analysis-card">
+                    <div class="ai-analysis-card-header"><i class="fas fa-brain"></i> 知识点掌握进度</div>
+                    <div class="ai-progress-item">
+                        <span class="ai-progress-label">React</span>
+                        <div class="ai-progress-track"><div class="ai-progress-fill" style="width:75%;background:#9333ea;"></div></div>
+                        <span class="ai-progress-value">75%</span>
+                    </div>
+                    <div class="ai-progress-item">
+                        <span class="ai-progress-label">TypeScript</span>
+                        <div class="ai-progress-track"><div class="ai-progress-fill" style="width:60%;background:#a855f7;"></div></div>
+                        <span class="ai-progress-value">60%</span>
+                    </div>
+                    <div class="ai-progress-item">
+                        <span class="ai-progress-label">Node.js</span>
+                        <div class="ai-progress-track"><div class="ai-progress-fill" style="width:45%;background:#c4b5fd;"></div></div>
+                        <span class="ai-progress-value">45%</span>
+                    </div>
+                    <div class="ai-progress-item">
+                        <span class="ai-progress-label">数据库</span>
+                        <div class="ai-progress-track"><div class="ai-progress-fill" style="width:80%;background:#9333ea;"></div></div>
+                        <span class="ai-progress-value">80%</span>
+                    </div>
+                </div>
+                <div class="ai-analysis-card">
+                    <div class="ai-analysis-card-header"><i class="fas fa-lightbulb"></i> AI 学习建议</div>
+                    <div class="ai-insight-item">
+                        <i class="fas fa-arrow-trend-up ai-insight-icon"></i>
+                        <span class="ai-insight-text">你的数据库设计基础较好，可将重点放在后端接口开发上</span>
+                    </div>
+                    <div class="ai-insight-item">
+                        <i class="fas fa-clock ai-insight-icon"></i>
+                        <span class="ai-insight-text">预计完成本任务需要 ${task?.estimatedHours || 8} 课时，建议分 ${Math.ceil((task?.estimatedHours || 8) / 2)} 次完成</span>
+                    </div>
+                    <div class="ai-insight-item">
+                        <i class="fas fa-triangle-exclamation ai-insight-icon"></i>
+                        <span class="ai-insight-text">TypeScript 泛型是你的薄弱点，建议额外练习</span>
+                    </div>
+                </div>
+                <div class="ai-analysis-card">
+                    <div class="ai-analysis-card-header"><i class="fas fa-star"></i> 关联能力点</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        ${abilities.slice(0, 5).map(a => `<span style="padding:3px 10px;background:#f3e8ff;color:#7c3aed;border-radius:12px;font-size:11px;">${a.name}</span>`).join('') || '<span style="font-size:12px;color:var(--text-tertiary);">暂无数据</span>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAiPathPanel() {
+            const body = document.getElementById('aiAnalysisBody');
+            if (!body) return;
+            const task = currentLearningTask;
+            body.innerHTML = `
+                <div class="ai-analysis-card">
+                    <div class="ai-analysis-card-header"><i class="fas fa-route"></i> AI 推荐学习路径</div>
+                    <div class="ai-nav-steps">
+                        <div class="ai-nav-step active">
+                            <div class="ai-nav-step-num"><i class="fas fa-book-open" style="font-size:10px;"></i></div>
+                            <div class="ai-nav-step-content">
+                                <div class="ai-nav-step-name">理解任务目标</div>
+                                <div class="ai-nav-step-desc">阅读任务说明，明确交付标准</div>
+                            </div>
+                        </div>
+                        <div class="ai-nav-step">
+                            <div class="ai-nav-step-connector"></div>
+                            <div class="ai-nav-step-num">2</div>
+                            <div class="ai-nav-step-content">
+                                <div class="ai-nav-step-name">学习核心知识点</div>
+                                <div class="ai-nav-step-desc">${task?.knowledgePoints?.map(id => getKnowledgePointById(id)?.name).filter(Boolean).slice(0, 2).join('、') || '关联知识点'}</div>
+                            </div>
+                        </div>
+                        <div class="ai-nav-step">
+                            <div class="ai-nav-step-connector"></div>
+                            <div class="ai-nav-step-num">3</div>
+                            <div class="ai-nav-step-content">
+                                <div class="ai-nav-step-name">完成测评练习</div>
+                                <div class="ai-nav-step-desc">客观题 + 主观评审</div>
+                            </div>
+                        </div>
+                        <div class="ai-nav-step">
+                            <div class="ai-nav-step-connector"></div>
+                            <div class="ai-nav-step-num">4</div>
+                            <div class="ai-nav-step-content">
+                                <div class="ai-nav-step-name">提交并获取 AI 反馈</div>
+                                <div class="ai-nav-step-desc">查看个性化学习报告</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ai-analysis-card">
+                    <div class="ai-analysis-card-header"><i class="fas fa-bullseye"></i> 难度自适应</div>
+                    <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+                        <p>AI 检测到你的基础水平为 <strong style="color:#7c3aed;">中等偏上</strong>，已将本任务的学习建议调整如下：</p>
+                        <ul style="padding-left:16px;margin-top:6px;">
+                            <li>跳过基础概念回顾</li>
+                            <li>重点攻克实战案例</li>
+                            <li>增加扩展阅读材料</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showAiLearningReport(taskId) {
+            const task = getTaskById(taskId);
+            if (!task) return;
+            const answers = quizAnswers[taskId] || {};
+            const questions = task.assessment?.objectiveConfig?.questions || [];
+            let correct = 0, wrong = 0, unanswered = 0;
+            questions.forEach(q => {
+                const ua = answers[q.id];
+                if (ua === undefined) unanswered++;
+                else if (String(ua) === String(q.answer) || (q.type === 'multiple' && Array.isArray(q.answer) && Array.isArray(ua) && q.answer.every(a => ua.includes(a)))) correct++;
+                else wrong++;
+            });
+            const score = questions.reduce((sum, q) => {
+                const ua = answers[q.id];
+                if (ua === undefined) return sum;
+                if (String(ua) === String(q.answer) || (q.type === 'multiple' && Array.isArray(q.answer) && Array.isArray(ua) && q.answer.every(a => ua.includes(a)))) return sum + (q.score || 0);
+                return sum;
+            }, 0);
+            const totalScore = questions.reduce((sum, q) => sum + (q.score || 0), 0);
+            const accuracy = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+            const grade = accuracy >= 90 ? 'A' : accuracy >= 75 ? 'B' : accuracy >= 60 ? 'C' : 'D';
+            const gradeColor = accuracy >= 90 ? '#22c55e' : accuracy >= 75 ? '#3b82f6' : accuracy >= 60 ? '#f97316' : '#ef4444';
+            const gradeDesc = accuracy >= 90 ? '表现卓越，完全掌握核心知识点' : accuracy >= 75 ? '表现良好，大部分内容已掌握' : accuracy >= 60 ? '基本达标，部分知识点需要巩固' : '未达标准，建议重新学习后再次测评';
+
+            const abilities = (task.abilityPoints || []).map(id => getAbilityPointById(id)).filter(Boolean);
+            const kps = getTaskKnowledgePoints(task);
+
+            // 错题分析
+            let wrongQuestionsHtml = '';
+            const wrongQs = questions.filter(q => {
+                const ua = answers[q.id];
+                return ua !== undefined && String(ua) !== String(q.answer) && !(q.type === 'multiple' && Array.isArray(q.answer) && Array.isArray(ua) && q.answer.every(a => ua.includes(a)));
+            });
+            if (wrongQs.length > 0) {
+                wrongQuestionsHtml = `<div class="ai-report-suggestion-card">
+                    <div class="ai-report-suggestion-card-title"><i class="fas fa-times-circle"></i> 错题分析（${wrongQs.length} 题）</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        ${wrongQs.map((q, i) => `
+                            <div style="background:white;border:1px solid #f0f0f0;border-radius:6px;padding:10px;">
+                                <div style="font-size:12px;font-weight:500;color:var(--text-primary);margin-bottom:4px;">${i+1}. ${q.content.substring(0, 60)}${q.content.length>60?'...':''}</div>
+                                <div style="font-size:11px;color:#ef4444;">你的答案：${Array.isArray(answers[q.id]) ? answers[q.id].join('、') : (answers[q.id] || '未作答')}</div>
+                                <div style="font-size:11px;color:#22c55e;">正确答案：${Array.isArray(q.answer) ? q.answer.join('、') : q.answer}</div>
+                                <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;"><i class="fas fa-lightbulb" style="color:#f59e0b;"></i> 涉及知识点：${kps[0]?.name || '核心概念'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            const reportBody = document.getElementById('aiReportBody');
+            reportBody.innerHTML = `
+                <div class="ai-report-grid">
+                    <div class="ai-report-stat">
+                        <div class="ai-report-stat-value" style="color:${gradeColor};">${grade}</div>
+                        <div class="ai-report-stat-label">综合等级</div>
+                    </div>
+                    <div class="ai-report-stat">
+                        <div class="ai-report-stat-value">${score}</div>
+                        <div class="ai-report-stat-label">得分 / ${totalScore}</div>
+                    </div>
+                    <div class="ai-report-stat">
+                        <div class="ai-report-stat-value">${accuracy}%</div>
+                        <div class="ai-report-stat-label">正确率</div>
+                    </div>
+                    <div class="ai-report-stat">
+                        <div class="ai-report-stat-value">${correct}/${questions.length}</div>
+                        <div class="ai-report-stat-label">答对/总题</div>
+                    </div>
+                    <div class="ai-report-stat">
+                        <div class="ai-report-stat-value">${wrong}</div>
+                        <div class="ai-report-stat-label">答错</div>
+                    </div>
+                    <div class="ai-report-stat">
+                        <div class="ai-report-stat-value">${unanswered}</div>
+                        <div class="ai-report-stat-label">未答</div>
+                    </div>
+                </div>
+                <div style="background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1px solid #e9d5ff;border-radius:10px;padding:14px;margin-bottom:16px;">
+                    <div style="font-weight:600;color:#7c3aed;margin-bottom:6px;font-size:14px;"><i class="fas fa-robot"></i> AI 综合评语</div>
+                    <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">${gradeDesc}</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="ai-analysis-card" style="margin-bottom:0;">
+                        <div class="ai-analysis-card-header"><i class="fas fa-chart-bar"></i> 能力雷达</div>
+                        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                            <div class="ai-progress-item">
+                                <span class="ai-progress-label" style="width:70px;">知识理解</span>
+                                <div class="ai-progress-track"><div class="ai-progress-fill" style="width:${Math.min(accuracy + (correct>wrong?10:0), 100)}%;background:#9333ea;"></div></div>
+                                <span class="ai-progress-value">${Math.min(accuracy + (correct>wrong?10:0), 100)}%</span>
+                            </div>
+                            <div class="ai-progress-item">
+                                <span class="ai-progress-label" style="width:70px;">应用能力</span>
+                                <div class="ai-progress-track"><div class="ai-progress-fill" style="width:${Math.max(accuracy - (wrong>correct?15:5), 20)}%;background:#a855f7;"></div></div>
+                                <span class="ai-progress-value">${Math.max(accuracy - (wrong>correct?15:5), 20)}%</span>
+                            </div>
+                            <div class="ai-progress-item">
+                                <span class="ai-progress-label" style="width:70px;">分析推理</span>
+                                <div class="ai-progress-track"><div class="ai-progress-fill" style="width:${accuracy}%;background:#c4b5fd;"></div></div>
+                                <span class="ai-progress-value">${accuracy}%</span>
+                            </div>
+                            <div class="ai-progress-item">
+                                <span class="ai-progress-label" style="width:70px;">综合素养</span>
+                                <div class="ai-progress-track"><div class="ai-progress-fill" style="width:${Math.round((accuracy + (unanswered===0?10:0))/1.1)}%;background:#d8b4fe;"></div></div>
+                                <span class="ai-progress-value">${Math.round((accuracy + (unanswered===0?10:0))/1.1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ai-analysis-card" style="margin-bottom:0;">
+                        <div class="ai-analysis-card-header"><i class="fas fa-tags"></i> 能力标签</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            ${abilities.slice(0,6).map((a,i) => `<span style="padding:3px 10px;background:${['#f3e8ff','#faf5ff','#fdf4ff'][i%3]};color:#7c3aed;border-radius:12px;font-size:11px;border:1px solid #e9d5ff;">${a.name}</span>`).join('') || '<span style="font-size:12px;color:var(--text-tertiary);">暂无数据</span>'}
+                        </div>
+                        <div style="margin-top:10px;font-size:12px;color:var(--text-secondary);">
+                            <div style="margin-bottom:6px;"><i class="fas fa-star" style="color:#f59e0b;"></i> <strong>最强能力：</strong>${abilities[0]?.name || '综合应用'}</div>
+                            <div><i class="fas fa-arrow-up" style="color:#22c55e;"></i> <strong>成长空间：</strong>${abilities[1]?.name || '分析推理'}</div>
+                        </div>
+                    </div>
+                </div>
+                ${wrongQuestionsHtml}
+                <div class="ai-report-suggestion-card" style="margin-top:16px;">
+                    <div class="ai-report-suggestion-card-title"><i class="fas fa-wand-magic-sparkles"></i> AI 个性化学习建议</div>
+                    <div class="ai-insight-item">
+                        <i class="fas fa-bullseye ai-insight-icon"></i>
+                        <span class="ai-insight-text"><strong>目标达成：</strong>${accuracy >= 80 ? '已达成学习目标，可以进入下一任务' : accuracy >= 60 ? '基本达成目标，建议复习后再次测评' : '建议重新学习本任务内容后再测评'}</span>
+                    </div>
+                    <div class="ai-insight-item">
+                        <i class="fas fa-book-open ai-insight-icon"></i>
+                        <span class="ai-insight-text"><strong>重点复习：</strong>《${kps[0]?.name || '核心知识点'}》和《${kps[1]?.name || '进阶技能'}》</span>
+                    </div>
+                    <div class="ai-insight-item">
+                        <i class="fas fa-route ai-insight-icon"></i>
+                        <span class="ai-insight-text"><strong>推荐路径：</strong>${accuracy >= 80 ? '进入下一任务继续学习' : '先复习错题，再针对性练习'}</span>
+                    </div>
+                    <div class="ai-insight-item">
+                        <i class="fas fa-clock ai-insight-icon"></i>
+                        <span class="ai-insight-text"><strong>时间规划：</strong>建议预留 ${Math.ceil((task.estimatedHours || 8) * (accuracy >= 80 ? 0.3 : 0.6))} 课时进行复习巩固</span>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:20px;">
+                    <button class="ai-guide-btn primary" style="padding:10px 28px;font-size:14px;" onclick="closeAiReport();showStepToast('AI 报告已保存至学习记录')">
+                        <i class="fas fa-check"></i> 确认并关闭报告
+                    </button>
+                </div>
+            `;
+            document.getElementById('aiReportOverlay').classList.add('active');
+            updateAiProgress(100);
+        }
+
+        function closeAiReport() {
+            document.getElementById('aiReportOverlay').classList.remove('active');
+        }
+
+        // 覆盖原版的 switchSideTab 和 renderSidePanel，让 AI 面板正常工作
+        const originalSwitchSideTab = switchSideTab;
+        switchSideTab = function(tab) {
+            if (tab === 'knowledge' || tab === 'ability' || tab === 'resource') {
+                originalSwitchSideTab(tab);
+            }
+        };
+        const originalRenderSidePanel = renderSidePanel;
+        renderSidePanel = function(task) {
+            // AI-first 模式下默认显示 AI 分析面板，同时保留基础 tab 功能
+            renderAiAnalysisPanel();
+        };
+
+        // AI 解读数据库
+        const AI_EXPLAIN_DB = {"knowledge":{"React 组件化开发":{"apply":"在本任务中，你需要使用 React 函数组件和 Hooks 构建前端界面。具体涉及：封装商品列表、商品详情、购物车等可复用组件；使用 useState/useEffect 管理组件状态；通过 Props 实现父子组件通信。","level":"核心必备","link":"前端开发环节"},"TypeScript 类型系统":{"apply":"你需要用 TypeScript 为组件定义 Props 接口、为 API 响应定义类型、使用泛型封装通用 Hook。严谨的类型定义能大幅减少运行时错误。","level":"核心必备","link":"前后端开发"},"CSS 模块化与响应式布局":{"apply":"本任务要求实现 PC/平板/手机多端适配的界面。你需要使用 Flexbox/Grid 布局，配合媒体查询实现响应式，并使用 CSS Modules 或 Tailwind 管理样式。","level":"重点掌握","link":"前端界面开发"},"RESTful API 设计规范":{"apply":"你需要设计用户认证、商品、订单等模块的 API 接口。要遵循 HTTP 方法语义，使用合适的状态码，规划清晰的 URL 结构，并用 Swagger 生成文档。","level":"核心必备","link":"后端接口开发"},"关系型数据库设计":{"apply":"你需要为电商系统设计用户、商品、订单、库存等核心数据表。要遵循三大范式，合理设计索引，规划外键关系，确保数据一致性和查询效率。","level":"核心必备","link":"数据库设计环节"},"JWT 身份认证与安全机制":{"apply":"你需要实现用户登录注册功能，使用 bcrypt 加密密码，用 JWT 签发和验证 Token，配置 Refresh Token 机制，保障用户认证安全。","level":"核心必备","link":"用户认证模块"},"Git 版本控制与团队协作":{"apply":"本任务要求你使用 Git 管理代码，遵循 Git Flow 工作流，编写规范的 Commit Message，通过 Pull Request 进行代码审查。","level":"重点掌握","link":"全程开发协作"},"软件架构模式":{"apply":"你需要为电商系统选择合适的架构方案。建议采用分层架构 + 前后端分离，根据业务复杂度考虑是否需要引入微服务或消息队列。","level":"核心必备","link":"架构设计环节"},"UML 建模与需求分析":{"apply":"你需要绘制用例图描述系统功能，绘制类图描述领域模型，绘制时序图描述核心业务流程，产出规范的需求规格说明书。","level":"核心必备","link":"需求分析环节"},"领域驱动设计（DDD）":{"apply":"你需要识别电商领域的限界上下文（如订单上下文、商品上下文），定义聚合根和实体，使用领域事件实现模块间通信。","level":"重点掌握","link":"架构设计环节"},"缓存策略与 Redis 应用":{"apply":"你需要使用 Redis 缓存热点数据（如商品列表、用户信息），配置合适的过期策略，防范缓存穿透和雪崩问题。","level":"建议了解","link":"性能优化环节"},"消息队列与异步通信":{"apply":"订单创建、库存扣减等操作可以通过消息队列异步处理，提升系统吞吐量。你需要了解 RabbitMQ 的基本使用和可靠性保证。","level":"建议了解","link":"高并发处理"},"软件测试理论与方法":{"apply":"你需要为前端组件编写单元测试，为 API 接口编写集成测试，关注测试覆盖率，建立代码质量门禁。","level":"重点掌握","link":"测试环节"},"前端性能优化":{"apply":"你需要优化页面加载速度，使用代码分割和懒加载，优化图片资源，关注 Lighthouse 评分和 Core Web Vitals 指标。","level":"重点掌握","link":"前端优化环节"},"容器化技术（Docker）":{"apply":"你需要将前后端应用容器化，编写 Dockerfile，使用 Docker Compose 编排服务，为部署上线做准备。","level":"建议了解","link":"部署环节"},"反向代理与负载均衡":{"apply":"你需要配置 Nginx 作为反向代理，将前端静态资源和后端 API 统一入口，配置 SSL 证书和缓存策略。","level":"建议了解","link":"部署环节"},"事务处理与并发控制":{"apply":"订单创建涉及多表操作（订单表、库存表、支付记录表），你需要使用数据库事务保证数据一致性，处理并发下的库存超卖问题。","level":"核心必备","link":"订单模块开发"},"CI/CD 与自动化部署":{"apply":"你需要配置 GitHub Actions 或 GitLab CI 流水线，实现代码提交后自动构建、测试、打包、部署，提升交付效率。","level":"建议了解","link":"部署环节"}},"ability":{"组件封装与复用能力":{"apply":"本任务要求你将电商系统的各个页面模块拆解为可复用的 UI 组件，如商品卡片、订单列表、用户头像等。需要设计清晰的 Props 接口，让组件在不同场景下都能灵活使用。","level":"核心必备","link":"前端界面开发"},"状态管理与数据流设计":{"apply":"你需要为电商系统设计全局状态管理方案，管理用户登录状态、购物车数据、订单信息等。要选择合适的状态管理工具，设计合理的数据流，避免不必要的渲染。","level":"核心必备","link":"前端架构设计"},"安全编码与漏洞防范":{"apply":"你需要防范 XSS、CSRF、SQL 注入等常见 Web 漏洞，正确处理用户输入，使用参数化查询，对敏感数据进行加密存储。","level":"核心必备","link":"前后端开发"},"问题排查与调试":{"apply":"开发过程中难免遇到 Bug，你需要熟练使用 Chrome DevTools、VS Code 调试器、日志分析等工具，系统化地定位和解决问题。","level":"重点掌握","link":"全程开发"},"前端框架深度应用":{"apply":"你需要深入理解 React 18 的并发特性、Hooks 原理、虚拟 DOM Diff 算法，能进行框架级优化，解决复杂场景下的渲染性能问题。","level":"核心必备","link":"前端开发"},"后端服务开发能力":{"apply":"你需要使用 Node.js + Express 搭建后端服务，实现路由、中间件、数据库集成、错误处理等功能，能独立完成后端模块开发。","level":"核心必备","link":"后端开发"},"数据库操作与优化":{"apply":"你需要熟练编写 SQL 进行数据查询和操作，掌握索引优化、事务控制、连接池配置，能分析和解决数据库性能问题。","level":"核心必备","link":"数据库开发"},"代码版本控制与协作":{"apply":"你需要使用 Git 进行分支管理、代码合并、冲突解决，遵循团队的代码审查流程，编写规范的提交信息。","level":"重点掌握","link":"团队协作"},"接口设计与文档编写":{"apply":"你需要设计符合 RESTful 规范的 API 接口，定义清晰的请求/响应格式，使用 Swagger/OpenAPI 编写可交互的接口文档。","level":"核心必备","link":"后端开发"},"数据库建模与查询优化":{"apply":"你需要根据业务需求设计规范的表结构，合理创建索引，编写高效的 SQL 查询，使用 EXPLAIN 分析和优化慢查询。","level":"核心必备","link":"数据库设计"},"技术选型与架构决策":{"apply":"你需要根据项目规模、团队能力、性能要求等因素，做出合理的技术选型和架构设计决策，能说明选型理由。","level":"核心必备","link":"架构设计"},"UML建模与可视化表达":{"apply":"你需要使用 UML 各类图表表达系统设计，将复杂的技术方案可视化呈现，让团队成员快速理解设计思路。","level":"核心必备","link":"需求分析"},"领域驱动设计实践":{"apply":"你需要理解 DDD 核心概念，能在项目中识别领域边界，应用限界上下文、聚合根、领域事件等战术模式。","level":"重点掌握","link":"架构设计"},"系统架构图绘制":{"apply":"你需要绘制清晰准确的系统架构图，包括部署架构、数据架构、技术架构等，准确表达各组件之间的关系。","level":"重点掌握","link":"架构设计"},"性能分析与调优":{"apply":"你需要使用 Lighthouse、Chrome DevTools 等工具分析性能瓶颈，针对性地实施代码分割、懒加载、缓存、查询优化等措施。","level":"重点掌握","link":"优化环节"},"测试设计与质量保障":{"apply":"你需要设计有效的测试用例覆盖正常和异常场景，编写单元测试和集成测试，关注测试覆盖率，建立质量门禁意识。","level":"重点掌握","link":"测试环节"},"容器化与运维部署":{"apply":"你需要熟练使用 Docker 进行应用容器化，编写 Dockerfile 和 Compose 配置，配置 Nginx 反向代理，搭建 CI/CD 自动化流水线。","level":"建议了解","link":"部署环节"},"业务分析与需求转化":{"apply":"你需要理解电商业务需求，将模糊的业务描述转化为清晰的技术方案和实现步骤，识别核心业务流程和边界场景。","level":"核心必备","link":"需求分析"}},"resource":{"React 18 官方文档（中文版）":{"reason":"这是 React 开发的权威参考，建议在学习任务前端部分时随时查阅。重点关注 Hooks API 和并发特性部分。","order":1,"link":"React 组件化开发"},"TypeScript 高级类型系统完全指南.pdf":{"reason":"深入理解 TypeScript 类型系统对编写高质量前端代码至关重要，建议结合组件开发同步学习。","order":2,"link":"TypeScript 类型系统"},"Ant Design 5.0 组件设计规范":{"reason":"本任务前端 UI 基于 Ant Design 5 开发，建议先熟悉组件库的基本用法和设计原则，再开始组件封装。","order":2,"link":"React 组件化开发"},"Vite 构建工具从入门到精通（视频教程）":{"reason":"项目使用 Vite 作为构建工具，建议在项目初始化阶段观看，理解配置项和插件机制。","order":1,"link":"前端工程化"},"前端性能优化实战手册 2025 版.pdf":{"reason":"前端开发完成后，使用本手册对照检查页面性能，优化 Lighthouse 评分和 Core Web Vitals。","order":4,"link":"前端性能优化"},"Node.js + Express 后端开发实战（视频课程）":{"reason":"后端开发的核心参考，建议在开始编写 API 接口前观看，掌握路由、中间件、数据库集成等基础。","order":1,"link":"后端服务开发"},"MySQL 数据库设计规范 v3.0.docx":{"reason":"数据库设计的重要参考，建议在绘制 ER 图和创建表结构前仔细阅读，遵循团队命名规范。","order":1,"link":"关系型数据库设计"},"RESTful API 设计最佳实践与案例集.pdf":{"reason":"设计 API 接口时的重要参考，建议对照本规范检查接口设计的合理性。","order":2,"link":"RESTful API 设计规范"},"Web 安全机制详解：从 JWT 到 OAuth 2.0.pdf":{"reason":"实现用户认证模块时的必读资料，重点关注 JWT 安全实践和常见漏洞防范。","order":3,"link":"JWT 身份认证"},"Redis 缓存策略与电商实战应用（视频）":{"reason":"需要优化系统性能时使用，学习 Redis 缓存设计模式和电商场景下的最佳实践。","order":5,"link":"缓存策略"},"RabbitMQ 消息队列设计与实践指南.pdf":{"reason":"处理高并发订单场景时的参考，了解消息队列的可靠性保证和电商异步场景案例。","order":5,"link":"消息队列"},"电商平台核心业务分析：订单/支付/库存.pdf":{"reason":"深入理解电商业务逻辑的重要资料，建议在需求分析阶段阅读，掌握订单状态机和库存扣减方案。","order":1,"link":"业务分析"},"Jest + React Testing Library 测试开发实战（视频）":{"reason":"为前端组件编写测试时的参考，学习组件测试、Hook 测试和 Mock 技巧。","order":4,"link":"软件测试"},"前端工程化体系建设指南.pdf":{"reason":"项目初始化阶段的重要参考，帮助配置 ESLint、Prettier、Git 工作流等工程化工具链。","order":1,"link":"Git 版本控制"},"Docker 容器化部署完全指南（视频课程）":{"reason":"部署上线前的必读资料，学习 Dockerfile 编写、Compose 编排和生产环境配置。","order":5,"link":"容器化技术"},"Nginx 反向代理与负载均衡配置手册.pdf":{"reason":"配置生产环境反向代理时的参考，学习 Location 匹配、SSL 配置和缓存策略。","order":5,"link":"反向代理"},"GitHub Actions CI/CD 流水线搭建指南.pdf":{"reason":"搭建自动化部署流水线时的参考，实现代码提交后自动构建、测试和部署。","order":5,"link":"CI/CD"},"软件架构模式：从单体到微服务演进.pdf":{"reason":"架构设计阶段的核心参考，帮助你为电商系统选择合适的架构模式和拆分策略。","order":1,"link":"软件架构模式"},"UML 建模与需求分析实战（视频教程）":{"reason":"需求分析阶段的实操指南，学习用例图、类图、时序图的绘制方法和需求分析技巧。","order":1,"link":"UML 建模"},"领域驱动设计（DDD）战略与战术模式.pdf":{"reason":"架构设计阶段的高级参考，帮助你识别领域边界，应用 DDD 战术模式设计领域模型。","order":2,"link":"领域驱动设计"},"单元测试覆盖率提升与 Mock 技巧精讲.pdf":{"reason":"编写单元测试时的进阶参考，深入学习测试替身和 Jest Mock 技巧。","order":4,"link":"软件测试"},"Webpack 与 Vite 构建优化深度解析（视频）":{"reason":"需要优化构建速度或打包体积时观看，学习 Bundle 分析和代码分割策略。","order":4,"link":"前端性能优化"},"阿里云 ECS + RDS 云服务快速入门":{"reason":"选择云部署方案时的参考，了解云服务器选购、环境配置和域名解析流程。","order":5,"link":"容器化技术"},"实训机房 B-205（高性能服务器集群）":{"reason":"本地开发环境的替代方案，如果本地环境配置困难，可以使用实训机房预装好的开发环境。","order":"-","link":"开发环境"},"Git 团队协作与代码审查规范手册.pdf":{"reason":"团队协作的规范指南，建议在整个开发过程中遵循，养成规范的 Git 使用习惯。","order":1,"link":"Git 版本控制"}}};
+
+        function getAiExplain(type, name) {
+            var data = AI_EXPLAIN_DB[type] && AI_EXPLAIN_DB[type][name];
+            if (data) return data;
+            if (type === 'knowledge') return { apply: '\u300c' + name + '\u300d\u662f\u672c\u4efb\u52a1\u6d89\u53ca\u7684\u91cd\u8981\u77e5\u8bc6\u70b9\uff0c\u5efa\u8bae\u7ed3\u5408\u4efb\u52a1\u5b9e\u9645\u9700\u6c42\u6df1\u5165\u7406\u89e3\u5176\u6838\u5fc3\u6982\u5ff5\u3002', level: '\u5efa\u8bae\u4e86\u89e3', link: '\u76f8\u5173\u4efb\u52a1\u73af\u8282' };
+            if (type === 'ability') return { apply: '\u300c' + name + '\u300d\u662f\u672c\u4efb\u52a1\u9700\u8981\u8fd0\u7528\u7684\u5173\u952e\u80fd\u529b\uff0c\u5728\u5b9e\u8df5\u4e2d\u4e0d\u65ad\u953b\u70bc\u548c\u63d0\u5347\u3002', level: '\u5efa\u8bae\u63d0\u5347', link: '\u76f8\u5173\u4efb\u52a1\u73af\u8282' };
+            return { reason: '\u300c' + name + '\u300d\u662f\u672c\u4efb\u52a1\u7684\u914d\u5957\u5b66\u4e60\u8d44\u6e90\uff0c\u5efa\u8bae\u6839\u636e\u5b66\u4e60\u8fdb\u5ea6\u5408\u7406\u5b89\u6392\u9605\u8bfb\u65f6\u95f4\u3002', order: '-', link: '\u76f8\u5173\u77e5\u8bc6\u70b9' };
+        }
+
+        function toggleAiExplain(type, id, name, containerId) {
+            var container = document.getElementById(containerId);
+            var existing = container.querySelector('.ai-explain-panel-inline, .ai-resource-explain-row');
+            if (existing) {
+                existing.remove();
+                return;
+            }
+            var explain = getAiExplain(type, name);
+            var html = '';
+            if (type === 'knowledge' || type === 'ability') {
+                var levelClass = explain.level === '核心必备' ? 'core' : (explain.level === '重点掌握' ? 'important' : 'basic');
+                html = '<div class="ai-explain-panel-inline">' +
+                    '<div class="ai-explain-title"><i class="fas fa-robot"></i> AI 解读</div>' +
+                    '<div class="ai-explain-section"><span class="ai-explain-label">在本任务中的应用：</span>' + explain.apply + '</div>' +
+                    '<div class="ai-explain-section"><span class="ai-explain-label">掌握要求：</span><span class="ai-explain-tag-2 ' + levelClass + '">' + explain.level + '</span></div>' +
+                    '<div class="ai-explain-section"><span class="ai-explain-label">关联环节：</span>' + explain.link + '</div>' +
+                    '</div>';
+            } else {
+                html = '<div class="ai-resource-explain-row">' +
+                    '<div class="ai-explain-title"><i class="fas fa-robot"></i> AI 推荐理由</div>' +
+                    '<div>' + explain.reason + '</div>' +
+                    '<div style="margin-top:4px;"><span class="ai-explain-label">建议阅读顺序：</span>第 ' + explain.order + ' 步 | <span class="ai-explain-label">关联：</span>' + explain.link + '</div>' +
+                    '</div>';
+            }
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        // AI 摘要 — 打开全屏模态框
+        function handleAiSummary(taskId) {
+            const task = getTaskById(taskId);
+            if (!task) return;
+            const btn = document.getElementById('aiSummaryBtn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...'; }
+            setTimeout(() => {
+                const knowledges = task.knowledgePoints?.map(id => getKnowledgePointById(id)?.name).filter(Boolean) || [];
+                const abilities = task.abilityPoints?.map(id => getAbilityPointById(id)?.name).filter(Boolean) || [];
+                const deliverables = task.deliverables?.map(d => d.name) || [];
+                const evalMethods = task.evaluationMethods || [];
+                const methodLabels = { paper: '试卷测评', question_bank: '题库抽测', review: '教师评审', random_draw: '随机抽查', outcome: '成果评审', homework: '作业提交', quiz: '在线测验' };
+                const methodNames = evalMethods.map(m => methodLabels[m] || m).join('、') || '综合测评';
+                const summaryHtml = `
+                    <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:16px;margin-bottom:16px;">
+                        <div style="font-weight:600;color:#7c3aed;margin-bottom:12px;font-size:14px;display:flex;align-items:center;gap:6px;"><i class="fas fa-sparkles"></i> AI 任务速览</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-bullseye"></i> 核心目标</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${task.description}</div>
+                            </div>
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-box"></i> 关键交付物</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${deliverables.slice(0, 3).join('、') || '详见任务说明'}</div>
+                            </div>
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-clipboard-check"></i> 测评方式</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${methodNames}</div>
+                            </div>
+                            <div style="background:white;border-radius:6px;padding:10px;border:1px solid #f0e6ff;">
+                                <div style="font-size:12px;color:#9333ea;font-weight:600;margin-bottom:4px;"><i class="fas fa-clock"></i> 建议用时 / 难度</div>
+                                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${task.estimatedHours}课时 | ${'★'.repeat(task.difficulty || 1)}${'☆'.repeat(5 - (task.difficulty || 1))}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+                            <div style="font-size:12px;color:#9333ea;font-weight:600;margin-right:4px;align-self:center;"><i class="fas fa-lightbulb"></i> 涉及知识点：</div>
+                            ${knowledges.slice(0, 5).map(k => '<span style="background:#fff7e6;color:#d46b08;border:1px solid #ffd591;padding:2px 10px;border-radius:10px;font-size:12px;">' + k + '</span>').join('')}
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+                            <div style="font-size:12px;color:#9333ea;font-weight:600;margin-right:4px;align-self:center;"><i class="fas fa-star"></i> 需要能力：</div>
+                            ${abilities.slice(0, 5).map(a => '<span style="background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f;padding:2px 10px;border-radius:10px;font-size:12px;">' + a + '</span>').join('')}
+                        </div>
+                        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;border-top:1px dashed #e9d5ff;padding-top:10px;">
+                            <strong>AI 学习建议：</strong>建议先通过右侧「关联知识点」了解核心概念，再结合「配套资源」进行针对性学习，最后查看「学习路径」规划学习顺序。
+                        </div>
+                    </div>
+                    <div style="border-top:2px solid #f0f0f0;padding-top:16px;">
+                        <div style="font-weight:600;color:var(--text-primary);margin-bottom:12px;font-size:14px;"><i class="fas fa-file-lines" style="color:#9333ea;margin-right:6px;"></i>完整任务说明</div>
+                        <div style="font-size:14px;color:var(--text-secondary);line-height:1.8;">${task.detailedDescription || task.description || '暂无任务说明'}</div>
+                    </div>
+                `;
+                document.getElementById('aiSummaryFullscreenContent').innerHTML = summaryHtml;
+                document.getElementById('aiSummaryOverlay').classList.add('active');
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sparkles"></i> AI 摘要'; }
+            }, 800);
+        }
+
+        function closeAiSummaryFullscreen() {
+            document.getElementById('aiSummaryOverlay').classList.remove('active');
         }
 
         init();

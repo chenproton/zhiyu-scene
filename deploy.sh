@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# deploy.sh - Next.js Standalone 部署脚本 (v5.1 智能全自动清扫版)
+# deploy.sh - Next.js Standalone 部署脚本 (v6.0 新服务器自动初始化版)
 #
 set -euo pipefail
 
@@ -12,6 +12,7 @@ REMOTE_BASE="${REMOTE_BASE:-/var/www}"
 # 每个项目修改这里即可
 SITE_NAME="scene" 
 PORT=3003
+NODE_VERSION="${NODE_VERSION:-20}"   # 远程服务器 Node.js 版本
 
 SSH_PORT="${SSH_PORT:-22}"
 
@@ -33,7 +34,7 @@ echo ""
 cd "$SCRIPT_DIR"
 
 # ── 1. 本地构建 ──────────────────────────────────────────────────────
-echo "[1/3] 本地构建中..."
+echo "[1/4] 本地构建中..."
 rm -rf "$STANDALONE_DIR"
 
 # 编译
@@ -48,9 +49,78 @@ fi
 
 echo "✅ 本地构建完成"
 
-# ── 2. 远程智能清扫与同步 ──────────────────────────────────────────
+# ── 2. 远程环境检查与自动安装 ───────────────────────────────────────
 echo ""
-echo "[2/3] 远程清扫与同步..."
+echo "[2/4] 远程服务器环境检查与初始化（幂等，已有则跳过）..."
+
+ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" bash -s << REMOTE_SETUP_EOF
+  set -euo pipefail
+
+  # ---- 2.1 基础工具 ----
+  need_install=""
+  for cmd in curl rsync; do
+    if ! command -v \$cmd &>/dev/null; then
+      need_install="\$need_install \$cmd"
+    fi
+  done
+
+  if [ -n "\$need_install" ]; then
+    echo "   📦 正在安装基础工具:\$need_install"
+    if command -v apt-get &>/dev/null; then
+      apt-get update -qq && apt-get install -y -qq \$need_install
+    elif command -v yum &>/dev/null; then
+      yum install -y \$need_install
+    elif command -v dnf &>/dev/null; then
+      dnf install -y \$need_install
+    else
+      echo "   ❌ 无法识别包管理器，请手动安装:\$need_install"
+      exit 1
+    fi
+  fi
+
+  # ---- 2.2 Node.js (via NVM) ----
+  export NVM_DIR="\$HOME/.nvm"
+  if [ -s "\$NVM_DIR/nvm.sh" ]; then
+    . "\$NVM_DIR/nvm.sh"
+  fi
+
+  if ! command -v node &>/dev/null; then
+    echo "   📦 Node.js 未安装，正在通过 NVM 安装 v$NODE_VERSION ..."
+    if [ ! -d "\$NVM_DIR" ]; then
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+      . "\$NVM_DIR/nvm.sh"
+    fi
+    nvm install $NODE_VERSION
+    nvm alias default $NODE_VERSION
+    # 确保后续非交互式 SSH 也能加载 NVM
+    if [ -f ~/.bashrc ] && ! grep -q 'NVM_DIR' ~/.bashrc; then
+      echo 'export NVM_DIR="\$HOME/.nvm"' >> ~/.bashrc
+      echo '[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"' >> ~/.bashrc
+    fi
+    echo "   ✅ Node.js 安装完成: \$(node -v)"
+  else
+    echo "   ✅ Node.js 已存在: \$(node -v)"
+  fi
+
+  # ---- 2.3 PM2 ----
+  if ! command -v pm2 &>/dev/null; then
+    echo "   📦 PM2 未安装，正在全局安装 ..."
+    npm install -g pm2
+    pm2 startup || true
+    echo "   ✅ PM2 安装完成: \$(pm2 -v)"
+  else
+    echo "   ✅ PM2 已存在: \$(pm2 -v)"
+  fi
+
+  # ---- 2.4 部署目录 ----
+  mkdir -p $REMOTE_DIR
+REMOTE_SETUP_EOF
+
+echo "✅ 远程环境准备就绪"
+
+# ── 3. 远程智能清扫与同步 ──────────────────────────────────────────
+echo ""
+echo "[3/4] 远程清扫与同步..."
 
 # 【优化点】智能识别并清理远程所有干扰目录 (dist, .next, standalone)
 # 这样无论子模块叫什么名字，rsync 都不再会报 cannot delete 错误
@@ -67,9 +137,9 @@ rsync -az --delete-after \
   "$STANDALONE_DIR/" \
   "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/"
 
-# ── 3. 服务器进程切换 ──────────────────────────────────────────────
+# ── 4. 服务器进程切换 ──────────────────────────────────────────────
 echo ""
-echo "[3/3] 重启 PM2 服务..."
+echo "[4/4] 重启 PM2 服务..."
 
 ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" \
   "export SITE_NAME='$SITE_NAME'; export PORT='$PORT'; export REMOTE_DIR='$REMOTE_DIR'; bash -s" << 'REMOTE_EOF'
