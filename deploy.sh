@@ -37,8 +37,14 @@ cd "$SCRIPT_DIR"
 echo "[1/4] 本地构建中..."
 rm -rf "$STANDALONE_DIR"
 
-# 编译
-pnpm install --frozen-lockfile
+# 智能依赖安装：已存在则跳过，避免每次重新比对版本
+if [ ! -d "node_modules" ] || [ "${FORCE_INSTALL:-0}" = "1" ]; then
+  echo "  📦 安装依赖..."
+  pnpm install --prefer-offline --no-frozen-lockfile
+else
+  echo "  ⏩ node_modules 已存在，跳过依赖安装（设置 FORCE_INSTALL=1 可强制重新安装）"
+fi
+
 pnpm build
 
 # 组装产物

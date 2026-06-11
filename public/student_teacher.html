@@ -2769,6 +2769,19 @@
         .ec-tip-warning { background: #fff7e6; border: 1px solid #ffd591; color: #d46b08; }
         .ec-tip-success { background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
 
+        /* 测评配置列表 */
+        .ec-config-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+        .ec-config-item { border: 1px solid #e8e8e8; border-radius: 8px; padding: 12px 16px; background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+        .ec-config-item:hover { border-color: #bfbfbf; background: #fafafa; }
+        .ec-config-item.active { border-color: var(--primary-color); background: #f0f7ff; box-shadow: 0 0 0 2px rgba(24,119,255,0.1); }
+        .ec-config-item-name { font-weight: 500; font-size: 14px; }
+        .ec-config-item-actions { display: flex; gap: 6px; }
+        .ec-config-item-actions button { opacity: 0.6; }
+        .ec-config-item-actions button:hover { opacity: 1; }
+        .ec-config-item.active .ec-config-item-actions button { opacity: 1; }
+        .ec-config-add-btn { border: 2px dashed #d9d9d9; border-radius: 8px; padding: 12px 16px; text-align: center; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; font-size: 14px; background: #fafafa; }
+        .ec-config-add-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: #f0f7ff; }
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
@@ -5548,7 +5561,25 @@
         let evalConfigTaskId = null;
         let evalConfigCurrentTab = 'random_draw';
 
-        // 弹窗数据缓存
+        // 弹窗数据缓存 —— 数组形式，支持多份配置
+        let ecRandomDrawItems = [];
+        let ecReviewItems = [];
+        let ecPaperItems = [];
+        let ecQuestionBankItems = [];
+        let ecOutcomeItems = [];
+        let ecHomeworkItems = [];
+        let ecQuizItems = [];
+
+        // 当前活跃配置索引
+        let ecRandomDrawActiveIndex = 0;
+        let ecReviewActiveIndex = 0;
+        let ecPaperActiveIndex = 0;
+        let ecQuestionBankActiveIndex = 0;
+        let ecOutcomeActiveIndex = 0;
+        let ecHomeworkActiveIndex = 0;
+        let ecQuizActiveIndex = 0;
+
+        // 兼容原有变量的引用（指向当前活跃配置的数据）
         let ecRandomDrawQuestions = [];
         let ecRandomDrawSelected = [];
         let ecReviewSteps = [];
@@ -5562,42 +5593,215 @@
         let ecQuizSelected = [];
         let ecQuizConfig = { questionCount: 5, difficulty: 'mixed', timeLimit: 15, allowRetake: false, shuffleQuestions: false, showResult: false };
 
+        // 同步当前活跃配置到数组
+        function syncCurrentEvalConfig(tab) {
+            switch(tab) {
+                case 'random_draw':
+                    if (ecRandomDrawItems[ecRandomDrawActiveIndex]) {
+                        ecRandomDrawItems[ecRandomDrawActiveIndex].questions = JSON.parse(JSON.stringify(ecRandomDrawQuestions));
+                        ecRandomDrawItems[ecRandomDrawActiveIndex].selected = ecRandomDrawSelected.slice();
+                    }
+                    break;
+                case 'review':
+                    if (ecReviewItems[ecReviewActiveIndex]) {
+                        ecReviewItems[ecReviewActiveIndex].steps = JSON.parse(JSON.stringify(ecReviewSteps));
+                        ecReviewItems[ecReviewActiveIndex].material = JSON.parse(JSON.stringify(ecReviewMaterial));
+                    }
+                    break;
+                case 'paper':
+                    if (ecPaperItems[ecPaperActiveIndex]) {
+                        ecPaperItems[ecPaperActiveIndex].paperId = ecPaperId;
+                        ecPaperItems[ecPaperActiveIndex].config = JSON.parse(JSON.stringify(ecPaperConfig));
+                    }
+                    break;
+                case 'question_bank':
+                    if (ecQuestionBankItems[ecQuestionBankActiveIndex]) {
+                        ecQuestionBankItems[ecQuestionBankActiveIndex].selected = ecQuestionBankSelected.slice();
+                        ecQuestionBankItems[ecQuestionBankActiveIndex].config = JSON.parse(JSON.stringify(ecQuestionBankConfig));
+                    }
+                    break;
+                case 'outcome':
+                    if (ecOutcomeItems[ecOutcomeActiveIndex]) {
+                        ecOutcomeItems[ecOutcomeActiveIndex].material = JSON.parse(JSON.stringify(ecOutcomeMaterial));
+                    }
+                    break;
+                case 'homework':
+                    if (ecHomeworkItems[ecHomeworkActiveIndex]) {
+                        ecHomeworkItems[ecHomeworkActiveIndex].material = JSON.parse(JSON.stringify(ecHomeworkMaterial));
+                    }
+                    break;
+                case 'quiz':
+                    if (ecQuizItems[ecQuizActiveIndex]) {
+                        ecQuizItems[ecQuizActiveIndex].selected = ecQuizSelected.slice();
+                        ecQuizItems[ecQuizActiveIndex].config = JSON.parse(JSON.stringify(ecQuizConfig));
+                    }
+                    break;
+            }
+        }
+
+        // 加载指定tab的活跃配置到兼容变量
+        function loadEvalConfigData(tab) {
+            switch(tab) {
+                case 'random_draw':
+                    if (ecRandomDrawItems.length > 0) {
+                        ecRandomDrawActiveIndex = Math.min(ecRandomDrawActiveIndex, ecRandomDrawItems.length - 1);
+                        const item = ecRandomDrawItems[ecRandomDrawActiveIndex];
+                        ecRandomDrawQuestions = JSON.parse(JSON.stringify(item.questions));
+                        ecRandomDrawSelected = item.selected.slice();
+                    }
+                    break;
+                case 'review':
+                    if (ecReviewItems.length > 0) {
+                        ecReviewActiveIndex = Math.min(ecReviewActiveIndex, ecReviewItems.length - 1);
+                        const item = ecReviewItems[ecReviewActiveIndex];
+                        ecReviewSteps = JSON.parse(JSON.stringify(item.steps));
+                        ecReviewMaterial = JSON.parse(JSON.stringify(item.material));
+                    }
+                    break;
+                case 'paper':
+                    if (ecPaperItems.length > 0) {
+                        ecPaperActiveIndex = Math.min(ecPaperActiveIndex, ecPaperItems.length - 1);
+                        const item = ecPaperItems[ecPaperActiveIndex];
+                        ecPaperId = item.paperId;
+                        ecPaperConfig = JSON.parse(JSON.stringify(item.config));
+                    }
+                    break;
+                case 'question_bank':
+                    if (ecQuestionBankItems.length > 0) {
+                        ecQuestionBankActiveIndex = Math.min(ecQuestionBankActiveIndex, ecQuestionBankItems.length - 1);
+                        const item = ecQuestionBankItems[ecQuestionBankActiveIndex];
+                        ecQuestionBankSelected = item.selected.slice();
+                        ecQuestionBankConfig = JSON.parse(JSON.stringify(item.config));
+                    }
+                    break;
+                case 'outcome':
+                    if (ecOutcomeItems.length > 0) {
+                        ecOutcomeActiveIndex = Math.min(ecOutcomeActiveIndex, ecOutcomeItems.length - 1);
+                        const item = ecOutcomeItems[ecOutcomeActiveIndex];
+                        ecOutcomeMaterial = JSON.parse(JSON.stringify(item.material));
+                    }
+                    break;
+                case 'homework':
+                    if (ecHomeworkItems.length > 0) {
+                        ecHomeworkActiveIndex = Math.min(ecHomeworkActiveIndex, ecHomeworkItems.length - 1);
+                        const item = ecHomeworkItems[ecHomeworkActiveIndex];
+                        ecHomeworkMaterial = JSON.parse(JSON.stringify(item.material));
+                    }
+                    break;
+                case 'quiz':
+                    if (ecQuizItems.length > 0) {
+                        ecQuizActiveIndex = Math.min(ecQuizActiveIndex, ecQuizItems.length - 1);
+                        const item = ecQuizItems[ecQuizActiveIndex];
+                        ecQuizSelected = item.selected.slice();
+                        ecQuizConfig = JSON.parse(JSON.stringify(item.config));
+                    }
+                    break;
+            }
+        }
+
         function openEvalConfigModal() {
             const task = currentLearningTask;
             if (!task) return;
             evalConfigTaskId = task.id;
 
-            // 初始化现场问答数据
-            const taskRdq = task.randomDrawQuestions || task.evalPoints?.randomDraw || [];
-            ecRandomDrawQuestions = JSON.parse(JSON.stringify(taskRdq));
-            ecRandomDrawSelected = (task.randomDrawSelectedIds || []).slice();
+            // 初始化现场问答数据（数组形式）
+            if (task.randomDrawItems && task.randomDrawItems.length > 0) {
+                ecRandomDrawItems = JSON.parse(JSON.stringify(task.randomDrawItems));
+            } else {
+                const taskRdq = task.randomDrawQuestions || task.evalPoints?.randomDraw || [];
+                ecRandomDrawItems = [{
+                    name: '现场问答 1',
+                    questions: JSON.parse(JSON.stringify(taskRdq)),
+                    selected: (task.randomDrawSelectedIds || []).slice()
+                }];
+            }
 
             // 初始化评审数据
-            ecReviewSteps = JSON.parse(JSON.stringify(task.reviewSteps || [
-                { id: 'rs-1', label: '初评', desc: '由指导教师进行材料审查', enabled: true, subjectType: 'teacher', weight: 50 },
-                { id: 'rs-2', label: '复评', desc: '由企业导师进行专业评审', enabled: true, subjectType: 'teacher', weight: 50 }
-            ]));
-            ecReviewMaterial = JSON.parse(JSON.stringify(task.reviewMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', venueResources: '', allowResubmit: false }));
+            if (task.reviewItems && task.reviewItems.length > 0) {
+                ecReviewItems = JSON.parse(JSON.stringify(task.reviewItems));
+            } else {
+                ecReviewItems = [{
+                    name: '现场评审 1',
+                    steps: JSON.parse(JSON.stringify(task.reviewSteps || [
+                        { id: 'rs-1', label: '初评', desc: '由指导教师进行材料审查', enabled: true, subjectType: 'teacher', weight: 50 },
+                        { id: 'rs-2', label: '复评', desc: '由企业导师进行专业评审', enabled: true, subjectType: 'teacher', weight: 50 }
+                    ])),
+                    material: JSON.parse(JSON.stringify(task.reviewMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', venueResources: '', allowResubmit: false }))
+                }];
+            }
 
             // 初始化试卷数据
-            ecPaperId = task.paperId || null;
-            ecPaperConfig = JSON.parse(JSON.stringify(task.paperConfig || { duration: 60, allowRetake: false, retakeCount: 1, shuffleQuestions: false, showResult: false, activationMode: 'manual', scheduledTime: '' }));
+            if (task.paperItems && task.paperItems.length > 0) {
+                ecPaperItems = JSON.parse(JSON.stringify(task.paperItems));
+            } else {
+                ecPaperItems = [{
+                    name: '试卷 1',
+                    paperId: task.paperId || null,
+                    config: JSON.parse(JSON.stringify(task.paperConfig || { duration: 60, allowRetake: false, retakeCount: 1, shuffleQuestions: false, showResult: false, activationMode: 'manual', scheduledTime: '' }))
+                }];
+            }
 
             // 初始化题库数据
-            const taskQb = task.questionBankQuestions || [];
-            ecQuestionBankSelected = taskQb.slice();
-            ecQuestionBankConfig = JSON.parse(JSON.stringify(task.questionBankConfig || { questionCount: 10, difficulty: 'mixed', timeLimit: 30, allowRetake: false, shuffleQuestions: false, showResult: false }));
+            if (task.questionBankItems && task.questionBankItems.length > 0) {
+                ecQuestionBankItems = JSON.parse(JSON.stringify(task.questionBankItems));
+            } else {
+                const taskQb = task.questionBankQuestions || [];
+                ecQuestionBankItems = [{
+                    name: '题库',
+                    selected: taskQb.slice(),
+                    config: JSON.parse(JSON.stringify(task.questionBankConfig || { questionCount: 10, difficulty: 'mixed', timeLimit: 30, allowRetake: false, shuffleQuestions: false, showResult: false }))
+                }];
+            }
 
             // 初始化成果评价数据
-            ecOutcomeMaterial = JSON.parse(JSON.stringify(task.outcomeMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', venueResources: '', allowResubmit: false }));
+            if (task.outcomeItems && task.outcomeItems.length > 0) {
+                ecOutcomeItems = JSON.parse(JSON.stringify(task.outcomeItems));
+            } else {
+                ecOutcomeItems = [{
+                    name: '成果评价',
+                    material: JSON.parse(JSON.stringify(task.outcomeMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', venueResources: '', allowResubmit: false }))
+                }];
+            }
 
             // 初始化作业数据
-            ecHomeworkMaterial = JSON.parse(JSON.stringify(task.homeworkMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', allowResubmit: false }));
+            if (task.homeworkItems && task.homeworkItems.length > 0) {
+                ecHomeworkItems = JSON.parse(JSON.stringify(task.homeworkItems));
+            } else {
+                ecHomeworkItems = [{
+                    name: '作业',
+                    material: JSON.parse(JSON.stringify(task.homeworkMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', allowResubmit: false }))
+                }];
+            }
 
             // 初始化随堂测数据
-            const taskQuiz = task.quizQuestions || [];
-            ecQuizSelected = taskQuiz.slice();
-            ecQuizConfig = JSON.parse(JSON.stringify(task.quizConfig || { questionCount: 5, difficulty: 'mixed', timeLimit: 15, allowRetake: false, shuffleQuestions: false, showResult: false }));
+            if (task.quizItems && task.quizItems.length > 0) {
+                ecQuizItems = JSON.parse(JSON.stringify(task.quizItems));
+            } else {
+                const taskQuiz = task.quizQuestions || [];
+                ecQuizItems = [{
+                    name: '随堂测',
+                    selected: taskQuiz.slice(),
+                    config: JSON.parse(JSON.stringify(task.quizConfig || { questionCount: 5, difficulty: 'mixed', timeLimit: 15, allowRetake: false, shuffleQuestions: false, showResult: false }))
+                }];
+            }
+
+            // 重置活跃索引
+            ecRandomDrawActiveIndex = 0;
+            ecReviewActiveIndex = 0;
+            ecPaperActiveIndex = 0;
+            ecQuestionBankActiveIndex = 0;
+            ecOutcomeActiveIndex = 0;
+            ecHomeworkActiveIndex = 0;
+            ecQuizActiveIndex = 0;
+
+            // 加载当前活跃配置到兼容变量
+            loadEvalConfigData('random_draw');
+            loadEvalConfigData('review');
+            loadEvalConfigData('paper');
+            loadEvalConfigData('question_bank');
+            loadEvalConfigData('outcome');
+            loadEvalConfigData('homework');
+            loadEvalConfigData('quiz');
 
             // 绑定表单值
             bindEvalConfigForms();
@@ -5612,6 +5816,15 @@
             renderQuizList();
             renderQuizSelected();
 
+            // 渲染配置列表
+            renderRandomDrawConfigList();
+            renderReviewConfigList();
+            renderPaperConfigList();
+            renderQuestionBankConfigList();
+            renderOutcomeConfigList();
+            renderHomeworkConfigList();
+            renderQuizConfigList();
+
             // 显示弹窗
             document.getElementById('evalConfigTitleText').textContent = '测评资源配置 — ' + (task.name || '');
             document.getElementById('evalConfigOverlay').classList.add('active');
@@ -5624,9 +5837,188 @@
         }
 
         function switchEvalConfigTab(tab) {
+            // 先同步当前tab数据到数组
+            syncCurrentEvalConfig(evalConfigCurrentTab);
+            
             evalConfigCurrentTab = tab;
             document.querySelectorAll('.eval-config-tab').forEach(t => t.classList.toggle('active', t.dataset.evalTab === tab));
             document.querySelectorAll('.eval-config-panel').forEach(p => p.classList.toggle('active', p.dataset.evalPanel === tab));
+            
+            // 加载新tab的数据
+            loadEvalConfigData(tab);
+            bindEvalConfigForms();
+            
+            // 根据tab渲染对应内容
+            switch(tab) {
+                case 'random_draw':
+                    renderRdqList(); renderRdqSelected(); break;
+                case 'review':
+                    renderReviewSteps(); break;
+                case 'paper':
+                    renderPaperList(); break;
+                case 'question_bank':
+                    renderQuestionBankList(); renderQuestionBankSelected(); break;
+                case 'outcome':
+                    break;
+                case 'homework':
+                    break;
+                case 'quiz':
+                    renderQuizList(); renderQuizSelected(); break;
+            }
+        }
+
+        // ==================== 配置列表渲染与复制 ====================
+        function renderConfigList(items, activeIndex, containerId, type) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            let html = '<div class="ec-config-list">';
+            items.forEach((item, index) => {
+                const isActive = index === activeIndex;
+                html += `
+                    <div class="ec-config-item ${isActive ? 'active' : ''}" onclick="switch${type}Config(${index})">
+                        <span class="ec-config-item-name">${item.name}</span>
+                        <div class="ec-config-item-actions">
+                            <button class="ec-btn ec-btn-ghost ec-btn-xs" onclick="event.stopPropagation();duplicate${type}Config(${index})" title="复制">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>`;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function switchRandomDrawConfig(index) {
+            syncCurrentEvalConfig('random_draw');
+            ecRandomDrawActiveIndex = index;
+            loadEvalConfigData('random_draw');
+            renderRdqList();
+            renderRdqSelected();
+            renderRandomDrawConfigList();
+        }
+        function duplicateRandomDrawConfig(index) {
+            const item = JSON.parse(JSON.stringify(ecRandomDrawItems[index]));
+            const baseName = item.name.replace(/\s+\d+$/, '');
+            item.name = baseName + ' ' + (ecRandomDrawItems.length + 1);
+            ecRandomDrawItems.push(item);
+            switchRandomDrawConfig(ecRandomDrawItems.length - 1);
+        }
+        function renderRandomDrawConfigList() {
+            renderConfigList(ecRandomDrawItems, ecRandomDrawActiveIndex, 'rdqConfigList', 'RandomDraw');
+        }
+
+        function switchReviewConfig(index) {
+            syncCurrentEvalConfig('review');
+            ecReviewActiveIndex = index;
+            loadEvalConfigData('review');
+            bindEvalConfigForms();
+            renderReviewSteps();
+            renderReviewConfigList();
+        }
+        function duplicateReviewConfig(index) {
+            const item = JSON.parse(JSON.stringify(ecReviewItems[index]));
+            const baseName = item.name.replace(/\s+\d+$/, '');
+            item.name = baseName + ' ' + (ecReviewItems.length + 1);
+            ecReviewItems.push(item);
+            switchReviewConfig(ecReviewItems.length - 1);
+        }
+        function renderReviewConfigList() {
+            renderConfigList(ecReviewItems, ecReviewActiveIndex, 'reviewConfigList', 'Review');
+        }
+
+        function switchPaperConfig(index) {
+            syncCurrentEvalConfig('paper');
+            ecPaperActiveIndex = index;
+            loadEvalConfigData('paper');
+            bindEvalConfigForms();
+            renderPaperList();
+            renderPaperConfigList();
+        }
+        function duplicatePaperConfig(index) {
+            const item = JSON.parse(JSON.stringify(ecPaperItems[index]));
+            const baseName = item.name.replace(/\s+\d+$/, '');
+            item.name = baseName + ' ' + (ecPaperItems.length + 1);
+            ecPaperItems.push(item);
+            switchPaperConfig(ecPaperItems.length - 1);
+        }
+        function renderPaperConfigList() {
+            renderConfigList(ecPaperItems, ecPaperActiveIndex, 'paperConfigList', 'Paper');
+        }
+
+        function switchQuestionBankConfig(index) {
+            syncCurrentEvalConfig('question_bank');
+            ecQuestionBankActiveIndex = index;
+            loadEvalConfigData('question_bank');
+            bindEvalConfigForms();
+            renderQuestionBankList();
+            renderQuestionBankSelected();
+            renderQuestionBankConfigList();
+        }
+        function duplicateQuestionBankConfig(index) {
+            const item = JSON.parse(JSON.stringify(ecQuestionBankItems[index]));
+            const baseName = item.name.replace(/\s+\d+$/, '');
+            item.name = baseName + ' ' + (ecQuestionBankItems.length + 1);
+            ecQuestionBankItems.push(item);
+            switchQuestionBankConfig(ecQuestionBankItems.length - 1);
+        }
+        function renderQuestionBankConfigList() {
+            renderConfigList(ecQuestionBankItems, ecQuestionBankActiveIndex, 'qbConfigList', 'QuestionBank');
+        }
+
+        function switchOutcomeConfig(index) {
+            syncCurrentEvalConfig('outcome');
+            ecOutcomeActiveIndex = index;
+            loadEvalConfigData('outcome');
+            bindEvalConfigForms();
+            renderOutcomeConfigList();
+        }
+        function duplicateOutcomeConfig(index) {
+            const item = JSON.parse(JSON.stringify(ecOutcomeItems[index]));
+            const baseName = item.name.replace(/\s+\d+$/, '');
+            item.name = baseName + ' ' + (ecOutcomeItems.length + 1);
+            ecOutcomeItems.push(item);
+            switchOutcomeConfig(ecOutcomeItems.length - 1);
+        }
+        function renderOutcomeConfigList() {
+            renderConfigList(ecOutcomeItems, ecOutcomeActiveIndex, 'outcomeConfigList', 'Outcome');
+        }
+
+        function switchHomeworkConfig(index) {
+            syncCurrentEvalConfig('homework');
+            ecHomeworkActiveIndex = index;
+            loadEvalConfigData('homework');
+            bindEvalConfigForms();
+            renderHomeworkConfigList();
+        }
+        function duplicateHomeworkConfig(index) {
+            const item = JSON.parse(JSON.stringify(ecHomeworkItems[index]));
+            const baseName = item.name.replace(/\s+\d+$/, '');
+            item.name = baseName + ' ' + (ecHomeworkItems.length + 1);
+            ecHomeworkItems.push(item);
+            switchHomeworkConfig(ecHomeworkItems.length - 1);
+        }
+        function renderHomeworkConfigList() {
+            renderConfigList(ecHomeworkItems, ecHomeworkActiveIndex, 'homeworkConfigList', 'Homework');
+        }
+
+        function switchQuizConfig(index) {
+            syncCurrentEvalConfig('quiz');
+            ecQuizActiveIndex = index;
+            loadEvalConfigData('quiz');
+            bindEvalConfigForms();
+            renderQuizList();
+            renderQuizSelected();
+            renderQuizConfigList();
+        }
+        function duplicateQuizConfig(index) {
+            const item = JSON.parse(JSON.stringify(ecQuizItems[index]));
+            const baseName = item.name.replace(/\s+\d+$/, '');
+            item.name = baseName + ' ' + (ecQuizItems.length + 1);
+            ecQuizItems.push(item);
+            switchQuizConfig(ecQuizItems.length - 1);
+        }
+        function renderQuizConfigList() {
+            renderConfigList(ecQuizItems, ecQuizActiveIndex, 'quizConfigList', 'Quiz');
         }
 
         function saveEvalConfig() {
@@ -5634,31 +6026,63 @@
             const task = getTaskById(evalConfigTaskId);
             if (!task) return;
 
-            // 保存现场问答
-            task.randomDrawQuestions = JSON.parse(JSON.stringify(ecRandomDrawQuestions));
-            task.randomDrawSelectedIds = ecRandomDrawSelected.slice();
+            // 先同步当前tab数据到数组
+            syncCurrentEvalConfig(evalConfigCurrentTab);
 
-            // 保存评审
-            task.reviewSteps = JSON.parse(JSON.stringify(ecReviewSteps));
-            task.reviewMaterial = JSON.parse(JSON.stringify(ecReviewMaterial));
+            // 保存现场问答（数组形式）
+            task.randomDrawItems = JSON.parse(JSON.stringify(ecRandomDrawItems));
+            // 兼容旧数据结构
+            const rdItem = ecRandomDrawItems[0];
+            if (rdItem) {
+                task.randomDrawQuestions = JSON.parse(JSON.stringify(rdItem.questions));
+                task.randomDrawSelectedIds = rdItem.selected.slice();
+            }
 
-            // 保存试卷
-            task.paperId = ecPaperId;
-            task.paperConfig = JSON.parse(JSON.stringify(ecPaperConfig));
+            // 保存评审（数组形式）
+            task.reviewItems = JSON.parse(JSON.stringify(ecReviewItems));
+            const rvItem = ecReviewItems[0];
+            if (rvItem) {
+                task.reviewSteps = JSON.parse(JSON.stringify(rvItem.steps));
+                task.reviewMaterial = JSON.parse(JSON.stringify(rvItem.material));
+            }
 
-            // 保存题库
-            task.questionBankQuestions = ecQuestionBankSelected.slice();
-            task.questionBankConfig = JSON.parse(JSON.stringify(ecQuestionBankConfig));
+            // 保存试卷（数组形式）
+            task.paperItems = JSON.parse(JSON.stringify(ecPaperItems));
+            const pItem = ecPaperItems[0];
+            if (pItem) {
+                task.paperId = pItem.paperId;
+                task.paperConfig = JSON.parse(JSON.stringify(pItem.config));
+            }
 
-            // 保存成果评价
-            task.outcomeMaterial = JSON.parse(JSON.stringify(ecOutcomeMaterial));
+            // 保存题库（数组形式）
+            task.questionBankItems = JSON.parse(JSON.stringify(ecQuestionBankItems));
+            const qbItem = ecQuestionBankItems[0];
+            if (qbItem) {
+                task.questionBankQuestions = qbItem.selected.slice();
+                task.questionBankConfig = JSON.parse(JSON.stringify(qbItem.config));
+            }
 
-            // 保存作业
-            task.homeworkMaterial = JSON.parse(JSON.stringify(ecHomeworkMaterial));
+            // 保存成果评价（数组形式）
+            task.outcomeItems = JSON.parse(JSON.stringify(ecOutcomeItems));
+            const ocItem = ecOutcomeItems[0];
+            if (ocItem) {
+                task.outcomeMaterial = JSON.parse(JSON.stringify(ocItem.material));
+            }
 
-            // 保存随堂测
-            task.quizQuestions = ecQuizSelected.slice();
-            task.quizConfig = JSON.parse(JSON.stringify(ecQuizConfig));
+            // 保存作业（数组形式）
+            task.homeworkItems = JSON.parse(JSON.stringify(ecHomeworkItems));
+            const hwItem = ecHomeworkItems[0];
+            if (hwItem) {
+                task.homeworkMaterial = JSON.parse(JSON.stringify(hwItem.material));
+            }
+
+            // 保存随堂测（数组形式）
+            task.quizItems = JSON.parse(JSON.stringify(ecQuizItems));
+            const qzItem = ecQuizItems[0];
+            if (qzItem) {
+                task.quizQuestions = qzItem.selected.slice();
+                task.quizConfig = JSON.parse(JSON.stringify(qzItem.config));
+            }
 
             closeEvalConfigModal();
             renderAssessmentPanel(task);
@@ -6187,6 +6611,7 @@
 
                     <!-- 现场问答 -->
                     <div class="eval-config-panel active" data-eval-panel="random_draw">
+                        <div id="rdqConfigList"></div>
                         <div class="ec-tip ec-tip-info">
                             <i class="fas fa-info-circle" style="margin-right:6px;"></i>
                             配置现场问答的题目库，教师将在现场从已选题目中随机抽取进行提问。
@@ -6213,6 +6638,7 @@
 
                     <!-- 现场评审 -->
                     <div class="eval-config-panel" data-eval-panel="review">
+                        <div id="reviewConfigList"></div>
                         <div class="ec-tip ec-tip-warning">
                             <i class="fas fa-info-circle" style="margin-right:6px;"></i>
                             评审时教师根据学生现场表现或提交的材料进行打分。
@@ -6266,6 +6692,7 @@
 
                     <!-- 试卷 -->
                     <div class="eval-config-panel" data-eval-panel="paper">
+                        <div id="paperConfigList"></div>
                         <div class="ec-card">
                             <div class="ec-card-header">
                                 <span class="ec-card-title">选择已有试卷</span>
@@ -6329,6 +6756,7 @@
 
                     <!-- 题库 -->
                     <div class="eval-config-panel" data-eval-panel="question_bank">
+                        <div id="qbConfigList"></div>
                         <div class="ec-tip ec-tip-info">
                             <i class="fas fa-info-circle" style="margin-right:6px;"></i>
                             从题库中选择题目组成测评资源，系统将随机抽题组成测评卷。
@@ -6406,6 +6834,7 @@
 
                     <!-- 成果评价 -->
                     <div class="eval-config-panel" data-eval-panel="outcome">
+                        <div id="outcomeConfigList"></div>
                         <div class="ec-tip ec-tip-success">
                             <i class="fas fa-info-circle" style="margin-right:6px;"></i>
                             成果评价时教师根据学生提交的成果材料进行打分。
@@ -6445,6 +6874,7 @@
 
                     <!-- 作业 -->
                     <div class="eval-config-panel" data-eval-panel="homework">
+                        <div id="homeworkConfigList"></div>
                         <div class="ec-tip ec-tip-warning">
                             <i class="fas fa-info-circle" style="margin-right:6px;"></i>
                             学生提交作业后，教师按评分规则进行打分。
@@ -6480,6 +6910,7 @@
 
                     <!-- 随堂测 -->
                     <div class="eval-config-panel" data-eval-panel="quiz">
+                        <div id="quizConfigList"></div>
                         <div class="ec-tip ec-tip-info">
                             <i class="fas fa-info-circle" style="margin-right:6px;"></i>
                             从题库中选择题目组成随堂测，课堂即时测验。

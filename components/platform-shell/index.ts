@@ -106,22 +106,13 @@ export const senceNavigationTemplate: PlatformNavigationConfig = {
     },
     {
       id: "ai-assisted",
-      label: "AI 辅助版本",
+      label: "AI 辅助功能",
       icon: "sparkles",
       children: [
         { id: "ai-assisted-scenarios", label: "场景资源编辑(AI辅助)", href: "/ai-assisted", matchers: ["/ai-assisted"] },
-        { id: "ai-assisted-grading", label: "教师任务评分(AI辅助)", href: "/ai-assisted/approvals/grading", matchers: ["/ai-assisted/approvals/grading$"] },
-        { id: "ai-assisted-simulation", label: "学生任务测评(AI辅助)", href: "/student_2.html", matchers: ["/student_2.html", "/ai-assisted/approvals/grading/simulation"] },
-      ],
-    },
-    {
-      id: "ai-first",
-      label: "AI 主导版本",
-      icon: "sparkles",
-      children: [
-        { id: "ai-first-scenarios", label: "场景资源编辑(AI主导)", href: "/ai-first", matchers: ["/ai-first"] },
-        { id: "ai-first-grading", label: "教师任务评分(AI主导)", href: "/ai-first/approvals/grading", matchers: ["/ai-first/approvals/grading$"] },
-        { id: "ai-first-simulation", label: "学生任务测评(AI主导)", href: "/student_3.html", matchers: ["/student_3.html", "/ai-first/approvals/grading/simulation"] },
+        { id: "ai-assisted-batch-create", label: "批量场景创建(智能体)", href: "/ai-first/scenarios/scenario-1/edit", matchers: ["/ai-first/scenarios/scenario-1/edit"] },
+        { id: "ai-assisted-grading", label: "教师场景评分(AI辅助)", href: "/ai-first/approvals/grading", matchers: ["/ai-first/approvals/grading$"] },
+        { id: "ai-assisted-simulation", label: "学生场景学习(AI辅助)", href: "/student_3.html", matchers: ["/student_3.html", "/ai-first/approvals/grading/simulation"] },
       ],
     },
   ],
