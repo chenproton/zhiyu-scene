@@ -5747,7 +5747,7 @@
             } else {
                 const taskQb = task.questionBankQuestions || [];
                 ecQuestionBankItems = [{
-                    name: '题库',
+                    name: '题库 1',
                     selected: taskQb.slice(),
                     config: JSON.parse(JSON.stringify(task.questionBankConfig || { questionCount: 10, difficulty: 'mixed', timeLimit: 30, allowRetake: false, shuffleQuestions: false, showResult: false }))
                 }];
@@ -5758,7 +5758,7 @@
                 ecOutcomeItems = JSON.parse(JSON.stringify(task.outcomeItems));
             } else {
                 ecOutcomeItems = [{
-                    name: '成果评价',
+                    name: '成果评价 1',
                     material: JSON.parse(JSON.stringify(task.outcomeMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', venueResources: '', allowResubmit: false }))
                 }];
             }
@@ -5768,7 +5768,7 @@
                 ecHomeworkItems = JSON.parse(JSON.stringify(task.homeworkItems));
             } else {
                 ecHomeworkItems = [{
-                    name: '作业',
+                    name: '作业 1',
                     material: JSON.parse(JSON.stringify(task.homeworkMaterial || { requiresMaterial: true, deadlineDays: 7, submitFormat: '', allowResubmit: false }))
                 }];
             }
@@ -5779,7 +5779,7 @@
             } else {
                 const taskQuiz = task.quizQuestions || [];
                 ecQuizItems = [{
-                    name: '随堂测',
+                    name: '随堂测 1',
                     selected: taskQuiz.slice(),
                     config: JSON.parse(JSON.stringify(task.quizConfig || { questionCount: 5, difficulty: 'mixed', timeLimit: 15, allowRetake: false, shuffleQuestions: false, showResult: false }))
                 }];
