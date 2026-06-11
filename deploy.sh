@@ -139,7 +139,7 @@ rsync -az --delete-after \
   --timeout=300 \
   --exclude='*.map' \
   --exclude='*.log' \
-  --exclude='logs/' \
+  --exclude='/logs/' \
   "$STANDALONE_DIR/" \
   "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/"
 
