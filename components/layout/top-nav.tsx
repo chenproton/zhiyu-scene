@@ -42,15 +42,15 @@ export function TopNav() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <a href="http://47.251.48.187:3001/portal" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+          <a href="http://111.170.170.202:3001/portal" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
             <Home className="mr-1.5 h-4 w-4" />
             门户首页
           </a>
-          <a href="http://47.251.48.187:3001/portal/workspace" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+          <a href="http://111.170.170.202:3001/portal/workspace" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
             <LayoutGrid className="mr-1.5 h-4 w-4" />
             我的服务台
           </a>
-          <a href="http://47.251.48.187:3001/portal/apps" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+          <a href="http://111.170.170.202:3001/portal/apps" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
             <Settings className="mr-1.5 h-4 w-4" />
             应用服务中心
           </a>
