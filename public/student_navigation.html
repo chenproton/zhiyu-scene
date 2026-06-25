@@ -204,44 +204,61 @@
   .hero-search button:hover { background: #3b8cff; }
   .hero-search button i { font-size: 14px; }
 
-  /* Hero stats bar */
+  /* Hero stats icon cards */
   .hero-stats {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(8px);
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.6);
-    padding: 18px 0;
-    margin-top: 28px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 32px;
   }
   .hero-stat-item {
-    flex: 1;
-    min-width: 0;
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    padding: 24px 16px 22px;
     text-align: center;
-    padding: 0 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .hero-stat-item + .hero-stat-item {
-    border-left: 1px solid #e2e8f0;
+  .hero-stat-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.1);
   }
+  .hero-stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  }
+  .hero-stat-icon.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+  .hero-stat-icon.purple { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+  .hero-stat-icon.green { background: linear-gradient(135deg, #059669, #10b981); }
+  .hero-stat-icon.orange { background: linear-gradient(135deg, #ea580c, #f59e0b); }
   .hero-stat-value {
     font-size: 32px;
     font-weight: 800;
     color: #0f172a;
     line-height: 1.1;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
+  .hero-stat-value::after { content: "+"; }
   .hero-stat-label {
-    font-size: 13px;
+    font-size: 14px;
     color: #64748b;
   }
 
+  @media (max-width: 992px) {
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  }
   @media (max-width: 480px) {
-    .hero-stats { padding: 14px 0; }
-    .hero-stat-value { font-size: 24px; }
-    .hero-stat-label { font-size: 12px; }
+    .hero-stats { grid-template-columns: 1fr; }
+    .hero-stat-value { font-size: 28px; }
   }
 
   /* Category shortcuts */
@@ -533,18 +550,22 @@
 
         <div class="hero-stats">
           <div class="hero-stat-item">
+            <div class="hero-stat-icon blue"><i class="fa fa-folder-open"></i></div>
             <div class="hero-stat-value" id="heroStatTotal">0</div>
             <div class="hero-stat-label">收录场景数</div>
           </div>
           <div class="hero-stat-item">
+            <div class="hero-stat-icon purple"><i class="fa fa-check-circle"></i></div>
             <div class="hero-stat-value" id="heroStatPublished">0</div>
             <div class="hero-stat-label">已发布场景</div>
           </div>
           <div class="hero-stat-item">
+            <div class="hero-stat-icon green"><i class="fa fa-tasks"></i></div>
             <div class="hero-stat-value" id="heroStatTasks">0</div>
             <div class="hero-stat-label">涉及任务数</div>
           </div>
           <div class="hero-stat-item">
+            <div class="hero-stat-icon orange"><i class="fa fa-briefcase"></i></div>
             <div class="hero-stat-value" id="heroStatPositions">0</div>
             <div class="hero-stat-label">覆盖岗位数</div>
           </div>
