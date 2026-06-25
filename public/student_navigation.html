@@ -399,40 +399,6 @@
     </div>
   </div>
 
-  <!-- 分类快捷入口 -->
-  <div class="category-bar" id="categoryBar">
-    <div class="category-item" data-industry="互联网/IT">
-      <div class="category-icon"><i class="fa fa-laptop"></i></div>
-      <div class="category-name">互联网/IT</div>
-      <div class="category-count">0 个场景</div>
-    </div>
-    <div class="category-item" data-industry="电子商务">
-      <div class="category-icon"><i class="fa fa-shopping-cart"></i></div>
-      <div class="category-name">电子商务</div>
-      <div class="category-count">0 个场景</div>
-    </div>
-    <div class="category-item" data-industry="金融">
-      <div class="category-icon"><i class="fa fa-line-chart"></i></div>
-      <div class="category-name">金融</div>
-      <div class="category-count">0 个场景</div>
-    </div>
-    <div class="category-item" data-industry="服务业">
-      <div class="category-icon"><i class="fa fa-handshake-o"></i></div>
-      <div class="category-name">服务业</div>
-      <div class="category-count">0 个场景</div>
-    </div>
-    <div class="category-item" data-industry="全部">
-      <div class="category-icon"><i class="fa fa-th-large"></i></div>
-      <div class="category-name">全部场景</div>
-      <div class="category-count">0 个场景</div>
-    </div>
-    <div class="category-item" data-industry="recent">
-      <div class="category-icon"><i class="fa fa-clock-o"></i></div>
-      <div class="category-name">最近更新</div>
-      <div class="category-count">按时间排序</div>
-    </div>
-  </div>
-
   <!-- 统计卡片 -->
   <div class="stats" id="statsRow">
     <div class="stat-card">
@@ -482,6 +448,14 @@
         <div class="filter-tags-more" id="professionTagsMore"></div>
       </div>
       <span class="expand-btn" data-target="professionTagsMore">展开</span>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">岗位</span>
+      <div class="filter-tags-wrap">
+        <div class="filter-tags" id="positionTags"></div>
+        <div class="filter-tags-more" id="positionTagsMore"></div>
+      </div>
+      <span class="expand-btn" data-target="positionTagsMore">展开</span>
     </div>
     <div class="filter-summary" id="filterSummary" style="display:none;">
       <span>已选条件：</span>
@@ -732,10 +706,16 @@
     const additionalProfessions = ["教学计划专业00", "SkedMajorto", "教学计划专业20", "软件工程专业", "自动化专业", "人工智能专业", "排课测试专业一", "排课测试专业二"];
     const professions = ["全部", ...existingProfessions, ...additionalProfessions];
 
+    const existingPositions = [...new Set(SCENARIOS.map(s => s.positionName).filter(Boolean))];
+    const additionalPositions = ["产品经理", "UI设计师", "测试工程师", "运维工程师", "人力资源专员", "客户服务专员", "财务会计", "市场营销专员"];
+    const positions = ["全部", ...existingPositions, ...additionalPositions];
+
     const industryFirstRow = industries.slice(0, 8);
     const industrySecondRow = industries.slice(8);
     const professionFirstRow = professions.slice(0, 8);
     const professionSecondRow = professions.slice(8);
+    const positionFirstRow = positions.slice(0, 8);
+    const positionSecondRow = positions.slice(8);
 
     const industryContainer = document.getElementById("industryTags");
     industryContainer.innerHTML = industryFirstRow.map((item, idx) =>
@@ -757,7 +737,17 @@
       `<span class="tag" data-value="${item}">${item}</span>`
     ).join("");
 
-    [industryContainer, industryMoreContainer, professionContainer, professionMoreContainer].forEach(container => {
+    const positionContainer = document.getElementById("positionTags");
+    positionContainer.innerHTML = positionFirstRow.map((item, idx) =>
+      `<span class="tag ${idx === 0 ? 'active' : ''}" data-value="${item}">${item}</span>`
+    ).join("");
+
+    const positionMoreContainer = document.getElementById("positionTagsMore");
+    positionMoreContainer.innerHTML = positionSecondRow.map((item) =>
+      `<span class="tag" data-value="${item}">${item}</span>`
+    ).join("");
+
+    [industryContainer, industryMoreContainer, professionContainer, professionMoreContainer, positionContainer, positionMoreContainer].forEach(container => {
       container.addEventListener("click", e => {
         if (e.target.classList.contains("tag")) {
           const groupId = container.id.replace('More', '');
@@ -826,18 +816,21 @@
   function getFilterValues() {
     const activeIndustry = document.querySelector("#industryTags .tag.active, #industryTagsMore .tag.active");
     const activeProfession = document.querySelector("#professionTags .tag.active, #professionTagsMore .tag.active");
+    const activePosition = document.querySelector("#positionTags .tag.active, #positionTagsMore .tag.active");
     return {
       industry: activeIndustry ? activeIndustry.dataset.value : "全部",
       profession: activeProfession ? activeProfession.dataset.value : "全部",
+      position: activePosition ? activePosition.dataset.value : "全部",
       keyword: searchInput.value.trim().toLowerCase()
     };
   }
 
   function updateFilterSummary() {
-    const { industry, profession, keyword } = getFilterValues();
+    const { industry, profession, position, keyword } = getFilterValues();
     const filters = [];
     if(industry !== '全部') filters.push({ type:'industry', label:`行业：${industry}` });
     if(profession !== '全部') filters.push({ type:'profession', label:`专业：${profession}` });
+    if(position !== '全部') filters.push({ type:'position', label:`岗位：${position}` });
     if(keyword) filters.push({ type:'keyword', label:`关键词：${keyword}` });
 
     const summary = document.getElementById('filterSummary');
@@ -857,6 +850,7 @@
         const type = icon.closest('.chip').dataset.type;
         if(type === 'industry') document.querySelector('#industryTags .tag[data-value="全部"]')?.click();
         if(type === 'profession') document.querySelector('#professionTags .tag[data-value="全部"]')?.click();
+        if(type === 'position') document.querySelector('#positionTags .tag[data-value="全部"]')?.click();
         if(type === 'keyword') { searchInput.value = ''; heroSearchInput.value = ''; renderCards(); updateFilterSummary(); }
       });
     });
@@ -865,6 +859,7 @@
   document.getElementById('clearFilters').addEventListener('click', () => {
     document.querySelector('#industryTags .tag[data-value="全部"]')?.click();
     document.querySelector('#professionTags .tag[data-value="全部"]')?.click();
+    document.querySelector('#positionTags .tag[data-value="全部"]')?.click();
     searchInput.value = '';
     heroSearchInput.value = '';
     renderCards();
@@ -873,13 +868,14 @@
 
   // =================== 渲染卡片 ===================
   function renderCards() {
-    const { industry, profession, keyword } = getFilterValues();
+    const { industry, profession, position, keyword } = getFilterValues();
 
     let filtered = SCENARIOS.filter(s => {
       const matchIndustry = industry === "全部" || s.industryName === industry;
       const matchProfession = profession === "全部" || s.professionName === profession;
+      const matchPosition = position === "全部" || s.positionName === position;
       const matchKeyword = !keyword || s.name.toLowerCase().includes(keyword) || s.code.toLowerCase().includes(keyword);
-      return matchIndustry && matchProfession && matchKeyword;
+      return matchIndustry && matchProfession && matchPosition && matchKeyword;
     });
 
     if (currentSort === "recent") {
