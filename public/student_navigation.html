@@ -204,6 +204,56 @@
   .hero-search button:hover { background: #3b8cff; }
   .hero-search button i { font-size: 14px; }
 
+  /* Hero stats cards */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .hero-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .hero-stat-info { text-align: left; }
+  .hero-stat-label {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+  .hero-stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+  }
+  .hero-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .hero-stat-icon.blue { background: #dbeafe; color: #1d4ed8; }
+  .hero-stat-icon.green { background: #dcfce7; color: #15803d; }
+  .hero-stat-icon.orange { background: #ffedd5; color: #c2410c; }
+  .hero-stat-icon.purple { background: #f3e8ff; color: #7e22ce; }
+
+  @media (max-width: 992px) {
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .hero-stats { grid-template-columns: 1fr; }
+  }
+
   /* Category shortcuts */
   .category-bar {
     display: grid;
@@ -489,6 +539,37 @@
         <div class="hero-search">
           <input type="text" id="mainSearchInput" placeholder="搜索场景名称或编码">
           <button id="mainSearchBtn"><i class="fa fa-search"></i> 搜索</button>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat-card">
+            <div class="hero-stat-info">
+              <div class="hero-stat-label">收录场景数</div>
+              <div class="hero-stat-value" id="heroStatTotal">0</div>
+            </div>
+            <div class="hero-stat-icon blue"><i class="fa fa-book"></i></div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-info">
+              <div class="hero-stat-label">已发布场景</div>
+              <div class="hero-stat-value" id="heroStatPublished">0</div>
+            </div>
+            <div class="hero-stat-icon green"><i class="fa fa-rocket"></i></div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-info">
+              <div class="hero-stat-label">涉及任务数</div>
+              <div class="hero-stat-value" id="heroStatTasks">0</div>
+            </div>
+            <div class="hero-stat-icon orange"><i class="fa fa-flask"></i></div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-info">
+              <div class="hero-stat-label">覆盖岗位数</div>
+              <div class="hero-stat-value" id="heroStatPositions">0</div>
+            </div>
+            <div class="hero-stat-icon purple"><i class="fa fa-eye"></i></div>
+          </div>
         </div>
       </div>
     </div>
@@ -878,9 +959,18 @@
     "linear-gradient(135deg,#0f766e,#14b8a6)"
   ];
 
-  // =================== 初始化分类统计 ===================
+  // =================== 初始化分类统计和 Hero 数据卡片 ===================
   function initCategoryCounts() {
     const total = SCENARIOS.length;
+    const published = SCENARIOS.filter(s => s.status === "published").length;
+    const tasks = SCENARIOS.reduce((sum, s) => sum + s.tasksCount, 0);
+    const positions = new Set(SCENARIOS.map(s => s.positionName).filter(Boolean)).size;
+
+    document.getElementById("heroStatTotal").textContent = total;
+    document.getElementById("heroStatPublished").textContent = published;
+    document.getElementById("heroStatTasks").textContent = tasks;
+    document.getElementById("heroStatPositions").textContent = positions;
+
     const industryCounts = {};
     SCENARIOS.forEach(s => { if(s.industryName) industryCounts[s.industryName] = (industryCounts[s.industryName]||0)+1; });
     document.querySelectorAll('.category-item').forEach(item => {
