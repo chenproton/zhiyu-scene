@@ -233,19 +233,6 @@
   .category-name { font-size: 14px; font-weight: 600; color: #334155; }
   .category-count { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 
-  /* Stats bar */
-  .stats-bar {
-    display: flex; align-items: center; justify-content: center;
-    gap: 24px; flex-wrap: wrap;
-    padding: 8px 0; margin-bottom: 12px;
-    font-size: 14px; font-weight: 600; color: #334155;
-  }
-  .stats-bar-lead { font-weight: 700; color: #1677ff; font-size: 30px; }
-  .stats-bar-item { display: flex; align-items: baseline; gap: 8px; }
-  .stats-bar-label { color: #334155; font-size: 28px; }
-  .stats-bar-value { font-size: 36px; font-weight: 800; color: #1677ff; }
-  .stats-bar-divider { width: 1px; height: 36px; background: #cbd5e1; }
-
   /* Filter */
   .filter-box {
     background: #fff; border-radius: 16px;
@@ -455,8 +442,6 @@
     .header-nav { display: none; }
     .main { padding: 80px 16px 32px; }
     .hero-side { flex-direction: column; }
-    .carousel-title { font-size: 26px; }
-    .stats { grid-template-columns: repeat(2, 1fr); }
     .card-grid { grid-template-columns: 1fr; }
     .category-bar { grid-template-columns: repeat(2, 1fr); }
     .toolbar { flex-direction: column; gap: 12px; align-items: flex-start; }
@@ -516,31 +501,6 @@
         <div class="side-panel-header"><i class="fa fa-heart"></i>心仪岗位场景</div>
         <div class="side-panel-body" id="favoritePositionScenarios"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- 统计条 -->
-  <div class="stats-bar" id="statsRow">
-    <div class="stats-bar-lead">场景化数智教学服务平台</div>
-    <div class="stats-bar-divider"></div>
-    <div class="stats-bar-item">
-      <span class="stats-bar-label">收录场景数</span>
-      <span class="stats-bar-value" id="statTotal">0</span>
-    </div>
-    <div class="stats-bar-divider"></div>
-    <div class="stats-bar-item">
-      <span class="stats-bar-label">已发布场景</span>
-      <span class="stats-bar-value" id="statPublished">0</span>
-    </div>
-    <div class="stats-bar-divider"></div>
-    <div class="stats-bar-item">
-      <span class="stats-bar-label">涉及任务数</span>
-      <span class="stats-bar-value" id="statTasks">0</span>
-    </div>
-    <div class="stats-bar-divider"></div>
-    <div class="stats-bar-item">
-      <span class="stats-bar-label">覆盖岗位数</span>
-      <span class="stats-bar-value" id="statPositions">0</span>
     </div>
   </div>
 
@@ -918,19 +878,9 @@
     "linear-gradient(135deg,#0f766e,#14b8a6)"
   ];
 
-  // =================== 初始化统计 ===================
-  function initStats() {
+  // =================== 初始化分类统计 ===================
+  function initCategoryCounts() {
     const total = SCENARIOS.length;
-    const published = SCENARIOS.filter(s => s.status === "published").length;
-    const tasks = SCENARIOS.reduce((sum, s) => sum + s.tasksCount, 0);
-    const positions = new Set(SCENARIOS.map(s => s.positionName).filter(Boolean)).size;
-
-    animateNumber("statTotal", total);
-    animateNumber("statPublished", published);
-    animateNumber("statTasks", tasks);
-    animateNumber("statPositions", positions);
-
-    // 分类统计
     const industryCounts = {};
     SCENARIOS.forEach(s => { if(s.industryName) industryCounts[s.industryName] = (industryCounts[s.industryName]||0)+1; });
     document.querySelectorAll('.category-item').forEach(item => {
@@ -940,20 +890,6 @@
       else if(industry === 'recent') countEl.textContent = '按时间排序';
       else countEl.textContent = `${industryCounts[industry] || 0} 个场景`;
     });
-  }
-
-  function animateNumber(id, target) {
-    const el = document.getElementById(id);
-    const duration = 800;
-    const start = performance.now();
-    function update(now) {
-      const progress = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.floor(target * ease);
-      if(progress < 1) requestAnimationFrame(update);
-      else el.textContent = target;
-    }
-    requestAnimationFrame(update);
   }
 
   // =================== 初始化筛选标签 ===================
@@ -1314,7 +1250,7 @@
   }
 
   // =================== 初始化 ===================
-  initStats();
+  initCategoryCounts();
   initFilters();
   initSidePanels();
   renderCards();
