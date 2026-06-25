@@ -91,7 +91,7 @@
   /* Hero layout: side panels + carousel */
   .hero-wrapper {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 1fr 300px;
     gap: 20px;
     margin-bottom: 8px;
   }
@@ -157,20 +157,17 @@
     min-height: 380px;
     background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    text-align: center;
-    padding: 48px 24px;
+    padding: 36px 24px;
   }
-  .hero-banner-content { max-width: 720px; color: #fff; }
-  .hero-banner-title { font-size: 42px; font-weight: 800; margin-bottom: 16px; letter-spacing: 1px; }
-  .hero-banner-subtitle { font-size: 16px; color: rgba(255,255,255,0.9); margin-bottom: 32px; }
+  .hero-banner-content { width: 100%; max-width: 560px; }
   .hero-search {
     display: flex; align-items: center;
     background: #fff; border-radius: 50px;
     padding: 6px 6px 6px 18px;
     box-shadow: 0 12px 32px rgba(0,0,0,0.15);
-    max-width: 560px; margin: 0 auto;
+    width: 100%;
   }
   .hero-search-icon { color: #94a3b8; font-size: 16px; margin-right: 10px; }
   .hero-search input {
@@ -479,6 +476,15 @@
 
   <!-- Hero 轮播区 -->
   <div class="hero-wrapper">
+    <div class="hero" id="heroCarousel">
+      <div class="hero-banner-content">
+        <div class="hero-search">
+          <i class="fa fa-search hero-search-icon"></i>
+          <input type="text" id="mainSearchInput" placeholder="搜索场景名称、岗位编码或关键词">
+          <button id="mainSearchBtn">搜索</button>
+        </div>
+      </div>
+    </div>
     <div class="hero-side">
       <div class="side-panel">
         <div class="side-panel-header"><i class="fa fa-bullseye"></i>目标岗位场景</div>
@@ -487,17 +493,6 @@
       <div class="side-panel">
         <div class="side-panel-header"><i class="fa fa-heart"></i>心仪岗位场景</div>
         <div class="side-panel-body" id="favoritePositionScenarios"></div>
-      </div>
-    </div>
-    <div class="hero" id="heroCarousel">
-      <div class="hero-banner-content">
-        <h1 class="hero-banner-title">能力测评中心</h1>
-        <p class="hero-banner-subtitle">集测评资源、岗位能力认定、毕业设计、学生画像于一体的一站式能力成长平台</p>
-        <div class="hero-search">
-          <i class="fa fa-search hero-search-icon"></i>
-          <input type="text" id="mainSearchInput" placeholder="搜索场景名称、岗位编码或关键词">
-          <button id="mainSearchBtn">搜索</button>
-        </div>
       </div>
     </div>
   </div>
