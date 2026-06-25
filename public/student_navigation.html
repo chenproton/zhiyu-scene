@@ -157,31 +157,52 @@
     min-height: 380px;
     background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     padding: 36px 24px;
   }
-  .hero-banner-content { width: 100%; max-width: 560px; }
+  .hero-banner-content {
+    width: 100%;
+    max-width: 620px;
+    text-align: center;
+  }
+  .hero-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 14px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    letter-spacing: 1px;
+  }
+  .hero-subtitle {
+    font-size: 16px;
+    color: rgba(255,255,255,0.92);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
   .hero-search {
     display: flex; align-items: center;
-    background: #fff; border-radius: 50px;
+    background: #fff; border-radius: 14px;
     padding: 6px 6px 6px 18px;
     box-shadow: 0 12px 32px rgba(0,0,0,0.15);
     width: 100%;
   }
-  .hero-search-icon { color: #94a3b8; font-size: 16px; margin-right: 10px; }
   .hero-search input {
     flex: 1; border: none; outline: none;
     font-size: 15px; color: #334155; background: transparent;
+    min-width: 0;
   }
   .hero-search input::placeholder { color: #94a3b8; }
   .hero-search button {
     background: #1677ff; color: #fff; border: none;
-    border-radius: 50px; padding: 12px 32px;
+    border-radius: 10px; padding: 11px 22px;
     font-size: 15px; cursor: pointer;
     transition: background 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
   }
   .hero-search button:hover { background: #3b8cff; }
+  .hero-search button i { font-size: 14px; }
 
   /* Category shortcuts */
   .category-bar {
@@ -478,10 +499,11 @@
   <div class="hero-wrapper">
     <div class="hero" id="heroCarousel">
       <div class="hero-banner-content">
+        <div class="hero-title">探索真实业务场景</div>
+        <div class="hero-subtitle">基于岗位能力模型，覆盖多行业、多专业的项目化学习场景，助力职业能力成长</div>
         <div class="hero-search">
-          <i class="fa fa-search hero-search-icon"></i>
-          <input type="text" id="mainSearchInput" placeholder="搜索场景名称、岗位编码或关键词">
-          <button id="mainSearchBtn">搜索</button>
+          <input type="text" id="mainSearchInput" placeholder="搜索场景名称或编码">
+          <button id="mainSearchBtn"><i class="fa fa-search"></i> 搜索</button>
         </div>
       </div>
     </div>
