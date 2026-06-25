@@ -88,24 +88,70 @@
   /* Main */
   .main { padding: 88px 32px 48px; max-width: 1600px; margin: 0 auto; }
 
+  /* Hero layout: side panels + carousel */
+  .hero-wrapper {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .hero-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .side-panel {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .side-panel-header {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .side-panel-header i { color: #1677ff; font-size: 16px; }
+  .side-panel-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .side-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .side-item:hover { background: #eff6ff; color: #1677ff; border-color: #bfdbfe; }
+  .side-item-title { font-weight: 600; margin-bottom: 4px; }
+  .side-item-meta { font-size: 12px; color: #94a3b8; }
+  .side-empty { color: #94a3b8; font-size: 13px; text-align: center; padding: 20px 0; }
+
   /* Hero carousel */
   .hero {
     position: relative;
     border-radius: 20px;
     overflow: hidden;
-    min-height: 360px;
-    margin-bottom: 28px;
+    min-height: 380px;
     background: #0f172a;
   }
   .carousel-track {
     display: flex;
     width: 100%;
-    height: 100%;
+    height: 380px;
     transition: transform 0.5s ease-in-out;
   }
   .carousel-slide {
     min-width: 100%;
-    height: 360px;
+    height: 380px;
     position: relative;
     background-size: cover;
     background-position: center;
@@ -391,6 +437,9 @@
   .footer-links span:hover { color: #1677ff; }
 
   @media (max-width: 1200px) {
+    .hero-wrapper { grid-template-columns: 1fr; }
+    .hero-side { flex-direction: row; }
+    .side-panel { min-width: 0; }
     .card-grid { grid-template-columns: repeat(3, 1fr); }
     .category-bar { grid-template-columns: repeat(3, 1fr); }
   }
@@ -398,6 +447,7 @@
     .header { padding: 0 16px; }
     .header-nav { display: none; }
     .main { padding: 80px 16px 32px; }
+    .hero-side { flex-direction: column; }
     .carousel-title { font-size: 26px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .card-grid { grid-template-columns: 1fr; }
@@ -439,11 +489,23 @@
 <div class="main">
 
   <!-- Hero 轮播区 -->
-  <div class="hero" id="heroCarousel">
-    <div class="carousel-track" id="carouselTrack">
-      <!-- JS 动态生成 -->
+  <div class="hero-wrapper">
+    <div class="hero-side">
+      <div class="side-panel">
+        <div class="side-panel-header"><i class="fa fa-bullseye"></i>目标岗位场景</div>
+        <div class="side-panel-body" id="targetPositionScenarios"></div>
+      </div>
+      <div class="side-panel">
+        <div class="side-panel-header"><i class="fa fa-heart"></i>心仪岗位场景</div>
+        <div class="side-panel-body" id="favoritePositionScenarios"></div>
+      </div>
     </div>
-    <div class="carousel-dots" id="carouselDots"></div>
+    <div class="hero" id="heroCarousel">
+      <div class="carousel-track" id="carouselTrack">
+        <!-- JS 动态生成 -->
+      </div>
+      <div class="carousel-dots" id="carouselDots"></div>
+    </div>
   </div>
 
   <!-- 统计卡片 -->
@@ -1152,6 +1214,36 @@
     renderPagination(totalPages);
   }
 
+  // =================== 侧边岗位场景面板 ===================
+  function initSidePanels() {
+    const targetContainer = document.getElementById("targetPositionScenarios");
+    const favoriteContainer = document.getElementById("favoritePositionScenarios");
+
+    const targetScenarios = SCENARIOS.filter(s => s.positionName).slice(0, 4);
+    const favoriteScenarios = SCENARIOS.filter(s => s.status === "published").slice(0, 4);
+
+    function renderList(container, list) {
+      if (list.length === 0) {
+        container.innerHTML = '<div class="side-empty">暂无数据</div>';
+        return;
+      }
+      container.innerHTML = list.map(s => `
+        <div class="side-item" data-id="${s.id}">
+          <div class="side-item-title">${s.name}</div>
+          <div class="side-item-meta">${s.positionName || s.industryName || "未指定"} · ${s.code}</div>
+        </div>
+      `).join("");
+      container.querySelectorAll(".side-item").forEach(item => {
+        item.addEventListener("click", () => {
+          window.location.href = "student.html";
+        });
+      });
+    }
+
+    renderList(targetContainer, targetScenarios);
+    renderList(favoriteContainer, favoriteScenarios);
+  }
+
   // =================== 首页轮播 ===================
   function initHeroCarousel() {
     const track = document.getElementById("carouselTrack");
@@ -1251,6 +1343,7 @@
   // =================== 初始化 ===================
   initStats();
   initFilters();
+  initSidePanels();
   initHeroCarousel();
   renderCards();
   updateFilterSummary();
