@@ -273,6 +273,30 @@
   .result-tip { font-size: 14px; color: #64748b; margin-bottom: 16px; }
   .result-tip b { color: #1677ff; font-weight: 700; }
 
+  /* Pagination */
+  .pagination {
+    display: flex; justify-content: center; align-items: center;
+    gap: 8px; margin-top: 28px;
+  }
+  .pagination button, .pagination .page-number {
+    min-width: 32px; height: 32px;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+    background: #fff; color: #475569;
+    font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 10px;
+    transition: all 0.2s;
+  }
+  .pagination button:hover:not(:disabled), .pagination .page-number:hover:not(.active) {
+    border-color: #1677ff; color: #1677ff;
+  }
+  .pagination .page-number.active {
+    background: #1677ff; color: #fff; border-color: #1677ff;
+  }
+  .pagination button:disabled {
+    opacity: 0.5; cursor: not-allowed; color: #94a3b8;
+  }
+
   /* Cards */
   .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
   .scene-card {
@@ -511,6 +535,9 @@
     <i class="fa fa-search"></i>
     <div>暂无匹配的场景，试试调整筛选条件</div>
   </div>
+
+  <!-- 分页 -->
+  <div class="pagination" id="pagination"></div>
 </div>
 
 <script>
@@ -659,6 +686,150 @@
       tasksCount: 0,
       totalHours: 0,
       coverImage: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-9",
+      name: "移动应用 UI 设计实战",
+      code: "SC-2026-0009",
+      version: "v1.2",
+      industryName: "互联网/IT",
+      professionName: "信息技术",
+      positionName: "UI设计师",
+      batchName: "2026春季 UI 设计场景",
+      creatorName: "王老师",
+      difficulty: 4,
+      status: "published",
+      publishTime: "2024-03-18 10:00:00",
+      updatedAt: "2024-03-10",
+      tasksCount: 3,
+      totalHours: 28,
+      coverImage: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-10",
+      name: "云服务器运维与监控",
+      code: "SC-2026-0010",
+      version: "v2.0",
+      industryName: "互联网/IT",
+      professionName: "信息技术",
+      positionName: "运维工程师",
+      batchName: "2026春季运维场景",
+      creatorName: "张老师",
+      difficulty: 5,
+      status: "published",
+      publishTime: "2024-03-20 14:00:00",
+      updatedAt: "2024-03-12",
+      tasksCount: 5,
+      totalHours: 40,
+      coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-11",
+      name: "产品需求分析与原型设计",
+      code: "SC-2026-0011",
+      version: "v1.5",
+      industryName: "互联网/IT",
+      professionName: "信息技术",
+      positionName: "产品经理",
+      batchName: "2026春季产品场景",
+      creatorName: "李老师",
+      difficulty: 3,
+      status: "pending",
+      publishTime: "",
+      updatedAt: "2024-03-08",
+      tasksCount: 0,
+      totalHours: 0,
+      coverImage: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-12",
+      name: "跨境电商运营实战",
+      code: "SC-2026-0012",
+      version: "v2.3",
+      industryName: "电子商务",
+      professionName: "电子商务",
+      positionName: "电商运营专员",
+      batchName: "2026春季电商实训场景开发",
+      creatorName: "赵老师",
+      difficulty: 3,
+      status: "published",
+      publishTime: "2024-03-22 09:30:00",
+      updatedAt: "2024-03-15",
+      tasksCount: 4,
+      totalHours: 32,
+      coverImage: "https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-13",
+      name: "智能客服系统搭建",
+      code: "SC-2026-0013",
+      version: "v1.0",
+      industryName: "服务业",
+      professionName: "市场营销",
+      positionName: "客户服务专员",
+      batchName: "2026春季服务场景",
+      creatorName: "王老师",
+      difficulty: 2,
+      status: "draft",
+      publishTime: "",
+      updatedAt: "2024-03-18",
+      tasksCount: 0,
+      totalHours: 0,
+      coverImage: "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-14",
+      name: "大数据平台搭建实践",
+      code: "SC-2026-0014",
+      version: "v2.1",
+      industryName: "互联网/IT",
+      professionName: "信息技术",
+      positionName: "数据分析师",
+      batchName: "2026春季大数据场景",
+      creatorName: "张老师",
+      difficulty: 5,
+      status: "published",
+      publishTime: "2024-03-25 11:00:00",
+      updatedAt: "2024-03-20",
+      tasksCount: 6,
+      totalHours: 48,
+      coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-15",
+      name: "人力资源招聘流程设计",
+      code: "SC-2026-0015",
+      version: "v1.3",
+      industryName: "服务业",
+      professionName: "公共管理与服务",
+      positionName: "人力资源专员",
+      batchName: "2026春季人力资源场景",
+      creatorName: "李老师",
+      difficulty: 2,
+      status: "published",
+      publishTime: "2024-03-28 10:00:00",
+      updatedAt: "2024-03-22",
+      tasksCount: 2,
+      totalHours: 16,
+      coverImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&h=400&fit=crop"
+    },
+    {
+      id: "scenario-16",
+      name: "金融风险控制建模",
+      code: "SC-2026-0016",
+      version: "v1.8",
+      industryName: "金融",
+      professionName: "财务管理",
+      positionName: "会计师",
+      batchName: "2026春季金融场景",
+      creatorName: "赵老师",
+      difficulty: 5,
+      status: "pending",
+      publishTime: "",
+      updatedAt: "2024-03-25",
+      tasksCount: 0,
+      totalHours: 0,
+      coverImage: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=400&fit=crop"
     }
   ];
 
@@ -776,6 +947,7 @@
           const groupId = container.id.replace('More', '');
           document.querySelectorAll(`#${groupId} .tag, #${groupId}More .tag`).forEach(t => t.classList.remove("active"));
           e.target.classList.add("active");
+          currentPage = 1;
           renderCards();
           updateFilterSummary();
         }
@@ -785,6 +957,11 @@
 
   // =================== 排序 ===================
   let currentSort = "default";
+
+  // =================== 分页 ===================
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+
   document.querySelectorAll(".sort-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
@@ -798,9 +975,9 @@
   const searchInput = document.getElementById("searchInput");
   const searchBtn = document.getElementById("searchBtn");
 
-  searchInput.addEventListener("input", () => renderCards());
-  searchBtn.addEventListener("click", () => renderCards());
-  searchInput.addEventListener("keydown", e => { if(e.key === 'Enter') renderCards(); });
+  searchInput.addEventListener("input", () => { currentPage = 1; renderCards(); });
+  searchBtn.addEventListener("click", () => { currentPage = 1; renderCards(); });
+  searchInput.addEventListener("keydown", e => { if(e.key === 'Enter') { currentPage = 1; renderCards(); } });
 
   // =================== 分类快捷入口 ===================
   document.querySelectorAll('.category-item').forEach(item => {
@@ -863,7 +1040,7 @@
         if(type === 'industry') document.querySelector('#industryTags .tag[data-value="全部"]')?.click();
         if(type === 'profession') document.querySelector('#professionTags .tag[data-value="全部"]')?.click();
         if(type === 'position') document.querySelector('#positionTags .tag[data-value="全部"]')?.click();
-        if(type === 'keyword') { searchInput.value = ''; renderCards(); updateFilterSummary(); }
+        if(type === 'keyword') { searchInput.value = ''; currentPage = 1; renderCards(); updateFilterSummary(); }
       });
     });
   }
@@ -873,6 +1050,7 @@
     document.querySelector('#professionTags .tag[data-value="全部"]')?.click();
     document.querySelector('#positionTags .tag[data-value="全部"]')?.click();
     searchInput.value = '';
+    currentPage = 1;
     renderCards();
     updateFilterSummary();
   });
@@ -901,25 +1079,32 @@
       filtered.sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
     }
 
-    document.getElementById("resultCount").textContent = filtered.length;
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    document.getElementById("resultCount").textContent = total;
 
     const grid = document.getElementById("cardGrid");
     const empty = document.getElementById("emptyState");
 
-    if (filtered.length === 0) {
+    if (total === 0) {
       grid.innerHTML = "";
       empty.style.display = "block";
+      renderPagination(0);
       return;
     }
     empty.style.display = "none";
 
-    grid.innerHTML = filtered.map((s, idx) => {
+    const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    grid.innerHTML = paginated.map((s, idx) => {
       const status = STATUS_MAP[s.status] || STATUS_MAP.draft;
       const dateStr = s.publishTime ? s.publishTime.split(" ")[0] : s.updatedAt;
       const displayDate = dateStr || "2024-01-01";
       const coverStyle = s.coverImage ? `background-image:url('${s.coverImage}')` : `background:${COVER_BACKUPS[idx % COVER_BACKUPS.length]}`;
       const resourceCount = s.tasksCount * 3 + Math.floor(Math.random() * 5);
-      const stars = Array(5).fill(0).map((_, i) => `<i class="fa fa-star ${i < s.difficulty ? 'active' : ''}"></i>`).join('');
 
       return `
         <div class="scene-card" data-id="${s.id}">
@@ -934,7 +1119,6 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="card-title">${s.name}</div>
             <div class="card-stats">
               <div class="card-stat">
                 <div class="card-stat-num">${s.tasksCount}</div>
@@ -953,7 +1137,6 @@
               <span class="card-tag blue">${s.industryName || "未指定"}</span>
               <span class="card-tag purple">${s.positionName || "未指定"}</span>
               <span class="card-tag">${s.professionName || "未分类"}</span>
-              <span class="card-tag orange" title="难度">难度<span class="difficulty-stars">${stars}</span></span>
             </div>
           </div>
         </div>
@@ -965,6 +1148,8 @@
         window.location.href = "student.html";
       });
     });
+
+    renderPagination(totalPages);
   }
 
   // =================== 首页轮播 ===================
@@ -1032,6 +1217,35 @@
     hero.addEventListener("mouseleave", start);
 
     start();
+  }
+
+  // =================== 分页渲染 ===================
+  function renderPagination(totalPages) {
+    const container = document.getElementById("pagination");
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+
+    let html = `<button class="prev" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<span class="page-number ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</span>`;
+    }
+    html += `<button class="next" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
+    container.innerHTML = html;
+
+    container.querySelector('.prev')?.addEventListener('click', () => {
+      if (currentPage > 1) { currentPage--; renderCards(); }
+    });
+    container.querySelector('.next')?.addEventListener('click', () => {
+      if (currentPage < totalPages) { currentPage++; renderCards(); }
+    });
+    container.querySelectorAll('.page-number').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPage = parseInt(btn.dataset.page);
+        renderCards();
+      });
+    });
   }
 
   // =================== 初始化 ===================
