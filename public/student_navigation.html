@@ -253,6 +253,32 @@
   .stats-bar-value { font-size: 20px; font-weight: 800; color: #1677ff; }
   .stats-bar-divider { width: 1px; height: 16px; background: #e2e8f0; }
 
+  /* Main search */
+  .main-search-wrap {
+    display: flex; justify-content: center;
+    margin-bottom: 28px;
+  }
+  .main-search {
+    display: flex; align-items: center;
+    background: #fff; border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 8px 8px 8px 20px;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+    max-width: 560px; width: 100%;
+  }
+  .main-search input {
+    flex: 1; border: none; outline: none;
+    font-size: 15px; color: #334155;
+  }
+  .main-search input::placeholder { color: #94a3b8; }
+  .main-search button {
+    background: linear-gradient(135deg, #1677ff, #3b8cff);
+    color: #fff; border: none; border-radius: 10px;
+    padding: 10px 22px; font-size: 14px; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .main-search button:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(22,119,255,0.35); }
+
   /* Filter */
   .filter-box {
     background: #fff; border-radius: 16px;
@@ -538,6 +564,14 @@
     <div class="stats-bar-item">
       <span class="stats-bar-label">覆盖岗位数</span>
       <span class="stats-bar-value" id="statPositions">0</span>
+    </div>
+  </div>
+
+  <!-- 主搜索框 -->
+  <div class="main-search-wrap">
+    <div class="main-search">
+      <input type="text" id="mainSearchInput" placeholder="搜索场景名称或编码">
+      <button id="mainSearchBtn"><i class="fa fa-search"></i> 搜索</button>
     </div>
   </div>
 
@@ -1037,10 +1071,21 @@
   // =================== 搜索 ===================
   const searchInput = document.getElementById("searchInput");
   const searchBtn = document.getElementById("searchBtn");
+  const mainSearchInput = document.getElementById("mainSearchInput");
+  const mainSearchBtn = document.getElementById("mainSearchBtn");
 
-  searchInput.addEventListener("input", () => { currentPage = 1; renderCards(); });
-  searchBtn.addEventListener("click", () => { currentPage = 1; renderCards(); });
-  searchInput.addEventListener("keydown", e => { if(e.key === 'Enter') { currentPage = 1; renderCards(); } });
+  function doSearch() {
+    currentPage = 1;
+    renderCards();
+  }
+
+  searchInput.addEventListener("input", () => { mainSearchInput.value = searchInput.value; doSearch(); });
+  searchBtn.addEventListener("click", () => { mainSearchInput.value = searchInput.value; doSearch(); });
+  searchInput.addEventListener("keydown", e => { if(e.key === 'Enter') { mainSearchInput.value = searchInput.value; doSearch(); } });
+
+  mainSearchInput.addEventListener("input", () => { searchInput.value = mainSearchInput.value; doSearch(); });
+  mainSearchBtn.addEventListener("click", () => { searchInput.value = mainSearchInput.value; doSearch(); });
+  mainSearchInput.addEventListener("keydown", e => { if(e.key === 'Enter') { searchInput.value = mainSearchInput.value; doSearch(); } });
 
   // =================== 分类快捷入口 ===================
   document.querySelectorAll('.category-item').forEach(item => {
@@ -1103,7 +1148,7 @@
         if(type === 'industry') document.querySelector('#industryTags .tag[data-value="全部"]')?.click();
         if(type === 'profession') document.querySelector('#professionTags .tag[data-value="全部"]')?.click();
         if(type === 'position') document.querySelector('#positionTags .tag[data-value="全部"]')?.click();
-        if(type === 'keyword') { searchInput.value = ''; currentPage = 1; renderCards(); updateFilterSummary(); }
+        if(type === 'keyword') { searchInput.value = ''; mainSearchInput.value = ''; currentPage = 1; renderCards(); updateFilterSummary(); }
       });
     });
   }
@@ -1113,6 +1158,7 @@
     document.querySelector('#professionTags .tag[data-value="全部"]')?.click();
     document.querySelector('#positionTags .tag[data-value="全部"]')?.click();
     searchInput.value = '';
+    mainSearchInput.value = '';
     currentPage = 1;
     renderCards();
     updateFilterSummary();
@@ -1249,67 +1295,19 @@
   function initHeroCarousel() {
     const track = document.getElementById("carouselTrack");
     const dots = document.getElementById("carouselDots");
-    const slidesData = SCENARIOS.slice(0, 5);
 
-    slidesData.forEach((s, idx) => {
-      const status = STATUS_MAP[s.status] || STATUS_MAP.draft;
-      const slide = document.createElement("div");
-      slide.className = "carousel-slide";
-      if (s.coverImage) {
-        slide.style.backgroundImage = `url('${s.coverImage}')`;
-      } else {
-        slide.style.background = COVER_BACKUPS[idx % COVER_BACKUPS.length];
-      }
-      slide.innerHTML = `
-        <div class="carousel-content">
-          <div class="carousel-badge"><i class="fa fa-star"></i> 精选场景 ${idx + 1}/5</div>
-          <h2 class="carousel-title">${s.name}</h2>
-          <div class="carousel-meta">场景编码：${s.code} · ${status.label} · ${s.industryName || "未指定"} · ${s.positionName || "未指定"}</div>
-          <div class="carousel-tags">
-            <span class="carousel-tag">${s.version}</span>
-            <span class="carousel-tag">${s.industryName || "未指定行业"}</span>
-            <span class="carousel-tag">${s.positionName || "未指定岗位"}</span>
-            <span class="carousel-tag">预计课时 ${s.totalHours}h</span>
-          </div>
-        </div>
-      `;
-      track.appendChild(slide);
-
-      const dot = document.createElement("div");
-      dot.className = "carousel-dot" + (idx === 0 ? " active" : "");
-      dot.addEventListener("click", () => goTo(idx));
-      dots.appendChild(dot);
-    });
-
-    let current = 0;
-    const total = slidesData.length;
-    let timer = null;
-
-    function goTo(index) {
-      current = index;
-      track.style.transform = `translateX(-${current * 100}%)`;
-      dots.querySelectorAll(".carousel-dot").forEach((d, i) => {
-        d.classList.toggle("active", i === current);
-      });
-    }
-
-    function next() {
-      goTo((current + 1) % total);
-    }
-
-    function start() {
-      timer = setInterval(next, 2000);
-    }
-
-    function stop() {
-      clearInterval(timer);
-    }
-
-    const hero = document.getElementById("heroCarousel");
-    hero.addEventListener("mouseenter", stop);
-    hero.addEventListener("mouseleave", start);
-
-    start();
+    const slide = document.createElement("div");
+    slide.className = "carousel-slide";
+    slide.style.backgroundImage = "url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&h=600&fit=crop')";
+    slide.innerHTML = `
+      <div class="carousel-content">
+        <div class="carousel-badge"><i class="fa fa-graduation-cap"></i> 沉浸式业务场景学习</div>
+        <h2 class="carousel-title">探索真实业务场景</h2>
+        <div class="carousel-meta">基于岗位能力模型，覆盖多行业、多专业的项目化学习场景，助力职业能力成长</div>
+      </div>
+    `;
+    track.appendChild(slide);
+    dots.style.display = "none";
   }
 
   // =================== 分页渲染 ===================
