@@ -412,6 +412,7 @@
     position: absolute; top: 12px; left: 12px; right: 12px;
     display: flex; justify-content: space-between; z-index: 1;
   }
+  .cover-tag-group { display: flex; gap: 8px; }
   .cover-tag {
     background: rgba(255,255,255,0.2);
     backdrop-filter: blur(4px);
@@ -436,14 +437,19 @@
   }
   .card-stat-num { font-size: 18px; font-weight: 800; color: #0f172a; }
   .card-stat-label { font-size: 12px; color: #94a3b8; margin-top: 2px; }
-  .card-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .card-tag {
-    font-size: 12px; padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; padding: 5px 12px; border-radius: 20px;
     background: #f1f5f9; color: #475569;
   }
   .card-tag.blue { background: #dbeafe; color: #1d4ed8; }
   .card-tag.purple { background: #f3e8ff; color: #7e22ce; }
   .card-tag.orange { background: #ffedd5; color: #c2410c; }
+  .card-info-row {
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: #64748b;
+    margin-top: 8px;
+  }
   .difficulty-stars { display: inline-flex; gap: 2px; margin-left: 6px; }
   .difficulty-stars .fa-star { font-size: 10px; color: #e2e8f0; }
   .difficulty-stars .fa-star.active { color: #f59e0b; }
@@ -1190,6 +1196,17 @@
   });
 
   // =================== 渲染卡片 ===================
+  function getViewCount(s) {
+    let hash = 0;
+    for (let i = 0; i < s.id.length; i++) hash = s.id.charCodeAt(i) + ((hash << 5) - hash);
+    return 100 + Math.abs(hash) % 900;
+  }
+  function getRelatedCount(s) {
+    let hash = 0;
+    for (let i = 0; i < s.code.length; i++) hash = s.code.charCodeAt(i) + ((hash << 5) - hash);
+    return Math.abs(hash) % 6;
+  }
+
   function renderCards() {
     const { industry, profession, position, keyword } = getFilterValues();
 
@@ -1237,40 +1254,53 @@
       const status = STATUS_MAP[s.status] || STATUS_MAP.draft;
       const dateStr = s.publishTime ? s.publishTime.split(" ")[0] : s.updatedAt;
       const displayDate = dateStr || "2024-01-01";
+      const collectDate = s.publishTime ? s.publishTime.split(" ")[0] : (s.updatedAt || "2024-01-01");
       const coverStyle = s.coverImage ? `background-image:url('${s.coverImage}')` : `background:${COVER_BACKUPS[idx % COVER_BACKUPS.length]}`;
-      const resourceCount = s.tasksCount * 3 + Math.floor(Math.random() * 5);
+      const viewCount = getViewCount(s);
+      const relatedScenariosCount = getRelatedCount(s);
+      const coCreatorName = "知与未来";
 
       return `
         <div class="scene-card" data-id="${s.id}">
           <div class="card-cover" style="${coverStyle}">
             <div class="cover-tags">
-              <span class="cover-tag">${s.version}</span>
+              <div class="cover-tag-group">
+                <span class="cover-tag">${s.version}</span>
+                <span class="cover-tag">${collectDate} 收录</span>
+              </div>
               <span class="cover-tag">${status.label}</span>
             </div>
             <div class="card-cover-content">
               <div class="cover-title">${s.name}</div>
-              <div class="cover-meta">场景编码：${s.code} · ${displayDate}</div>
+              <div class="cover-meta">岗位编码：${s.code} · ${displayDate}</div>
             </div>
           </div>
           <div class="card-body">
             <div class="card-stats">
               <div class="card-stat">
+                <div class="card-stat-num">${viewCount}</div>
+                <div class="card-stat-label">浏览次数</div>
+              </div>
+              <div class="card-stat">
+                <div class="card-stat-num">${relatedScenariosCount}</div>
+                <div class="card-stat-label">关联场景</div>
+              </div>
+              <div class="card-stat">
                 <div class="card-stat-num">${s.tasksCount}</div>
-                <div class="card-stat-label">涉及任务</div>
-              </div>
-              <div class="card-stat">
-                <div class="card-stat-num">${s.totalHours}</div>
-                <div class="card-stat-label">预计课时</div>
-              </div>
-              <div class="card-stat">
-                <div class="card-stat-num">${resourceCount}</div>
-                <div class="card-stat-label">资源数</div>
+                <div class="card-stat-label">场景任务</div>
               </div>
             </div>
             <div class="card-tags">
-              <span class="card-tag blue">${s.industryName || "未指定"}</span>
-              <span class="card-tag purple">${s.positionName || "未指定"}</span>
-              <span class="card-tag">${s.professionName || "未分类"}</span>
+              <span class="card-tag orange">面向行业：${s.industryName || "未指定"}</span>
+              <span class="card-tag blue">适用专业：${s.professionName || "未分类"}</span>
+            </div>
+            <div class="card-info-row">
+              <span>创建人：${s.creatorName || "未指定"}</span>
+              <span>共建人：${coCreatorName}</span>
+            </div>
+            <div class="card-info-row">
+              <span>浏览量：${viewCount}</span>
+              <span>更新时间：${s.updatedAt || "-"}</span>
             </div>
           </div>
         </div>
