@@ -87,6 +87,7 @@ export const senceNavigationTemplate: PlatformNavigationConfig = {
         { id: "scene-resource", label: "场景资源管理", href: "/", matchers: ["/"] },
         { id: "batch-group", label: "批次分组管理", href: "/batches", matchers: ["/batches"] },
         { id: "approval-workflow", label: "审批流程管理", href: "/workflows", matchers: ["/workflows"] },
+        { id: "heart-scenes", label: "心仪岗位场景", href: "/heart-scenes", matchers: ["/heart-scenes"] },
         { id: "resource-approval", label: "资源审批管理", href: "/approvals", matchers: ["/approvals$"] },
       ],
     },

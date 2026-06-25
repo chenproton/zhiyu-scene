@@ -320,6 +320,25 @@ export interface Student {
   avatar?: string
 }
 
+/** 学生心仪岗位场景（志愿/收藏） */
+export interface StudentHeartScene {
+  id: string
+  studentId: string
+  scenarioId: string
+  scenarioName: string
+  positionId?: string
+  positionName?: string
+  professionId?: string
+  professionName?: string
+  priority: number // 优先级：1 第一志愿，2 第二志愿……
+  status: "draft" | "submitted" | "matched" | "confirmed" // 草稿/已提交/已匹配/已确认
+  createdAt: string
+  updatedAt: string
+  matchedBatchId?: string
+  matchedBatchName?: string
+  teacherComment?: string
+}
+
 export interface StudentScenarioScore {
   id: string
   studentId: string
@@ -1526,6 +1545,87 @@ export const students: Student[] = [
   { id: "stu-22", name: "许二十三", studentNumber: "2022003", class: "网络工程2201班", department: "信息工程系", enrollmentYear: 2022 },
   { id: "stu-23", name: "何二十四", studentNumber: "2022004", class: "电子商务2201班", department: "经济管理系", enrollmentYear: 2022 },
   { id: "stu-24", name: "吕二十五", studentNumber: "2022005", class: "电子商务2201班", department: "经济管理系", enrollmentYear: 2022 },
+]
+
+// Student Heart Scenes - Students' favorite scenario selections for job positions
+export const studentHeartScenes: StudentHeartScene[] = [
+  {
+    id: "heart-1",
+    studentId: "stu-1",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    positionId: "pos-1",
+    positionName: "前端开发工程师",
+    professionId: "prof-1",
+    professionName: "信息技术",
+    priority: 1,
+    status: "submitted",
+    createdAt: "2026-04-10",
+    updatedAt: "2026-04-10",
+    matchedBatchId: "batch-2",
+    matchedBatchName: "2026春季前端开发场景建设",
+  },
+  {
+    id: "heart-2",
+    studentId: "stu-1",
+    scenarioId: "scenario-2",
+    scenarioName: "RESTful API 设计与开发",
+    positionId: "pos-2",
+    positionName: "后端开发工程师",
+    professionId: "prof-1",
+    professionName: "信息技术",
+    priority: 2,
+    status: "submitted",
+    createdAt: "2026-04-10",
+    updatedAt: "2026-04-10",
+  },
+  {
+    id: "heart-3",
+    studentId: "stu-2",
+    scenarioId: "scenario-1",
+    scenarioName: "企业级前端项目开发实战",
+    positionId: "pos-1",
+    positionName: "前端开发工程师",
+    professionId: "prof-1",
+    professionName: "信息技术",
+    priority: 1,
+    status: "matched",
+    createdAt: "2026-04-08",
+    updatedAt: "2026-04-12",
+    matchedBatchId: "batch-2",
+    matchedBatchName: "2026春季前端开发场景建设",
+    teacherComment: "已根据第一志愿分配至前端开发批次",
+  },
+  {
+    id: "heart-4",
+    studentId: "stu-3",
+    scenarioId: "scenario-4",
+    scenarioName: "电商平台运营全流程",
+    positionId: "pos-5",
+    positionName: "电商运营专员",
+    professionId: "prof-2",
+    professionName: "电子商务",
+    priority: 1,
+    status: "confirmed",
+    createdAt: "2026-04-05",
+    updatedAt: "2026-04-15",
+    matchedBatchId: "batch-1",
+    matchedBatchName: "2026春季电商实训场景开发",
+  },
+  {
+    id: "heart-5",
+    studentId: "stu-3",
+    scenarioId: "scenario-5",
+    scenarioName: "企业财务报表分析",
+    positionId: "pos-8",
+    positionName: "会计师",
+    professionId: "prof-3",
+    professionName: "财务管理",
+    priority: 2,
+    status: "draft",
+    createdAt: "2026-04-05",
+    updatedAt: "2026-04-05",
+  },
 ]
 
 // Student Scenario Scores - Records of students completing scenarios
