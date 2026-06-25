@@ -149,65 +149,42 @@
   .side-item-meta { font-size: 12px; color: #94a3b8; }
   .side-empty { color: #94a3b8; font-size: 13px; text-align: center; padding: 20px 0; flex-shrink: 0; }
 
-  /* Hero carousel */
+  /* Hero banner */
   .hero {
     position: relative;
     border-radius: 20px;
     overflow: hidden;
     min-height: 380px;
-    background: #0f172a;
-  }
-  .carousel-track {
-    display: flex;
-    width: 100%;
-    height: 380px;
-    transition: transform 0.5s ease-in-out;
-  }
-  .carousel-slide {
-    min-width: 100%;
-    height: 380px;
-    position: relative;
-    background-size: cover;
-    background-position: center;
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     padding: 48px 24px;
   }
-  .carousel-slide::after {
-    content: "";
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(15,23,42,0.78) 0%, rgba(30,58,138,0.55) 50%, rgba(22,119,255,0.35) 100%);
+  .hero-banner-content { max-width: 720px; color: #fff; }
+  .hero-banner-title { font-size: 42px; font-weight: 800; margin-bottom: 16px; letter-spacing: 1px; }
+  .hero-banner-subtitle { font-size: 16px; color: rgba(255,255,255,0.9); margin-bottom: 32px; }
+  .hero-search {
+    display: flex; align-items: center;
+    background: #fff; border-radius: 50px;
+    padding: 6px 6px 6px 18px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    max-width: 560px; margin: 0 auto;
   }
-  .carousel-content { position: relative; z-index: 1; max-width: 720px; color: #fff; }
-  .carousel-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    color: #e0f2fe;
-    padding: 6px 14px; border-radius: 20px;
-    font-size: 13px; margin-bottom: 16px;
+  .hero-search-icon { color: #94a3b8; font-size: 16px; margin-right: 10px; }
+  .hero-search input {
+    flex: 1; border: none; outline: none;
+    font-size: 15px; color: #334155; background: transparent;
   }
-  .carousel-title { font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.5px; }
-  .carousel-meta { font-size: 14px; color: rgba(255,255,255,0.85); margin-bottom: 18px; line-height: 1.6; }
-  .carousel-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-  .carousel-tag {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(4px);
-    padding: 5px 12px; border-radius: 6px;
-    font-size: 12px; color: #fff;
+  .hero-search input::placeholder { color: #94a3b8; }
+  .hero-search button {
+    background: #1677ff; color: #fff; border: none;
+    border-radius: 50px; padding: 12px 32px;
+    font-size: 15px; cursor: pointer;
+    transition: background 0.2s;
   }
-  .carousel-dots {
-    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 8px; z-index: 2;
-  }
-  .carousel-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: rgba(255,255,255,0.4); cursor: pointer;
-    transition: all 0.2s;
-  }
-  .carousel-dot.active { background: #fff; width: 22px; border-radius: 4px; }
+  .hero-search button:hover { background: #3b8cff; }
 
   /* Category shortcuts */
   .category-bar {
@@ -250,41 +227,6 @@
   .stats-bar-label { color: #334155; font-size: 28px; }
   .stats-bar-value { font-size: 36px; font-weight: 800; color: #1677ff; }
   .stats-bar-divider { width: 1px; height: 36px; background: #cbd5e1; }
-
-  /* Main search */
-  .main-search-wrap { margin-bottom: 12px; }
-  .main-search {
-    display: flex; align-items: center;
-    background: #f8fafc; border-radius: 14px;
-    border: 1px solid #e2e8f0;
-    padding: 6px 6px 6px 20px;
-    width: 100%;
-  }
-  .main-search input {
-    flex: 1; border: none; outline: none; background: transparent;
-    font-size: 15px; color: #334155;
-  }
-  .main-search input::placeholder { color: #94a3b8; }
-  .main-search button {
-    background: #1677ff; color: #fff; border: none;
-    border-radius: 10px; padding: 10px 24px;
-    font-size: 14px; cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-    transition: background 0.2s;
-  }
-  .main-search button:hover { background: #3b8cff; }
-  .hot-search {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    margin-top: 10px; font-size: 13px; color: #64748b;
-  }
-  .hot-search-label { color: #94a3b8; }
-  .hot-search-tag {
-    padding: 4px 12px; border-radius: 20px;
-    background: #fff; border: 1px solid #e2e8f0;
-    color: #475569; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .hot-search-tag:hover { background: #eff6ff; color: #1677ff; border-color: #bfdbfe; }
 
   /* Filter */
   .filter-box {
@@ -548,10 +490,15 @@
       </div>
     </div>
     <div class="hero" id="heroCarousel">
-      <div class="carousel-track" id="carouselTrack">
-        <!-- JS 动态生成 -->
+      <div class="hero-banner-content">
+        <h1 class="hero-banner-title">能力测评中心</h1>
+        <p class="hero-banner-subtitle">集测评资源、岗位能力认定、毕业设计、学生画像于一体的一站式能力成长平台</p>
+        <div class="hero-search">
+          <i class="fa fa-search hero-search-icon"></i>
+          <input type="text" id="mainSearchInput" placeholder="搜索场景名称、岗位编码或关键词">
+          <button id="mainSearchBtn">搜索</button>
+        </div>
       </div>
-      <div class="carousel-dots" id="carouselDots"></div>
     </div>
   </div>
 
@@ -577,23 +524,6 @@
     <div class="stats-bar-item">
       <span class="stats-bar-label">覆盖岗位数</span>
       <span class="stats-bar-value" id="statPositions">0</span>
-    </div>
-  </div>
-
-  <!-- 主搜索框 -->
-  <div class="main-search-wrap">
-    <div class="main-search">
-      <input type="text" id="mainSearchInput" placeholder="搜索岗位名称、岗位编码或关键词">
-      <button id="mainSearchBtn"><i class="fa fa-search"></i> 搜索岗位</button>
-    </div>
-    <div class="hot-search">
-      <span class="hot-search-label">热门搜索：</span>
-      <span class="hot-search-tag" data-keyword="前端开发">前端开发</span>
-      <span class="hot-search-tag" data-keyword="数据分析师">数据分析师</span>
-      <span class="hot-search-tag" data-keyword="电商运营">电商运营</span>
-      <span class="hot-search-tag" data-keyword="品牌经理">品牌经理</span>
-      <span class="hot-search-tag" data-keyword="会计师">会计师</span>
-      <span class="hot-search-tag" data-keyword="新媒体运营">新媒体运营</span>
     </div>
   </div>
 
@@ -1109,15 +1039,6 @@
   mainSearchBtn.addEventListener("click", () => { searchInput.value = mainSearchInput.value; doSearch(); });
   mainSearchInput.addEventListener("keydown", e => { if(e.key === 'Enter') { searchInput.value = mainSearchInput.value; doSearch(); } });
 
-  document.querySelectorAll('.hot-search-tag').forEach(tag => {
-    tag.addEventListener('click', () => {
-      const keyword = tag.dataset.keyword;
-      searchInput.value = keyword;
-      mainSearchInput.value = keyword;
-      doSearch();
-    });
-  });
-
   // =================== 分类快捷入口 ===================
   document.querySelectorAll('.category-item').forEach(item => {
     item.addEventListener('click', () => {
@@ -1346,25 +1267,6 @@
     renderList(favoriteContainer, favoriteScenarios);
   }
 
-  // =================== 首页轮播 ===================
-  function initHeroCarousel() {
-    const track = document.getElementById("carouselTrack");
-    const dots = document.getElementById("carouselDots");
-
-    const slide = document.createElement("div");
-    slide.className = "carousel-slide";
-    slide.style.backgroundImage = "url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&h=600&fit=crop')";
-    slide.innerHTML = `
-      <div class="carousel-content">
-        <div class="carousel-badge"><i class="fa fa-graduation-cap"></i> 沉浸式业务场景学习</div>
-        <h2 class="carousel-title">探索真实业务场景</h2>
-        <div class="carousel-meta">基于岗位能力模型，覆盖多行业、多专业的项目化学习场景，助力职业能力成长</div>
-      </div>
-    `;
-    track.appendChild(slide);
-    dots.style.display = "none";
-  }
-
   // =================== 分页渲染 ===================
   function renderPagination(totalPages) {
     const container = document.getElementById("pagination");
@@ -1398,7 +1300,6 @@
   initStats();
   initFilters();
   initSidePanels();
-  initHeroCarousel();
   renderCards();
   updateFilterSummary();
 
