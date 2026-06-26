@@ -81,15 +81,17 @@ function FilterRow({
   const hasMore = options.length > INITIAL_VISIBLE_COUNT
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-b-0">
-      <div className="mt-1 w-10 shrink-0 text-sm font-medium text-gray-700">{label}</div>
+    <div className="flex items-start gap-4 py-3 border-b border-dashed border-slate-200 last:border-b-0">
+      <div className="mt-0.5 w-10 shrink-0 text-sm font-medium text-gray-800">{label}</div>
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => onChange("全部")}
           className={cn(
-            "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-            value === "全部" ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+            value === "全部"
+              ? "border-transparent bg-[#1677ff] text-white hover:bg-[#1677ff]/90"
+              : "border-gray-200 bg-white text-gray-700 hover:border-[#1677ff]/50 hover:text-[#1677ff]"
           )}
         >
           全部
@@ -100,8 +102,10 @@ function FilterRow({
             type="button"
             onClick={() => onChange(option)}
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-              value === option ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              value === option
+                ? "border-transparent bg-[#1677ff] text-white hover:bg-[#1677ff]/90"
+                : "border-gray-200 bg-white text-gray-700 hover:border-[#1677ff]/50 hover:text-[#1677ff]"
             )}
           >
             {option}
@@ -112,7 +116,7 @@ function FilterRow({
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="mt-1 flex shrink-0 items-center gap-0.5 text-xs text-primary hover:text-primary/80"
+          className="mt-0.5 flex shrink-0 items-center gap-0.5 text-xs text-[#1677ff] hover:text-[#1677ff]/80"
         >
           {expanded ? "收起" : "展开"}
           {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
