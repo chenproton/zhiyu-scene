@@ -104,6 +104,7 @@ export interface Scenario {
   updatedAt: string
   publishTime?: string
   viewCount?: number
+  relatedScenesCount?: number
 }
 
 export interface TaskEvalPoint {
@@ -654,6 +655,8 @@ export const scenarios: Scenario[] = [
     version: "v2.1",
     status: "published",
     publishTime: "2024-03-15 10:30:00",
+    viewCount: 684,
+    relatedScenesCount: 3,
     creatorId: "user-1",
     creatorName: "张老师",
     coBuilders: [{ id: "user-2", name: "李老师" }],

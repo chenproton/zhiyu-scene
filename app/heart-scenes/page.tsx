@@ -1,47 +1,15 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import {
-  Heart,
-  Search,
-  Flame,
-  Eye,
-  Briefcase,
-  Layers,
-  Trophy,
-  Trash2,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Search, Trophy } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { scenarios, professions, studentHeartScenes as initialHeartScenes } from "@/lib/mock-data"
+import { scenarios, studentHeartScenes as initialHeartScenes } from "@/lib/mock-data"
 import type { Scenario, StudentHeartScene } from "@/lib/mock-data"
 
 const CURRENT_STUDENT_ID = "stu-1"
-const MAX_HEARTS = 5
-
-const BANNER_GRADIENTS = [
-  "from-blue-500 to-indigo-600",
-  "from-rose-500 to-orange-600",
-  "from-emerald-500 to-teal-600",
-  "from-violet-500 to-purple-600",
-  "from-amber-500 to-red-500",
-  "from-cyan-500 to-blue-600",
-  "from-fuchsia-500 to-pink-600",
-  "from-lime-500 to-green-600",
-  "from-sky-500 to-indigo-500",
-  "from-orange-400 to-rose-500",
-  "from-teal-400 to-cyan-600",
-  "from-indigo-400 to-violet-600",
-]
-
-function getGradientIndex(id: string) {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash)
-  return Math.abs(hash) % BANNER_GRADIENTS.length
-}
 
 function getViewCount(scenario: Scenario) {
   if (typeof scenario.viewCount === "number") return scenario.viewCount
@@ -50,15 +18,27 @@ function getViewCount(scenario: Scenario) {
   return 800 + (Math.abs(hash) % 200)
 }
 
+function getRelatedScenesCount(scenario: Scenario) {
+  if (typeof scenario.relatedScenesCount === "number") return scenario.relatedScenesCount
+  return scenarios.filter(
+    (s) => s.id !== scenario.id && s.industryName && s.industryName === scenario.industryName
+  ).length
+}
+
 function formatDate(date?: string) {
   if (!date) return "-"
   return date.replace(/-/g, ".")
 }
 
+function getPublishDate(scenario: Scenario) {
+  if (scenario.publishTime) return scenario.publishTime.split(" ")[0]
+  return scenario.createdAt
+}
+
 export default function HeartScenesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTag, setActiveTag] = useState<string>("全部")
-  const [heartScenes, setHeartScenes] = useState<StudentHeartScene[]>(initialHeartScenes)
+  const [heartScenes] = useState<StudentHeartScene[]>(initialHeartScenes)
 
   const myHearts = useMemo(
     () => heartScenes.filter((h) => h.studentId === CURRENT_STUDENT_ID).sort((a, b) => a.priority - b.priority),
@@ -83,9 +63,7 @@ export default function HeartScenesPage() {
         (scenario.professionName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
         (scenario.industryName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
       const matchesTag =
-        activeTag === "全部" ||
-        scenario.industryName === activeTag ||
-        scenario.professionName === activeTag
+        activeTag === "全部" || scenario.industryName === activeTag || scenario.professionName === activeTag
       return matchesSearch && matchesTag
     })
   }, [searchQuery, activeTag])
@@ -95,39 +73,6 @@ export default function HeartScenesPage() {
       .map((s) => ({ ...s, _viewCount: getViewCount(s) }))
       .sort((a, b) => b._viewCount - a._viewCount)
       .slice(0, 5)
-  }, [])
-
-  const toggleHeart = (scenario: Scenario) => {
-    setHeartScenes((prev) => {
-      const exists = prev.find((h) => h.studentId === CURRENT_STUDENT_ID && h.scenarioId === scenario.id)
-      if (exists) return prev.filter((h) => h.id !== exists.id)
-      if (prev.filter((h) => h.studentId === CURRENT_STUDENT_ID).length >= MAX_HEARTS) return prev
-      const nextPriority = prev.filter((h) => h.studentId === CURRENT_STUDENT_ID).length + 1
-      const newHeart: StudentHeartScene = {
-        id: `heart-${Date.now()}`,
-        studentId: CURRENT_STUDENT_ID,
-        scenarioId: scenario.id,
-        scenarioName: scenario.name,
-        positionId: scenario.positionId,
-        positionName: scenario.positionName,
-        professionId: scenario.professionId,
-        professionName: scenario.professionName,
-        priority: nextPriority,
-        status: "draft",
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: new Date().toISOString().split("T")[0],
-      }
-      return [...prev, newHeart]
-    })
-  }
-
-  const removeHeart = (scenarioId: string) => {
-    setHeartScenes((prev) => prev.filter((h) => !(h.studentId === CURRENT_STUDENT_ID && h.scenarioId === scenarioId)))
-  }
-
-  const hotThreshold = useMemo(() => {
-    const counts = scenarios.map(getViewCount).sort((a, b) => b - a)
-    return counts[Math.floor(counts.length * 0.3)] || 0
   }, [])
 
   return (
@@ -206,38 +151,44 @@ export default function HeartScenesPage() {
           {/* Grid */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredScenarios.map((scenario) => {
-              const isHearted = heartScenarioIds.has(scenario.id)
               const viewCount = getViewCount(scenario)
-              const isHot = viewCount >= hotThreshold
-              const gradient = BANNER_GRADIENTS[getGradientIndex(scenario.id)]
+              const relatedScenesCount = getRelatedScenesCount(scenario)
+              const publishDate = getPublishDate(scenario)
               const coBuilder = scenario.coBuilders?.[0]?.name || "知与未来"
               return (
                 <Card
                   key={scenario.id}
                   className="overflow-hidden border-slate-100 transition-all hover:shadow-lg"
                 >
-                  {/* Banner */}
-                  <div className={cn("relative bg-gradient-to-br px-4 pb-4 pt-3 text-white", gradient)}>
-                    <div className="mb-6 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                  {/* Banner with cover image */}
+                  <div className="relative h-36 overflow-hidden">
+                    <img
+                      src={scenario.coverImage || "/placeholder.svg"}
+                      alt={scenario.name}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-900/80" />
+                    <div className="relative z-10 flex h-full flex-col justify-between px-4 pb-4 pt-3 text-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-white/20 text-white hover:bg-white/30 border-none text-[10px]">
+                            {scenario.version || "v1.0"}
+                          </Badge>
+                          <Badge className="bg-white/20 text-white hover:bg-white/30 border-none text-[10px]">
+                            {formatDate(publishDate)} 收录
+                          </Badge>
+                        </div>
                         <Badge className="bg-white/20 text-white hover:bg-white/30 border-none text-[10px]">
-                          {scenario.version || "v1.0"}
-                        </Badge>
-                        <Badge className="bg-white/20 text-white hover:bg-white/30 border-none text-[10px]">
-                          {formatDate(scenario.createdAt)} 收录
+                          已发布
                         </Badge>
                       </div>
-                      {isHot && (
-                        <Badge className="bg-red-500/90 text-white hover:bg-red-500 border-none text-[10px] gap-1">
-                          <Flame className="h-3 w-3" />
-                          热门
-                        </Badge>
-                      )}
+                      <div>
+                        <h3 className="text-lg font-bold">{scenario.name}</h3>
+                        <p className="mt-1 text-xs text-white/80">
+                          岗位编码：{scenario.code} · {formatDate(publishDate)}
+                        </p>
+                      </div>
                     </div>
-                    <h3 className="text-lg font-bold">{scenario.name}</h3>
-                    <p className="mt-1 text-xs text-white/80">
-                      场景编码：{scenario.code} · {formatDate(scenario.updatedAt)}
-                    </p>
                   </div>
 
                   {/* Stats */}
@@ -247,8 +198,8 @@ export default function HeartScenesPage() {
                       <div className="text-xs text-gray-500">浏览次数</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xl font-bold text-gray-800">1</div>
-                      <div className="text-xs text-gray-500">关联岗位</div>
+                      <div className="text-xl font-bold text-gray-800">{relatedScenesCount}</div>
+                      <div className="text-xs text-gray-500">关联场景</div>
                     </div>
                     <div className="text-center">
                       <div className="text-xl font-bold text-gray-800">{scenario.tasks.length}</div>
@@ -259,43 +210,25 @@ export default function HeartScenesPage() {
                   {/* Tags + meta */}
                   <CardContent className="p-4 space-y-3">
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="bg-orange-50 text-orange-600 hover:bg-orange-50 text-xs font-normal">
+                      <Badge
+                        variant="secondary"
+                        className="bg-orange-50 text-orange-600 hover:bg-orange-50 text-xs font-normal"
+                      >
                         面向行业：{scenario.industryName || "-"}
                       </Badge>
-                      <Badge variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-50 text-xs font-normal">
+                      <Badge
+                        variant="secondary"
+                        className="bg-blue-50 text-blue-600 hover:bg-blue-50 text-xs font-normal"
+                      >
                         适用专业：{scenario.professionName || "-"}
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-500">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
                       <span>创建人：{scenario.creatorName || "-"}</span>
                       <span>共建人：{coBuilder}</span>
                       <span>浏览量：{viewCount}</span>
                       <span>更新时间：{formatDate(scenario.updatedAt)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-end border-t border-slate-100 pt-3">
-                      {isHearted ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 text-red-500 hover:bg-red-50 hover:text-red-600 gap-1"
-                          onClick={() => removeHeart(scenario.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          移除
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 gap-1"
-                          onClick={() => toggleHeart(scenario)}
-                        >
-                          <Heart className="h-4 w-4" />
-                          心仪
-                        </Button>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
