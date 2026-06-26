@@ -247,9 +247,12 @@ export default function HeartScenesPage() {
             const coBuilder = scenario.coBuilders?.[0]?.name || "知与未来"
             const coverImage = getCoverImage(scenario)
             return (
-              <Card
+              <a
                 key={scenario.id}
-                className="group overflow-hidden border-slate-100 transition-all hover:shadow-lg"
+                href="http://111.170.170.202:3002/learning-route"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block overflow-hidden rounded-xl border border-slate-100 bg-white transition-all hover:shadow-lg"
               >
                 {/* Banner with cover image */}
                 <div className="relative h-36 overflow-hidden">
@@ -272,7 +275,11 @@ export default function HeartScenesPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => toggleHeart(scenario)}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toggleHeart(scenario)
+                          }}
                           className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
                           title={isHearted ? "取消心仪" : "设为心仪"}
                         >
@@ -332,7 +339,7 @@ export default function HeartScenesPage() {
                     <span className="truncate">更新时间：{formatDate(scenario.updatedAt)}</span>
                   </div>
                 </CardContent>
-              </Card>
+              </a>
             )
           })}
         </div>
