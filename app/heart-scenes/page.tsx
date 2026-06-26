@@ -42,13 +42,6 @@ function getViewCount(scenario: Scenario) {
   return 800 + (Math.abs(hash) % 200)
 }
 
-function getRelatedScenesCount(scenario: Scenario) {
-  if (typeof scenario.relatedScenesCount === "number") return scenario.relatedScenesCount
-  return scenarios.filter(
-    (s) => s.id !== scenario.id && s.industryName && s.industryName === scenario.industryName
-  ).length
-}
-
 function formatDate(date?: string) {
   if (!date) return "-"
   return date.replace(/-/g, ".")
@@ -225,10 +218,7 @@ export default function HeartScenesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredScenarios.map((scenario) => {
             const isHearted = heartScenarioIds.has(scenario.id)
-            const viewCount = getViewCount(scenario)
-            const relatedScenesCount = getRelatedScenesCount(scenario)
             const publishDate = getPublishDate(scenario)
-            const coBuilder = scenario.coBuilders?.[0]?.name || "知与未来"
             const coverImage = getCoverImage(scenario)
             return (
               <a
@@ -236,17 +226,17 @@ export default function HeartScenesPage() {
                 href="http://111.170.170.202:3002/learning-route"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group block overflow-hidden rounded-xl border border-slate-100 bg-white transition-all hover:shadow-lg"
+                className="group flex flex-col overflow-hidden rounded-xl border border-slate-100 bg-white transition-all hover:shadow-lg"
               >
                 {/* Banner with cover image */}
-                <div className="relative h-36 overflow-hidden">
+                <div className="relative flex-1 min-h-[140px] overflow-hidden">
                   <img
                     src={coverImage}
                     alt={scenario.name}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/50 to-slate-900/80" />
-                  <div className="relative z-10 flex h-full flex-col justify-between px-3 pb-3 pt-3 text-white">
+                  <div className="relative z-10 flex h-full min-h-[140px] flex-col justify-between px-3 pb-3 pt-3 text-white">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Badge className="bg-white/20 text-white hover:bg-white/30 border-none text-[10px]">
@@ -275,54 +265,13 @@ export default function HeartScenesPage() {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-base font-bold line-clamp-1">{scenario.name}</h3>
+                      <h3 className="text-base font-bold line-clamp-2">{scenario.name}</h3>
                       <p className="mt-1 text-xs text-white/80 line-clamp-1">
                         岗位编码：{scenario.code} · {formatDate(publishDate)}
                       </p>
                     </div>
                   </div>
                 </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 py-3">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-gray-800">{viewCount}</div>
-                    <div className="text-xs text-gray-500">浏览次数</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-gray-800">{relatedScenesCount}</div>
-                    <div className="text-xs text-gray-500">关联场景</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-gray-800">{scenario.tasks.length}</div>
-                    <div className="text-xs text-gray-500">场景任务</div>
-                  </div>
-                </div>
-
-                {/* Tags + meta */}
-                <CardContent className="p-3 space-y-2.5">
-                  <div className="flex flex-wrap gap-1.5">
-                    <Badge
-                      variant="secondary"
-                      className="bg-orange-50 text-orange-600 hover:bg-orange-50 text-[10px] font-normal"
-                    >
-                      面向行业：{scenario.industryName || "-"}
-                    </Badge>
-                    <Badge
-                      variant="secondary"
-                      className="bg-blue-50 text-blue-600 hover:bg-blue-50 text-[10px] font-normal"
-                    >
-                      适用专业：{scenario.professionName || "-"}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-gray-500">
-                    <span className="truncate">创建人：{scenario.creatorName || "-"}</span>
-                    <span className="truncate">共建人：{coBuilder}</span>
-                    <span className="truncate">浏览量：{viewCount}</span>
-                    <span className="truncate">更新时间：{formatDate(scenario.updatedAt)}</span>
-                  </div>
-                </CardContent>
               </a>
             )
           })}
