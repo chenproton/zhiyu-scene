@@ -9,7 +9,6 @@ import {
   Briefcase,
   Layers,
   Trophy,
-  BarChart3,
   Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -98,8 +97,6 @@ export default function HeartScenesPage() {
       .slice(0, 5)
   }, [])
 
-  const maxViews = useMemo(() => Math.max(...rankedScenarios.map((s) => s._viewCount), 1), [rankedScenarios])
-
   const toggleHeart = (scenario: Scenario) => {
     setHeartScenes((prev) => {
       const exists = prev.find((h) => h.studentId === CURRENT_STUDENT_ID && h.scenarioId === scenario.id)
@@ -153,7 +150,7 @@ export default function HeartScenesPage() {
                   placeholder="搜索场景名称、编码、行业或专业..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 max-w-md"
                 />
               </div>
 
@@ -277,11 +274,7 @@ export default function HeartScenesPage() {
                       <span>更新时间：{formatDate(scenario.updatedAt)}</span>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                      <div className="flex items-center gap-1 text-sm font-semibold text-red-500">
-                        <BarChart3 className="h-4 w-4" />
-                        {"★".repeat(scenario.difficulty)} 难度
-                      </div>
+                    <div className="flex items-center justify-end border-t border-slate-100 pt-3">
                       {isHearted ? (
                         <Button
                           variant="ghost"
