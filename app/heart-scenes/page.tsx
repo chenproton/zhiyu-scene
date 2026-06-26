@@ -60,8 +60,6 @@ function getPublishDate(scenario: Scenario) {
 }
 
 type FilterState = {
-  industry: string
-  profession: string
   position: string
 }
 
@@ -129,8 +127,6 @@ function FilterRow({
 export default function HeartScenesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filters, setFilters] = useState<FilterState>({
-    industry: "全部",
-    profession: "全部",
     position: "全部",
   })
   const [heartScenes, setHeartScenes] = useState<StudentHeartScene[]>(initialHeartScenes)
@@ -143,10 +139,8 @@ export default function HeartScenesPage() {
   const heartScenarioIds = useMemo(() => new Set(myHearts.map((h) => h.scenarioId)), [myHearts])
 
   const filterOptions = useMemo(() => {
-    const industries = Array.from(new Set(scenarios.map((s) => s.industryName).filter(Boolean) as string[]))
-    const professions = Array.from(new Set(scenarios.map((s) => s.professionName).filter(Boolean) as string[]))
     const positions = Array.from(new Set(scenarios.map((s) => s.positionName).filter(Boolean) as string[]))
-    return { industries, professions, positions }
+    return { positions }
   }, [])
 
   const filteredScenarios = useMemo(() => {
@@ -158,10 +152,8 @@ export default function HeartScenesPage() {
         (scenario.positionName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
         (scenario.professionName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
         (scenario.industryName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
-      const matchesIndustry = filters.industry === "全部" || scenario.industryName === filters.industry
-      const matchesProfession = filters.profession === "全部" || scenario.professionName === filters.profession
       const matchesPosition = filters.position === "全部" || scenario.positionName === filters.position
-      return matchesSearch && matchesIndustry && matchesProfession && matchesPosition
+      return matchesSearch && matchesPosition
     })
   }, [searchQuery, filters])
 
@@ -218,22 +210,10 @@ export default function HeartScenesPage() {
           </div>
 
           <FilterRow
-            label="行业"
-            options={filterOptions.industries}
-            value={filters.industry}
-            onChange={(value) => setFilters((prev) => ({ ...prev, industry: value }))}
-          />
-          <FilterRow
-            label="专业"
-            options={filterOptions.professions}
-            value={filters.profession}
-            onChange={(value) => setFilters((prev) => ({ ...prev, profession: value }))}
-          />
-          <FilterRow
             label="岗位"
             options={filterOptions.positions}
             value={filters.position}
-            onChange={(value) => setFilters((prev) => ({ ...prev, position: value }))}
+            onChange={(value) => setFilters({ position: value })}
           />
         </CardContent>
       </Card>
