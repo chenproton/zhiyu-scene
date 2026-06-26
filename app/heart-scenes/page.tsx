@@ -4,41 +4,61 @@ import { useMemo, useState } from "react"
 import {
   Heart,
   Search,
+  Flame,
+  Eye,
   Briefcase,
   Layers,
-  CheckCircle2,
-  Bookmark,
-  GraduationCap,
+  Trophy,
   BarChart3,
+  Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import {
-  scenarios,
-  professions,
-  students,
-  studentHeartScenes as initialHeartScenes,
-} from "@/lib/mock-data"
+import { scenarios, professions, studentHeartScenes as initialHeartScenes } from "@/lib/mock-data"
 import type { Scenario, StudentHeartScene } from "@/lib/mock-data"
 
 const CURRENT_STUDENT_ID = "stu-1"
 const MAX_HEARTS = 5
 
+const BANNER_GRADIENTS = [
+  "from-blue-500 to-indigo-600",
+  "from-rose-500 to-orange-600",
+  "from-emerald-500 to-teal-600",
+  "from-violet-500 to-purple-600",
+  "from-amber-500 to-red-500",
+  "from-cyan-500 to-blue-600",
+  "from-fuchsia-500 to-pink-600",
+  "from-lime-500 to-green-600",
+  "from-sky-500 to-indigo-500",
+  "from-orange-400 to-rose-500",
+  "from-teal-400 to-cyan-600",
+  "from-indigo-400 to-violet-600",
+]
+
+function getGradientIndex(id: string) {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash)
+  return Math.abs(hash) % BANNER_GRADIENTS.length
+}
+
+function getViewCount(scenario: Scenario) {
+  if (typeof scenario.viewCount === "number") return scenario.viewCount
+  let hash = 0
+  for (let i = 0; i < scenario.id.length; i++) hash = scenario.id.charCodeAt(i) + ((hash << 5) - hash)
+  return 800 + (Math.abs(hash) % 200)
+}
+
+function formatDate(date?: string) {
+  if (!date) return "-"
+  return date.replace(/-/g, ".")
+}
+
 export default function HeartScenesPage() {
-  const [activeTab, setActiveTab] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [professionId, setProfessionId] = useState<string>("all")
+  const [activeTag, setActiveTag] = useState<string>("全部")
   const [heartScenes, setHeartScenes] = useState<StudentHeartScene[]>(initialHeartScenes)
 
   const myHearts = useMemo(
@@ -48,31 +68,43 @@ export default function HeartScenesPage() {
 
   const heartScenarioIds = useMemo(() => new Set(myHearts.map((h) => h.scenarioId)), [myHearts])
 
+  const allTags = useMemo(() => {
+    const industryTags = Array.from(new Set(scenarios.map((s) => s.industryName).filter(Boolean) as string[]))
+    const professionTags = Array.from(new Set(scenarios.map((s) => s.professionName).filter(Boolean) as string[]))
+    return { industries: industryTags, professions: professionTags }
+  }, [])
+
   const filteredScenarios = useMemo(() => {
-    const source = activeTab === "mine" ? scenarios.filter((s) => heartScenarioIds.has(s.id)) : scenarios
-    return source.filter((scenario) => {
+    return scenarios.filter((scenario) => {
       if (scenario.status !== "published" && scenario.status !== "approved") return false
       const matchesSearch =
         scenario.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (scenario.code?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
         (scenario.positionName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
-        (scenario.professionName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
-      const matchesProfession = professionId === "all" || scenario.professionId === professionId
-      return matchesSearch && matchesProfession
+        (scenario.professionName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+        (scenario.industryName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+      const matchesTag =
+        activeTag === "全部" ||
+        scenario.industryName === activeTag ||
+        scenario.professionName === activeTag
+      return matchesSearch && matchesTag
     })
-  }, [searchQuery, professionId, activeTab, heartScenarioIds])
+  }, [searchQuery, activeTag])
+
+  const rankedScenarios = useMemo(() => {
+    return [...scenarios]
+      .map((s) => ({ ...s, _viewCount: getViewCount(s) }))
+      .sort((a, b) => b._viewCount - a._viewCount)
+      .slice(0, 5)
+  }, [])
+
+  const maxViews = useMemo(() => Math.max(...rankedScenarios.map((s) => s._viewCount), 1), [rankedScenarios])
 
   const toggleHeart = (scenario: Scenario) => {
     setHeartScenes((prev) => {
-      const exists = prev.find(
-        (h) => h.studentId === CURRENT_STUDENT_ID && h.scenarioId === scenario.id
-      )
-      if (exists) {
-        return prev.filter((h) => h.id !== exists.id)
-      }
-      if (prev.filter((h) => h.studentId === CURRENT_STUDENT_ID).length >= MAX_HEARTS) {
-        return prev
-      }
+      const exists = prev.find((h) => h.studentId === CURRENT_STUDENT_ID && h.scenarioId === scenario.id)
+      if (exists) return prev.filter((h) => h.id !== exists.id)
+      if (prev.filter((h) => h.studentId === CURRENT_STUDENT_ID).length >= MAX_HEARTS) return prev
       const nextPriority = prev.filter((h) => h.studentId === CURRENT_STUDENT_ID).length + 1
       const newHeart: StudentHeartScene = {
         id: `heart-${Date.now()}`,
@@ -92,223 +124,229 @@ export default function HeartScenesPage() {
     })
   }
 
-  const formatDate = (date?: string) => {
-    if (!date) return "-"
-    return date.replace(/-/g, ".")
+  const removeHeart = (scenarioId: string) => {
+    setHeartScenes((prev) => prev.filter((h) => !(h.studentId === CURRENT_STUDENT_ID && h.scenarioId === scenarioId)))
   }
 
+  const hotThreshold = useMemo(() => {
+    const counts = scenarios.map(getViewCount).sort((a, b) => b - a)
+    return counts[Math.floor(counts.length * 0.3)] || 0
+  }, [])
+
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="mx-auto max-w-7xl space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-800">心仪岗位场景</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          选择感兴趣的岗位实践场景，系统将据此推荐实训批次并生成个性化学习路径。
-        </p>
+        <h1 className="text-2xl font-semibold text-gray-800">我的心仪场景</h1>
+        <p className="mt-1 text-sm text-gray-500">管理学生端收藏的心仪场景，支持按行业筛选与搜索</p>
       </div>
 
-      {/* Tabs + filters */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList>
-            <TabsTrigger value="all" className="gap-2">
-              <Layers className="h-4 w-4" />
-              全部场景
-            </TabsTrigger>
-            <TabsTrigger value="mine" className="gap-2">
-              <Heart className="h-4 w-4" />
-              我的心仪
-              {myHearts.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-primary/10 text-primary">
-                  {myHearts.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="搜索场景名称或编码"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 sm:w-64"
-              />
-            </div>
-            <Select value={professionId} onValueChange={setProfessionId}>
-              <SelectTrigger className="w-full sm:w-44">
-                <SelectValue placeholder="选择专业" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部专业</SelectItem>
-                {professions.map((prof) => (
-                  <SelectItem key={prof.id} value={prof.id}>
-                    {prof.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <TabsContent value="all" className="mt-4">
-          <ScenarioList
-            scenarios={filteredScenarios}
-            myHearts={myHearts}
-            heartScenarioIds={heartScenarioIds}
-            onToggleHeart={toggleHeart}
-            emptyText="未找到匹配场景"
-            formatDate={formatDate}
-          />
-        </TabsContent>
-
-        <TabsContent value="mine" className="mt-4">
-          {myHearts.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Heart className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-                <h3 className="text-base font-medium text-gray-700">还没有心仪场景</h3>
-                <p className="mt-1 text-sm text-gray-500">在“全部场景”中点击心仪按钮，即可收藏到此列表</p>
-                <Button className="mt-4" onClick={() => setActiveTab("all")}>
-                  去浏览场景
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <ScenarioList
-              scenarios={filteredScenarios}
-              myHearts={myHearts}
-              heartScenarioIds={heartScenarioIds}
-              onToggleHeart={toggleHeart}
-              emptyText="未找到匹配场景"
-              formatDate={formatDate}
-            />
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
-
-function ScenarioList({
-  scenarios,
-  myHearts,
-  heartScenarioIds,
-  onToggleHeart,
-  emptyText,
-  formatDate,
-}: {
-  scenarios: Scenario[]
-  myHearts: StudentHeartScene[]
-  heartScenarioIds: Set<string>
-  onToggleHeart: (scenario: Scenario) => void
-  emptyText: string
-  formatDate: (date?: string) => string
-}) {
-  if (scenarios.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <Search className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-          <h3 className="text-base font-medium text-gray-700">{emptyText}</h3>
-          <p className="mt-1 text-sm text-gray-500">请尝试调整搜索关键词或专业筛选</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <div className="space-y-3">
-      {scenarios.map((scenario) => {
-        const isHearted = heartScenarioIds.has(scenario.id)
-        const heart = myHearts.find((h) => h.scenarioId === scenario.id)
-        return (
-          <Card
-            key={scenario.id}
-            className={cn(
-              "group overflow-hidden transition-all hover:shadow-md",
-              isHearted && "border-primary/30 bg-primary/[0.02]"
-            )}
-          >
-            <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-              {/* Cover */}
-              <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:h-24 sm:w-36">
-                <img
-                  src={scenario.coverImage || "/placeholder.svg"}
-                  alt={scenario.name}
-                  className="h-full w-full object-cover"
+      <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+        {/* Main */}
+        <div className="space-y-4">
+          {/* Search + filters */}
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="搜索场景名称、编码、行业或专业..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
                 />
-                {isHearted && (
-                  <div className="absolute left-2 top-2">
-                    <Badge className="bg-primary text-white hover:bg-primary">
-                      <Bookmark className="mr-1 h-3 w-3" />
-                      第 {heart?.priority} 志愿
-                    </Badge>
-                  </div>
-                )}
               </div>
 
-              {/* Info */}
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary" className="text-xs font-normal">
-                    v{scenario.version || "1.0"}
-                  </Badge>
-                  <span className="text-xs text-gray-400">{formatDate(scenario.createdAt)} 收录</span>
-                  <Badge className="bg-green-50 text-green-600 hover:bg-green-50 text-xs font-normal">
-                    <CheckCircle2 className="mr-1 h-3 w-3" />
-                    已发布
-                  </Badge>
-                </div>
-
-                <h3 className="truncate text-base font-semibold text-gray-800">{scenario.name}</h3>
-                <p className="mt-0.5 text-xs text-gray-500">
-                  场景编码：{scenario.code || "-"} · {formatDate(scenario.updatedAt)} 更新
-                </p>
-
-                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                  <span className="inline-flex items-center gap-1">
-                    <Layers className="h-3.5 w-3.5" />
-                    任务 {scenario.tasks.length}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Briefcase className="h-3.5 w-3.5" />
-                    {scenario.positionName || "未关联岗位"}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <GraduationCap className="h-3.5 w-3.5" />
-                    {scenario.professionName || "未分类"}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <BarChart3 className="h-3.5 w-3.5" />
-                    难度 {"★".repeat(scenario.difficulty)}
-                  </span>
-                </div>
-
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                  <span>面向行业：{scenario.industryName || "-"}</span>
-                  <span>适用专业：{scenario.professionName || "-"}</span>
-                  <span>创建人：{scenario.creatorName || "-"}</span>
-                </div>
-              </div>
-
-              {/* Action */}
-              <div className="flex shrink-0 items-center justify-end sm:flex-col sm:items-end sm:gap-2">
-                <Button
-                  variant={isHearted ? "default" : "outline"}
-                  size="sm"
-                  className="h-9 gap-1.5"
-                  onClick={() => onToggleHeart(scenario)}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTag("全部")}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                    activeTag === "全部"
+                      ? "bg-primary text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  )}
                 >
-                  <Heart className={cn("h-4 w-4", isHearted && "fill-current")} />
-                  {isHearted ? "已心仪" : "心仪"}
-                </Button>
+                  全部
+                </button>
+                {allTags.industries.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setActiveTag(tag)}
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                      activeTag === tag
+                        ? "bg-primary text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    )}
+                  >
+                    {tag}
+                  </button>
+                ))}
+                {allTags.professions.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setActiveTag(tag)}
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                      activeTag === tag
+                        ? "bg-primary text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    )}
+                  >
+                    {tag}
+                  </button>
+                ))}
               </div>
             </CardContent>
           </Card>
-        )
-      })}
+
+          <div className="text-sm text-gray-500">共 {filteredScenarios.length} 个场景</div>
+
+          {/* Grid */}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredScenarios.map((scenario) => {
+              const isHearted = heartScenarioIds.has(scenario.id)
+              const viewCount = getViewCount(scenario)
+              const isHot = viewCount >= hotThreshold
+              const gradient = BANNER_GRADIENTS[getGradientIndex(scenario.id)]
+              const coBuilder = scenario.coBuilders?.[0]?.name || "知与未来"
+              return (
+                <Card
+                  key={scenario.id}
+                  className="overflow-hidden border-slate-100 transition-all hover:shadow-lg"
+                >
+                  {/* Banner */}
+                  <div className={cn("relative bg-gradient-to-br px-4 pb-4 pt-3 text-white", gradient)}>
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-white/20 text-white hover:bg-white/30 border-none text-[10px]">
+                          {scenario.version || "v1.0"}
+                        </Badge>
+                        <Badge className="bg-white/20 text-white hover:bg-white/30 border-none text-[10px]">
+                          {formatDate(scenario.createdAt)} 收录
+                        </Badge>
+                      </div>
+                      {isHot && (
+                        <Badge className="bg-red-500/90 text-white hover:bg-red-500 border-none text-[10px] gap-1">
+                          <Flame className="h-3 w-3" />
+                          热门
+                        </Badge>
+                      )}
+                    </div>
+                    <h3 className="text-lg font-bold">{scenario.name}</h3>
+                    <p className="mt-1 text-xs text-white/80">
+                      场景编码：{scenario.code} · {formatDate(scenario.updatedAt)}
+                    </p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 py-4">
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-gray-800">{viewCount}</div>
+                      <div className="text-xs text-gray-500">浏览次数</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-gray-800">1</div>
+                      <div className="text-xs text-gray-500">关联岗位</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-gray-800">{scenario.tasks.length}</div>
+                      <div className="text-xs text-gray-500">场景任务</div>
+                    </div>
+                  </div>
+
+                  {/* Tags + meta */}
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="bg-orange-50 text-orange-600 hover:bg-orange-50 text-xs font-normal">
+                        面向行业：{scenario.industryName || "-"}
+                      </Badge>
+                      <Badge variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-50 text-xs font-normal">
+                        适用专业：{scenario.professionName || "-"}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-500">
+                      <span>创建人：{scenario.creatorName || "-"}</span>
+                      <span>共建人：{coBuilder}</span>
+                      <span>浏览量：{viewCount}</span>
+                      <span>更新时间：{formatDate(scenario.updatedAt)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                      <div className="flex items-center gap-1 text-sm font-semibold text-red-500">
+                        <BarChart3 className="h-4 w-4" />
+                        {"★".repeat(scenario.difficulty)} 难度
+                      </div>
+                      {isHearted ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 text-red-500 hover:bg-red-50 hover:text-red-600 gap-1"
+                          onClick={() => removeHeart(scenario.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          移除
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1"
+                          onClick={() => toggleHeart(scenario)}
+                        >
+                          <Heart className="h-4 w-4" />
+                          心仪
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Sidebar ranking */}
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-800">
+                <Trophy className="h-5 w-5 text-yellow-500" />
+                心仪场景排行
+              </div>
+              <p className="mb-4 text-xs text-gray-500">按浏览量排序 TOP5</p>
+              <div className="space-y-3">
+                {rankedScenarios.map((scenario, index) => {
+                  const viewCount = scenario._viewCount
+                  const rank = index + 1
+                  return (
+                    <div key={scenario.id} className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
+                          rank <= 3 ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        {rank}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-gray-800">{scenario.name}</div>
+                        <div className="text-xs text-gray-500">{scenario.industryName || "-"}</div>
+                      </div>
+                      <div className="text-xs font-semibold text-red-500">{viewCount}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
