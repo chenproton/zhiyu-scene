@@ -17,6 +17,7 @@ import {
   Trash2,
   Undo2,
   Upload,
+  UserPlus,
   X,
   ArrowDownFromLine,
   ArrowUpFromLine,
@@ -363,6 +364,10 @@ export default function SceneHallPage() {
     setScenarios((prev) => prev.filter((s) => s.id !== scenario.id))
   }
 
+  const handleInviteCoBuild = (scenario: Scenario) => {
+    alert(`邀请共建功能开发中，已记录对场景「${scenario.name}」的共建意向。`)
+  }
+
   const handleSubmitApproval = (scenario: Scenario) => {
     if (scenario.batchId) {
       setScenarios((prev) =>
@@ -447,9 +452,9 @@ export default function SceneHallPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <PrdAnnotation data={getAnnotation("scene-management-title")}>
               <div>
-                <h1 className="text-xl font-semibold text-slate-900">场景管理</h1>
+                <h1 className="text-xl font-semibold text-slate-900">场景模板管理</h1>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  维护场景信息、任务信息等场景资源管理功能
+                  维护场景信息、任务信息等场景模板管理功能，开课后自动归档至历史档案库
                 </p>
               </div>
             </PrdAnnotation>
@@ -865,6 +870,7 @@ export default function SceneHallPage() {
               onSubmitApproval={handleSubmitApproval}
               onWithdrawApproval={handleWithdrawApproval}
               onViewRejectReason={handleViewRejectReason}
+              onInviteCoBuild={handleInviteCoBuild}
               className="border-0 rounded-none"
             />
           </CardContent>
@@ -910,6 +916,7 @@ export default function SceneHallPage() {
                         onSubmitApproval={handleSubmitApproval}
                         onWithdrawApproval={handleWithdrawApproval}
                         onViewRejectReason={handleViewRejectReason}
+                        onInviteCoBuild={handleInviteCoBuild}
                       />
                     </div>
                   </CollapsibleContent>
@@ -938,6 +945,7 @@ export default function SceneHallPage() {
                   onSubmitApproval={handleSubmitApproval}
                   onWithdrawApproval={handleWithdrawApproval}
                   onViewRejectReason={handleViewRejectReason}
+                  onInviteCoBuild={handleInviteCoBuild}
                 />
               </div>
             </div>

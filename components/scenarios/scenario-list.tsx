@@ -1,6 +1,6 @@
 "use client"
 
-import { Copy, Eye, GitBranch, Pencil, Send, Trash2, Undo2, MessageSquare } from "lucide-react"
+import { Copy, Eye, GitBranch, Pencil, Send, Trash2, Undo2, MessageSquare, UserPlus } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,6 +28,7 @@ interface ScenarioListProps {
   onSubmitApproval?: (scenario: Scenario) => void
   onWithdrawApproval?: (scenario: Scenario) => void
   onViewRejectReason?: (scenario: Scenario) => void
+  onInviteCoBuild?: (scenario: Scenario) => void
   className?: string
   basePath?: string
 }
@@ -42,6 +43,7 @@ export function ScenarioList({
   onSubmitApproval,
   onWithdrawApproval,
   onViewRejectReason,
+  onInviteCoBuild,
   className,
   basePath = "/scenarios",
 }: ScenarioListProps) {
@@ -173,6 +175,20 @@ export function ScenarioList({
                     >
                       <Copy className="mr-1 h-3 w-3" />
                       克隆场景
+                    </Button>
+                  </PrdAnnotation>
+                  <PrdAnnotation data={getAnnotation("row-action-invite")}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-emerald-600 hover:text-emerald-700"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onInviteCoBuild?.(scenario)
+                      }}
+                    >
+                      <UserPlus className="mr-1 h-3 w-3" />
+                      邀请共建
                     </Button>
                   </PrdAnnotation>
                   {scenario.status === "draft" && onSubmitApproval && (

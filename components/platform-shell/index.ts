@@ -84,18 +84,12 @@ export const senceNavigationTemplate: PlatformNavigationConfig = {
       label: "场景建设管理",
       icon: "layoutGrid",
       children: [
-        { id: "scene-resource", label: "场景资源管理", href: "/", matchers: ["/"] },
+        { id: "scene-resource", label: "场景模板管理", href: "/", matchers: ["/"] },
         { id: "batch-group", label: "批次分组管理", href: "/batches", matchers: ["/batches"] },
         { id: "approval-workflow", label: "审批流程管理", href: "/workflows", matchers: ["/workflows"] },
         { id: "resource-approval", label: "资源审批管理", href: "/approvals", matchers: ["/approvals$"] },
+        { id: "scene-archive", label: "场景历史档案库", href: "/scene-archive", matchers: ["/scene-archive"] },
       ],
-    },
-    {
-      id: "heart-scenes",
-      label: "心仪岗位场景",
-      icon: "heart",
-      href: "/heart-scenes",
-      matchers: ["/heart-scenes"],
     },
     {
       id: "teacher-grading",
@@ -103,13 +97,6 @@ export const senceNavigationTemplate: PlatformNavigationConfig = {
       icon: "clipboardCheck",
       href: "/approvals/grading",
       matchers: ["/approvals/grading$"],
-    },
-    {
-      id: "student-assessment",
-      label: "学生任务测评",
-      icon: "graduationCap",
-      href: "/student.html",
-      matchers: ["/student.html"],
     },
     {
       id: "ai-assisted",
